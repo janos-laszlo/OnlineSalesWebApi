@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SalesWebApi/SalesWebApi.csproj" />
+  <Project Path="UserIdentity/UserIdentity.csproj" />
+</Solution>

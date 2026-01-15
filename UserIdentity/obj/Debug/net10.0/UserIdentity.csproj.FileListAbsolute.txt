@@ -1,0 +1,12 @@
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\UserIdentity.csproj.AssemblyReference.cache
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\UserIdentity.GeneratedMSBuildEditorConfig.editorconfig
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\UserIdentity.AssemblyInfoInputs.cache
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\UserIdentity.AssemblyInfo.cs
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\UserIdentity.csproj.CoreCompileInputs.cache
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\bin\Debug\net10.0\UserIdentity.deps.json
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\bin\Debug\net10.0\UserIdentity.dll
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\bin\Debug\net10.0\UserIdentity.pdb
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\UserIdentity.dll
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\refint\UserIdentity.dll
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\UserIdentity.pdb
+E:\Code repositories\OnlineSalesWebApi\UserIdentity\obj\Debug\net10.0\ref\UserIdentity.dll

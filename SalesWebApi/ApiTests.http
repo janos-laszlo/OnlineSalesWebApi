@@ -2,3 +2,12 @@ GET http://localhost:5152
 
 ###
 GET http://localhost:5152/todos
+
+###
+POST http://localhost:5152/register
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "passs1Ddsf"
+}

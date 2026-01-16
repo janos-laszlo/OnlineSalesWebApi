@@ -1,18 +1,29 @@
-﻿using UserIdentity.Entities;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Logging;
+using UserIdentity.Entities;
 
 namespace UserIdentity.Commands;
 
-public class RegisterUserCommand
+public sealed class RegisterUserCommand(ILogger<RegisterUserCommand> logger)
 {
-    public void Execute(UserRegistrationDto userRegistrationDto)
+    public Result Execute(UserRegistrationDto userRegistrationDto)
     {
-        var userResult = User.Create(userRegistrationDto.Email, userRegistrationDto.Password);
+        var userResult = User.Create(
+            userRegistrationDto.Email,
+            userRegistrationDto.Password);
         if (userResult.IsFailure)
         {
-            Console.WriteLine(userResult.Error);
-            return;
+            logger.LogError("Cannot register user because {Error}", userResult.Error);
+            return userResult;
         }
+
+        // save to database...
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("User with email {Email} registered successfully", userRegistrationDto.Email);
+        
+        return Result.Success();
     }
 
-    public sealed record UserRegistrationDto(string Email, string Password);
 }
+
+public sealed record UserRegistrationDto(string Email, string Password);

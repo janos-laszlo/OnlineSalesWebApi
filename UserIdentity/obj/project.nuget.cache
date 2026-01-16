@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "FqUIQChEZ2E=",
+  "dgSpecHash": "G3LzORgfjJs=",
   "success": true,
   "projectFilePath": "E:\\Code repositories\\OnlineSalesWebApi\\UserIdentity\\UserIdentity.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\janos\\.nuget\\packages\\languageext.core\\4.4.9\\languageext.core.4.4.9.nupkg.sha512",
-    "C:\\Users\\janos\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
+    "C:\\Users\\janos\\.nuget\\packages\\csharpfunctionalextensions\\3.6.0\\csharpfunctionalextensions.3.6.0.nupkg.sha512",
     "C:\\Users\\janos\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\janos\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.0\\microsoft.extensions.logging.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\janos\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.15.0\\microsoft.identitymodel.abstractions.8.15.0.nupkg.sha512",

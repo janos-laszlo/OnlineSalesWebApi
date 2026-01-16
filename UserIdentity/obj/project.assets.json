@@ -2,32 +2,16 @@
   "version": 3,
   "targets": {
     "net10.0": {
-      "LanguageExt.Core/4.4.9": {
+      "CSharpFunctionalExtensions/3.6.0": {
         "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "7.0.0"
-        },
         "compile": {
-          "lib/netstandard2.0/LanguageExt.Core.dll": {
-            "related": ".xml"
+          "lib/net8.0/CSharpFunctionalExtensions.dll": {
+            "related": ".pdb;.xml"
           }
         },
         "runtime": {
-          "lib/netstandard2.0/LanguageExt.Core.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
-        "type": "package",
-        "compile": {
-          "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll": {
-            "related": ".xml"
+          "lib/net8.0/CSharpFunctionalExtensions.dll": {
+            "related": ".pdb;.xml"
           }
         }
       },
@@ -131,41 +115,24 @@
     }
   },
   "libraries": {
-    "LanguageExt.Core/4.4.9": {
-      "sha512": "K9VGWkThJkaomifa3zcmwysw1BaSqIZZPZc6trBnJN8u9mpmA/cMMwCWEa/v7bPv/+NnG6PbyIDB7HtxBX7yCQ==",
+    "CSharpFunctionalExtensions/3.6.0": {
+      "sha512": "c+oWbfDKKjpOLPMxn/iPn1GL24YTJMtOiGfj0AsDKZ2v6/Mr6V7BfzfWLg6KqNRx3KRy3KcQE680SwvDTI/jcg==",
       "type": "package",
-      "path": "languageext.core/4.4.9",
+      "path": "csharpfunctionalextensions/3.6.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "lang-ext-small.png",
-        "languageext.core.4.4.9.nupkg.sha512",
-        "languageext.core.nuspec",
-        "lib/netstandard2.0/LanguageExt.Core.dll",
-        "lib/netstandard2.0/LanguageExt.Core.xml"
-      ]
-    },
-    "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
-      "sha512": "3aeMZ1N0lJoSyzqiP03hqemtb1BijhsJADdobn/4nsMJ8V1H+CrpuduUe4hlRdx+ikBQju1VGjMD1GJ3Sk05Eg==",
-      "type": "package",
-      "path": "microsoft.bcl.asyncinterfaces/7.0.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "Icon.png",
-        "LICENSE.TXT",
-        "THIRD-PARTY-NOTICES.TXT",
-        "buildTransitive/net461/Microsoft.Bcl.AsyncInterfaces.targets",
-        "buildTransitive/net462/_._",
-        "lib/net462/Microsoft.Bcl.AsyncInterfaces.dll",
-        "lib/net462/Microsoft.Bcl.AsyncInterfaces.xml",
-        "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.dll",
-        "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.xml",
-        "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll",
-        "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.xml",
-        "microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
-        "microsoft.bcl.asyncinterfaces.nuspec",
-        "useSharedDesignerContext.txt"
+        "csharpfunctionalextensions.3.6.0.nupkg.sha512",
+        "csharpfunctionalextensions.nuspec",
+        "lib/net6.0/CSharpFunctionalExtensions.dll",
+        "lib/net6.0/CSharpFunctionalExtensions.pdb",
+        "lib/net6.0/CSharpFunctionalExtensions.xml",
+        "lib/net8.0/CSharpFunctionalExtensions.dll",
+        "lib/net8.0/CSharpFunctionalExtensions.pdb",
+        "lib/net8.0/CSharpFunctionalExtensions.xml",
+        "lib/netstandard2.0/CSharpFunctionalExtensions.dll",
+        "lib/netstandard2.0/CSharpFunctionalExtensions.pdb",
+        "lib/netstandard2.0/CSharpFunctionalExtensions.xml"
       ]
     },
     "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.0": {
@@ -378,13 +345,12 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "LanguageExt.Core >= 4.4.9",
+      "CSharpFunctionalExtensions >= 3.6.0",
       "Microsoft.IdentityModel.JsonWebTokens >= 8.15.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\janos\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\janos\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -395,19 +361,13 @@
       "packagesPath": "C:\\Users\\janos\\.nuget\\packages\\",
       "outputPath": "E:\\Code repositories\\OnlineSalesWebApi\\UserIdentity\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\janos\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\janos\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -432,9 +392,9 @@
       "net10.0": {
         "targetAlias": "net10.0",
         "dependencies": {
-          "LanguageExt.Core": {
+          "CSharpFunctionalExtensions": {
             "target": "Package",
-            "version": "[4.4.9, )"
+            "version": "[3.6.0, )"
           },
           "Microsoft.IdentityModel.JsonWebTokens": {
             "target": "Package",

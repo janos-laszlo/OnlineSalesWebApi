@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
-using LanguageExt;
-using LanguageExt.Common;
+using CSharpFunctionalExtensions;
 
 namespace UserIdentity.Entities;
 
@@ -17,18 +16,14 @@ internal class User
         PasswordHash = passwordHash;
     }
 
-    public static Fin<User> Create(string email, string password)
+    public static Result<User> Create(string email, string passwordHash)
     {
-        if(!Regex.IsMatch("^\\S+@\\S+\\.\\S+$", email))
-            return Fin<User>.Fail(Error.New("Invalid email format"));
+        if (!Regex.IsMatch("^\\S+@\\S+\\.\\S+$", email))
+            return Result.Failure<User>("Invalid email format");
 
-        var passwordHash = HashPassword(password);
+        if (string.IsNullOrWhiteSpace(passwordHash) || passwordHash.Length < 8)
+            return Result.Failure<User>("Password hash must be at least 8 characters long");
+
         return new User(0, email, passwordHash);
-    }
-
-    private static string HashPassword(string password)
-    {
-        var hasher = new PassworHasher<User>();
-        return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
     }
 }

@@ -3,7 +3,7 @@ using SalesWebApi.Endpoints;
 using UserIdentity;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddUserIdentity();
+builder.Services.AddUserIdentity(builder.Configuration);
 
 var app = builder.Build();
 

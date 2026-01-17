@@ -9,6 +9,7 @@ internal partial class User
     public long Id { get; private set; }
     public string Email { get; private set; }
     public string PasswordHash { get; private set; }
+    public bool Emailconfirmed { get; private set; }
 
     [GeneratedRegex("(?=.*[a-z])(?=.*[A-Z])")]
     private static partial Regex charactersRegex();
@@ -19,11 +20,12 @@ internal partial class User
     [GeneratedRegex(@"^\S+@\S+\.\S+$")]
     private static partial Regex emailRegex();
 
-    private User(long id, string email, string passwordHash)
+    private User(long id, string email, string passwordHash, bool emailConfirmed)
     {
         Id = id;
         Email = email;
         PasswordHash = passwordHash;
+        Emailconfirmed = emailConfirmed;
     }
 
     public static Result<User> Create(string email, string password)
@@ -45,6 +47,6 @@ internal partial class User
         // In this context, passing null is acceptable because we are not using any user-specific data for hashing.
         var hashedPassword = passwordhasher.HashPassword(null, password);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-        return new User(0, email, hashedPassword);
+        return new User(0, email, hashedPassword, false);
     }
 }

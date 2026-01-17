@@ -11,7 +11,7 @@ public static class UserIdentityRegistration
         this IServiceCollection services, 
         IConfiguration configuration)
     {
-        services.AddTransient<RegisterUserCommand>();
+        services.AddTransient<IRegisterUserCommand, RegisterUserCommand>();
         services.AddDbContext<UserIdentityDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("MariaDB");

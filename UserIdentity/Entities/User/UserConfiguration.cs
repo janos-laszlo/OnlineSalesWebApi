@@ -19,7 +19,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(128);
 
-        builder.Property(u => u.Emailconfirmed)
+        builder.Property(u => u.EmailConfirmed)
             .IsRequired();
     }
 }

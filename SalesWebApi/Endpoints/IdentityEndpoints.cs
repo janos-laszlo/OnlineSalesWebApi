@@ -10,7 +10,7 @@ public static class IdentityEndpoints
         app.MapPost(
             "/register", 
             [RequestSizeLimit(1024)](UserRegistrationDto userRegistrationDto, 
-            RegisterUserCommand registerUserCommand) =>
+            IRegisterUserCommand registerUserCommand) =>
             {
                 var registerUserCommandResult = registerUserCommand.Execute(userRegistrationDto);
                 return registerUserCommandResult.IsSuccess

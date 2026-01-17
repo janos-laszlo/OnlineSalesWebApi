@@ -9,7 +9,7 @@ internal partial class User
     public long Id { get; private set; }
     public string Email { get; private set; }
     public string PasswordHash { get; private set; }
-    public bool Emailconfirmed { get; private set; }
+    public bool EmailConfirmed { get; private set; }
 
     [GeneratedRegex("(?=.*[a-z])(?=.*[A-Z])")]
     private static partial Regex charactersRegex();
@@ -25,7 +25,7 @@ internal partial class User
         Id = id;
         Email = email;
         PasswordHash = passwordHash;
-        Emailconfirmed = emailConfirmed;
+        EmailConfirmed = emailConfirmed;
     }
 
     public static Result<User> Create(string email, string password)

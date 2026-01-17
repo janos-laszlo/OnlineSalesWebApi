@@ -4,7 +4,14 @@ using UserIdentity.Entities;
 
 namespace UserIdentity.Commands;
 
-public sealed class RegisterUserCommand(ILogger<RegisterUserCommand> logger)
+public interface IRegisterUserCommand
+{
+    Result Execute(UserRegistrationDto userRegistrationDto);
+}
+
+internal sealed class RegisterUserCommand(
+    ILogger<RegisterUserCommand> logger,
+    UserIdentityDbContext dbContext) : IRegisterUserCommand
 {
     public Result Execute(UserRegistrationDto userRegistrationDto)
     {
@@ -16,8 +23,10 @@ public sealed class RegisterUserCommand(ILogger<RegisterUserCommand> logger)
             logger.LogError("Cannot register user because {Error}", userResult.Error);
             return userResult;
         }
-
-        // save to database...
+        // TODO: Check for existing user with the same email
+        // TODO: Add a CreatedAt timestamp to remove users who never confirm their email
+        dbContext.Users.Add(userResult.Value);
+        dbContext.SaveChanges();
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("User with email {Email} registered successfully", userRegistrationDto.Email);
         

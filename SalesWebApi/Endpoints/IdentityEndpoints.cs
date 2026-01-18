@@ -8,13 +8,13 @@ public static class IdentityEndpoints
     public static void MapIdentityEndpoints(this WebApplication app)
     {
         app.MapPost(
-            "/register", 
-            [RequestSizeLimit(1024)](UserRegistrationDto userRegistrationDto, 
+            "/register",
+            [RequestSizeLimit(1024)] (UserRegistrationDto userRegistrationDto,
             IRegisterUserCommand registerUserCommand) =>
             {
                 var registerUserCommandResult = registerUserCommand.Execute(userRegistrationDto);
                 return registerUserCommandResult.IsSuccess
-                    ? Results.Ok()
+                    ? Results.Ok(new { Id = registerUserCommandResult.Value })
                     : Results.BadRequest(Envelope.Failure(registerUserCommandResult.Error));
             });
         app.MapPost("/login", () => "Login Endpoint");

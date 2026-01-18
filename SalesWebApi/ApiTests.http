@@ -8,6 +8,6 @@ POST http://localhost:5152/register
 Content-Type: application/json
 
 {
-    "email": "test1@example.com",
+    "email": "test2@example.com",
     "password": "passs1Ddsfs#"
 }

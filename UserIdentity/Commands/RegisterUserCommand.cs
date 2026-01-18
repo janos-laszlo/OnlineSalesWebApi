@@ -6,14 +6,14 @@ namespace UserIdentity.Commands;
 
 public interface IRegisterUserCommand
 {
-    Result Execute(UserRegistrationDto userRegistrationDto);
+    Result<int> Execute(UserRegistrationDto userRegistrationDto);
 }
 
 internal sealed class RegisterUserCommand(
     ILogger<RegisterUserCommand> logger,
     UserIdentityDbContext dbContext) : IRegisterUserCommand
 {
-    public Result Execute(UserRegistrationDto userRegistrationDto)
+    public Result<int> Execute(UserRegistrationDto userRegistrationDto)
     {
         var userResult = User.Create(
             userRegistrationDto.Email,
@@ -21,16 +21,21 @@ internal sealed class RegisterUserCommand(
         if (userResult.IsFailure)
         {
             logger.LogError("Cannot register user because {Error}", userResult.Error);
-            return userResult;
+            return Result.Failure<int>(userResult.Error);
         }
-        // TODO: Check for existing user with the same email
-        // TODO: Add a CreatedAt timestamp to remove users who never confirm their email
+
+        if (dbContext.Users.Any(u => u.Email == userRegistrationDto.Email))
+        {
+            logger.LogError("User with email {UserRegistrationEmail} already exists", userRegistrationDto.Email);
+            return Result.Failure<int>($"User with email {userRegistrationDto.Email} already exists");
+        }
+
         dbContext.Users.Add(userResult.Value);
         dbContext.SaveChanges();
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("User with email {Email} registered successfully", userRegistrationDto.Email);
-        
-        return Result.Success();
+
+        return userResult.Value.Id;
     }
 
 }

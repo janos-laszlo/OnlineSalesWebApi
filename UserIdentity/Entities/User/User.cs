@@ -6,10 +6,11 @@ namespace UserIdentity.Entities;
 
 internal partial class User
 {
-    public long Id { get; private set; }
+    public int Id { get; private set; }
     public string Email { get; private set; }
     public string PasswordHash { get; private set; }
     public bool EmailConfirmed { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
 
     [GeneratedRegex("(?=.*[a-z])(?=.*[A-Z])")]
     private static partial Regex charactersRegex();
@@ -20,12 +21,17 @@ internal partial class User
     [GeneratedRegex(@"^\S+@\S+\.\S+$")]
     private static partial Regex emailRegex();
 
-    private User(long id, string email, string passwordHash, bool emailConfirmed)
+    private User(int id, string email, string passwordHash, bool emailConfirmed, DateTimeOffset createdAt)
     {
         Id = id;
         Email = email;
         PasswordHash = passwordHash;
         EmailConfirmed = emailConfirmed;
+        CreatedAt = createdAt;
+    }
+
+    private User(int id, string email, string hashedPassword) : this(id, email, hashedPassword, false, DateTimeOffset.UtcNow)
+    {
     }
 
     public static Result<User> Create(string email, string password)
@@ -47,6 +53,6 @@ internal partial class User
         // In this context, passing null is acceptable because we are not using any user-specific data for hashing.
         var hashedPassword = passwordhasher.HashPassword(null, password);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-        return new User(0, email, hashedPassword, false);
+        return new User(0, email, hashedPassword);
     }
 }

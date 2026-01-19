@@ -6,14 +6,14 @@ namespace UserIdentity.Commands;
 
 public interface IRegisterUserCommand
 {
-    Result<int> Execute(UserRegistrationDto userRegistrationDto);
+    Result<int> Execute(UserCredentialsDto userRegistrationDto);
 }
 
 internal sealed class RegisterUserCommand(
     ILogger<RegisterUserCommand> logger,
     UserIdentityDbContext dbContext) : IRegisterUserCommand
 {
-    public Result<int> Execute(UserRegistrationDto userRegistrationDto)
+    public Result<int> Execute(UserCredentialsDto userRegistrationDto)
     {
         var userResult = User.Create(
             userRegistrationDto.Email,
@@ -39,5 +39,3 @@ internal sealed class RegisterUserCommand(
     }
 
 }
-
-public sealed record UserRegistrationDto(string Email, string Password);

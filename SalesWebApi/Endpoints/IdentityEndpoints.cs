@@ -9,7 +9,7 @@ public static class IdentityEndpoints
     {
         app.MapPost(
             "/register",
-            [RequestSizeLimit(1024)] (UserRegistrationDto userRegistrationDto,
+            [RequestSizeLimit(1024)] (UserCredentialsDto userRegistrationDto,
             IRegisterUserCommand registerUserCommand) =>
             {
                 var registerUserCommandResult = registerUserCommand.Execute(userRegistrationDto);
@@ -17,7 +17,16 @@ public static class IdentityEndpoints
                     ? Results.Ok(new { Id = registerUserCommandResult.Value })
                     : Results.BadRequest(Envelope.Failure(registerUserCommandResult.Error));
             });
-        app.MapPost("/login", () => "Login Endpoint");
+        app.MapPost(
+            "/login",
+            (UserCredentialsDto userLoginDto,
+            ILoginUserCommand loginUserCommand) =>
+        {
+            var loginResult = loginUserCommand.Execute(userLoginDto);
+            return loginResult.IsSuccess
+                ? Results.Ok(new { Token = loginResult.Value })
+                : Results.BadRequest(Envelope.Failure(loginResult.Error));
+        });
         app.MapPost("/refresh-token", () => "Refresh Token Endpoint");
     }
 }

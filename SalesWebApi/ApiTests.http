@@ -20,3 +20,8 @@ Content-Type: application/json
     "email": "test2@example.com",
     "password": "passs1Ddsfs#"
 }
+
+###
+POST http://localhost:5152/refresh-token
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxNTIiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUxNTIiLCJleHAiOjE3Njg5NTQ1MjQsImlhdCI6MTc2ODk0NzMyNCwibmJmIjoxNzY4OTQ3MzI0LCJzdWIiOjIsImVtYWlsIjoidGVzdDJAZXhhbXBsZS5jb20ifQ.9UuVmqzkGxm6BENhW4qPudcAoDQkZGurfduapWxKI0s

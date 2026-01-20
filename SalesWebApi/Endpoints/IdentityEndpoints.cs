@@ -27,6 +27,7 @@ public static class IdentityEndpoints
                 ? Results.Ok(new { Token = loginResult.Value })
                 : Results.BadRequest(Envelope.Failure(loginResult.Error));
         });
-        app.MapPost("/refresh-token", () => "Refresh Token Endpoint");
+        app.MapPost("/refresh-token", () => "Refresh Token Endpoint")
+            .RequireAuthorization();
     }
 }

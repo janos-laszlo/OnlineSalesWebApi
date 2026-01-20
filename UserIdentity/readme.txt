@@ -1,5 +1,7 @@
 To use this project:
--a connection string named 'MariaDB' is needed in the configuration
+-Add the following to the configuration:
+    -'ConnectionStrings:MariaDB': a connection string to MariaDB
+    -'Jwt:EncryptionKey': the key used to encrypt the JWT
 -call AddUserIdentity on the service collection
 
 TODO:

@@ -24,10 +24,21 @@ public static class IdentityEndpoints
         {
             var loginResult = loginUserCommand.Execute(userLoginDto);
             return loginResult.IsSuccess
-                ? Results.Ok(new { Token = loginResult.Value })
+                ? Results.Ok(loginResult.Value)
                 : Results.BadRequest(Envelope.Failure(loginResult.Error));
         });
-        app.MapPost("/refresh-token", () => "Refresh Token Endpoint")
+        app.MapPost(
+            "/refresh-token",
+            (RefreshTokenRequestDto refreshTokenDto,
+            IRefreshTokenCommand refreshTokenCommand) =>
+            {
+                var refreshToken = refreshTokenCommand.Execute(refreshTokenDto.RefreshToken);
+                return refreshToken.IsSuccess
+                    ? Results.Ok(refreshToken.Value)
+                    : Results.BadRequest(Envelope.Failure(refreshToken.Error));
+            });
+
+        app.MapGet("/health", () => Results.Ok("Healthy"))
             .RequireAuthorization();
     }
 }

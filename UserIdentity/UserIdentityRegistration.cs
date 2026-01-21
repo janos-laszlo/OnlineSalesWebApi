@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ public static class UserIdentityRegistration
     {
         services.AddTransient<IRegisterUserCommand, RegisterUserCommand>();
         services.AddTransient<ILoginUserCommand, LoginUserCommand>();
+        services.AddTransient<IRefreshTokenCommand, RefreshTokenCommand>();
         services.AddDbContext<UserIdentityDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("MariaDB");
@@ -20,6 +22,9 @@ public static class UserIdentityRegistration
                 connectionString,
                 ServerVersion.AutoDetect(connectionString));
         });
+        services.AddDataProtection();
+        services.AddTransient<JwtService>();
+
         return services;
     }
 }

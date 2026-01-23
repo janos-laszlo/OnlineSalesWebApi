@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using UserIdentity.Entities;
 
 namespace UserIdentity.Commands;
@@ -18,8 +19,10 @@ internal sealed class LoginUserCommand(
 
     public Result<TokenResponseDto> Execute(UserCredentialsDto userLoginDto)
     {
-        var user = dbContext.Users.FirstOrDefault(
-            u => u.Email == userLoginDto.Email);
+        var user = dbContext
+            .Users
+            .AsNoTracking()
+            .FirstOrDefault(u => u.Email == userLoginDto.Email);
         if (user == null)
             return Result.Failure<TokenResponseDto>(Error);
 

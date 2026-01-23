@@ -1,6 +1,7 @@
 using System.Text.Json;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace UserIdentity.Commands;
@@ -44,7 +45,10 @@ internal sealed class RefreshTokenCommand(
             return Result.Failure<TokenResponseDto>(Error);
         }
 
-        var user = dbContext.Users.FirstOrDefault(u => u.Id == refreshTokenObj.UserId);
+        var user = dbContext
+            .Users
+            .AsNoTracking()
+            .FirstOrDefault(u => u.Id == refreshTokenObj.UserId);
         if (user == null)
         {
             return Result.Failure<TokenResponseDto>(Error);

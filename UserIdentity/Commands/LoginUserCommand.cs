@@ -7,7 +7,9 @@ namespace UserIdentity.Commands;
 
 public interface ILoginUserCommand
 {
-    Result<TokenResponseDto> Execute(UserCredentialsDto userLoginDto);
+    Task<Result<TokenResponseDto>> Execute(
+        UserCredentialsDto userLoginDto,
+        CancellationToken cancellationToken);
 }
 
 internal sealed class LoginUserCommand(
@@ -17,12 +19,14 @@ internal sealed class LoginUserCommand(
     private const string Error = "Invalid email or password";
     private static readonly PasswordHasher<User> passwordHasher = new();
 
-    public Result<TokenResponseDto> Execute(UserCredentialsDto userLoginDto)
+    public async Task<Result<TokenResponseDto>> Execute(
+        UserCredentialsDto userLoginDto,
+        CancellationToken cancellationToken)
     {
-        var user = dbContext
+        var user = await dbContext
             .Users
             .AsNoTracking()
-            .FirstOrDefault(u => u.Email == userLoginDto.Email);
+            .FirstOrDefaultAsync(u => u.Email == userLoginDto.Email, cancellationToken);
         if (user == null)
             return Result.Failure<TokenResponseDto>(Error);
 

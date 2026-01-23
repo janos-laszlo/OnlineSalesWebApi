@@ -9,30 +9,35 @@ public static class IdentityEndpoints
     {
         app.MapPost(
             "/register",
-            [RequestSizeLimit(1024)] (UserCredentialsDto userRegistrationDto,
-            IRegisterUserCommand registerUserCommand) =>
+            [RequestSizeLimit(1024)] async (UserCredentialsDto userRegistrationDto,
+            IRegisterUserCommand registerUserCommand,
+            CancellationToken cancellationToken) =>
             {
-                var registerUserCommandResult = registerUserCommand.Execute(userRegistrationDto);
+                var registerUserCommandResult = await registerUserCommand.Execute(
+                    userRegistrationDto, cancellationToken);
                 return registerUserCommandResult.IsSuccess
                     ? Results.Ok(new { Id = registerUserCommandResult.Value })
                     : Results.BadRequest(Envelope.Failure(registerUserCommandResult.Error));
             });
         app.MapPost(
             "/login",
-            (UserCredentialsDto userLoginDto,
-            ILoginUserCommand loginUserCommand) =>
+            async (UserCredentialsDto userLoginDto,
+            ILoginUserCommand loginUserCommand,
+            CancellationToken cancellationToken) =>
         {
-            var loginResult = loginUserCommand.Execute(userLoginDto);
+            var loginResult = await loginUserCommand.Execute(userLoginDto, cancellationToken);
             return loginResult.IsSuccess
                 ? Results.Ok(loginResult.Value)
                 : Results.BadRequest(Envelope.Failure(loginResult.Error));
         });
         app.MapPost(
             "/refresh-token",
-            (RefreshTokenRequestDto refreshTokenDto,
-            IRefreshTokenCommand refreshTokenCommand) =>
+            async (RefreshTokenRequestDto refreshTokenDto,
+            IRefreshTokenCommand refreshTokenCommand,
+            CancellationToken cancellationToken) =>
             {
-                var refreshToken = refreshTokenCommand.Execute(refreshTokenDto.RefreshToken);
+                var refreshToken = await refreshTokenCommand.Execute(
+                    refreshTokenDto.RefreshToken, cancellationToken);
                 return refreshToken.IsSuccess
                     ? Results.Ok(refreshToken.Value)
                     : Results.BadRequest(Envelope.Failure(refreshToken.Error));

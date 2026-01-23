@@ -8,7 +8,9 @@ namespace UserIdentity.Commands;
 
 public interface IRefreshTokenCommand
 {
-    Result<TokenResponseDto> Execute(string refreshToken);
+    Task<Result<TokenResponseDto>> Execute(
+        string refreshToken,
+        CancellationToken cancellationToken);
 }
 
 internal sealed class RefreshTokenCommand(
@@ -20,7 +22,9 @@ internal sealed class RefreshTokenCommand(
     private const string EncryptionKeyConfigKey = "Jwt:EncryptionKey";
     private const string Error = "Invalid refresh token";
 
-    public Result<TokenResponseDto> Execute(string refreshToken)
+    public async Task<Result<TokenResponseDto>> Execute(
+        string refreshToken,
+        CancellationToken cancellationToken)
     {
         var protector = dataProtectionProvider.CreateProtector(
             configuration.GetValue<string>(EncryptionKeyConfigKey)!);
@@ -45,10 +49,10 @@ internal sealed class RefreshTokenCommand(
             return Result.Failure<TokenResponseDto>(Error);
         }
 
-        var user = dbContext
+        var user = await dbContext
             .Users
             .AsNoTracking()
-            .FirstOrDefault(u => u.Id == refreshTokenObj.UserId);
+            .FirstOrDefaultAsync(u => u.Id == refreshTokenObj.UserId, cancellationToken);
         if (user == null)
         {
             return Result.Failure<TokenResponseDto>(Error);

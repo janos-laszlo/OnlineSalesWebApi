@@ -79,8 +79,7 @@ internal sealed class RegisterUserCommand(
             Request = TickerHelper.CreateTickerRequest(email),
             ExecutionTime = DateTime.UtcNow.AddSeconds(10),
             Retries = 30,
-            RetryIntervals = [5, 10, 15]
-            // RetryIntervals = [5, 15, 30, 60, 120, 300, 600, 1800, 3600]
+            RetryIntervals = [5, 15, 30, 60, 120, 300, 600]
         });
     }
 }

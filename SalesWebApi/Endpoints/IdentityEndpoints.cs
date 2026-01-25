@@ -16,9 +16,10 @@ public static class IdentityEndpoints
                 var registerUserCommandResult = await registerUserCommand.Execute(
                     userRegistrationDto, cancellationToken);
                 return registerUserCommandResult.IsSuccess
-                    ? Results.Ok(new { Id = registerUserCommandResult.Value })
+                    ? Results.Ok()
                     : Results.BadRequest(Envelope.Failure(registerUserCommandResult.Error));
             });
+
         app.MapPost(
             "/login",
             async (UserCredentialsDto userLoginDto,
@@ -27,9 +28,10 @@ public static class IdentityEndpoints
         {
             var loginResult = await loginUserCommand.Execute(userLoginDto, cancellationToken);
             return loginResult.IsSuccess
-                ? Results.Ok(loginResult.Value)
+                ? Results.Ok(Envelope.Success(loginResult.Value))
                 : Results.BadRequest(Envelope.Failure(loginResult.Error));
         });
+
         app.MapPost(
             "/refresh-token",
             async (RefreshTokenRequestDto refreshTokenDto,
@@ -39,8 +41,20 @@ public static class IdentityEndpoints
                 var refreshToken = await refreshTokenCommand.Execute(
                     refreshTokenDto.RefreshToken, cancellationToken);
                 return refreshToken.IsSuccess
-                    ? Results.Ok(refreshToken.Value)
+                    ? Results.Ok(Envelope.Success(refreshToken.Value))
                     : Results.BadRequest(Envelope.Failure(refreshToken.Error));
+            });
+
+        app.MapGet(
+            "/confirm-email",
+            async (string token,
+            IConfirmEmailCommand confirmEmailCommand,
+            CancellationToken cancellationToken) =>
+            {
+                var confirmEmailCommandResult = await confirmEmailCommand.Execute(token, cancellationToken);
+                return confirmEmailCommandResult.IsSuccess
+                    ? Results.Ok()
+                    : Results.BadRequest(Envelope.Failure(confirmEmailCommandResult.Error));
             });
 
         app.MapGet("/health", () => Results.Ok("Healthy"))

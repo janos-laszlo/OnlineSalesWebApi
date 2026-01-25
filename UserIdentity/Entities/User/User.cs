@@ -53,6 +53,14 @@ internal partial class User
         // In this context, passing null is acceptable because we are not using any user-specific data for hashing.
         var hashedPassword = passwordhasher.HashPassword(null, password);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-        return new User(0, email, hashedPassword);
+        return new User(0, email.ToLowerInvariant(), hashedPassword);
+    }
+
+    internal bool ConfirmEmail(DateTime confirmedAt)
+    {
+        if(this.CreatedAt + TimeSpan.FromDays(7) < confirmedAt)
+            return false;
+        EmailConfirmed = true;
+        return true;
     }
 }

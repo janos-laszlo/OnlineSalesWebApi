@@ -1,16 +1,16 @@
 GET http://localhost:5152
 
 ###
-GET http://localhost:5152/todos
-
-###
 POST http://localhost:5152/register
 Content-Type: application/json
 
 {
-    "email": "test2@example.com",
+    "email": "test27@example.com",
     "password": "passs1Ddsfs#"
 }
+
+###
+GET http://localhost:5152/confirm-email?token=S67Yui2DPBBU5gDGC0I_02cxiWV65MEXVtyxW3wfrJq7632sDu330v-c9yOaGiz5ghzqiBIFsciEey5azay4DtKgQn9AEqO3i0zVCkXfxRbDGUvIg2eYzcDKwXpYni7aKRCRQbPzkJPba2zyK-VT8fz2h_91rN9riZpF-OvR8pCwed4M13RWwZB3ZtUMqny8WPFZMCZddO6KWJRCPEwxyfLx9twi8PN1L4b0PsAmIUp6jT7CMX8OcPliF5fOIAw9Jp5pVe7KWc1eVWTMS3AzwfUX1gvg-Q3xrMjlHT3CILyB5uOrgdmIALj3SwIuXpZk80ZX5k9NanLAj4uLs3obEUFWkrU
 
 ###
 POST http://localhost:5152/login

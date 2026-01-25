@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TickerQ.DependencyInjection;
 using UserIdentity.Commands;
+using UserIdentity.Emails;
 
 namespace UserIdentity;
 
@@ -16,16 +17,16 @@ public static class UserIdentityRegistration
         services.AddTransient<IRegisterUserCommand, RegisterUserCommand>();
         services.AddTransient<ILoginUserCommand, LoginUserCommand>();
         services.AddTransient<IRefreshTokenCommand, RefreshTokenCommand>();
-        services.AddTickerQ();
+        services.AddTransient<IConfirmEmailCommand, ConfirmEmailCommand>();
+        var connectionString = configuration.GetConnectionString("MariaDB");
         services.AddDbContext<UserIdentityDbContext>(options =>
-        {
-            var connectionString = configuration.GetConnectionString("MariaDB");
             options.UseMySql(
                 connectionString,
-                ServerVersion.AutoDetect(connectionString));
-        });
+                ServerVersion.AutoDetect(connectionString)));
+        services.AddTickerQ();
         services.AddDataProtection();
         services.AddTransient<JwtService>();
+        services.AddSingleton<IEmailService, ConsoleEmailService>();
 
         return services;
     }

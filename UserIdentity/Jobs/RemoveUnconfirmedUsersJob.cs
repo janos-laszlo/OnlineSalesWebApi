@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TickerQ.Utilities.Base;
 
-namespace UserIdentity.BackgroundJobs;
+namespace UserIdentity.Jobs;
 
 internal sealed class RemoveUnconfirmedUsersJob(
     UserIdentityDbContext dbContext)

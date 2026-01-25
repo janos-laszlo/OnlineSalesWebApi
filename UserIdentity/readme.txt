@@ -3,10 +3,9 @@ To use this project:
     -'ConnectionStrings:MariaDB': a connection string to MariaDB
     -'Jwt:EncryptionKey': the key used to encrypt the JWT
 -call AddUserIdentity on the service collection
+-call UseUserIdentity on the IApplicationBuilder
 
 TODO:
--remove users who haven't confirmed their email after a certain time
--add Scalar
 -refresh tokens:
     -the refresh token will have information about the user ID and 
     expiry timestamp. It will be encrypted using a custom key + user ID

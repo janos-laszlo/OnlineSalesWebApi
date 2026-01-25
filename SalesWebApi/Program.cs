@@ -29,7 +29,7 @@ builder.Services.AddUserIdentity(builder.Configuration);
 
 var app = builder.Build();
 
-app.MapIdentityEndpoints();
 app.UseUserIdentity();
+app.MapIdentityEndpoints();
 
 app.Run();

@@ -7,7 +7,6 @@ internal sealed class UserIdentityDbContext(
     DbContextOptions<UserIdentityDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users { get; init; }
-    public DbSet<Email> Emails { get; init; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

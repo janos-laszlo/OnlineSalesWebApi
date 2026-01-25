@@ -2,8 +2,12 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TickerQ.Utilities;
+using TickerQ.Utilities.Interfaces.Managers;
+using TickerQ.Utilities.Models.Ticker;
 using UserIdentity.Emails;
 using UserIdentity.Entities;
+using UserIdentity.Jobs;
 
 namespace UserIdentity.Commands;
 
@@ -17,7 +21,8 @@ public interface IRegisterUserCommand
 internal sealed class RegisterUserCommand(
     ILogger<RegisterUserCommand> logger,
     UserIdentityDbContext dbContext,
-    IDataProtectionProvider dataProtectionProvider) : IRegisterUserCommand
+    IDataProtectionProvider dataProtectionProvider,
+    ITimeTickerManager<TimeTicker> timeTickerManager) : IRegisterUserCommand
 {
     public async Task<Result> Execute(
         UserCredentialsDto userRegistrationDto,
@@ -47,7 +52,6 @@ internal sealed class RegisterUserCommand(
         // Save user to generate Id
         await dbContext.SaveChangesAsync(cancellationToken);
         await CreateEmailConfirmationRequest(userResult.Value);
-        await dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }
@@ -58,19 +62,25 @@ internal sealed class RegisterUserCommand(
             dataProtectionProvider);
         var token = emailConfirmationToken.GenerateToken(
             user.Id, user.Email);
-        var email = new Email
-        {
-            To = user.Email,
-            Subject = "Please confirm your email address",
-            Body = 
-                $"""
+        var email = new Email(
+            user.Email,
+            "Please confirm your email address",
+            $"""
                 Dear user,
                 Please confirm your email address by clicking the link below:
                 http://localhost:5152/confirm-email?token={token}
 
                 Thank you!
-                """
-        };
-        dbContext.Emails.Add(email);
+            """);
+        await timeTickerManager.AddAsync(new TimeTicker
+        {
+            Function = SendEmailJob.SendEmail,
+            Description = $"Request confirmation of {email.To} email address",
+            Request = TickerHelper.CreateTickerRequest(email),
+            ExecutionTime = DateTime.UtcNow.AddSeconds(10),
+            Retries = 30,
+            RetryIntervals = [5, 10, 15]
+            // RetryIntervals = [5, 15, 30, 60, 120, 300, 600, 1800, 3600]
+        });
     }
 }

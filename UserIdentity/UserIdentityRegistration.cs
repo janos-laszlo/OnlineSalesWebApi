@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using TickerQ.DependencyInjection;
+using TickerQ.EntityFrameworkCore.DependencyInjection;
 using UserIdentity.Commands;
 using UserIdentity.Emails;
 
@@ -22,8 +24,11 @@ public static class UserIdentityRegistration
         services.AddDbContext<UserIdentityDbContext>(options =>
             options.UseMySql(
                 connectionString,
-                ServerVersion.AutoDetect(connectionString)));
-        services.AddTickerQ();
+                ServerVersion.AutoDetect(connectionString),
+                efOptions => efOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
+        services.AddTickerQ(options =>
+            options.AddOperationalStore<UserIdentityDbContext>(efOptions =>
+                efOptions.UseModelCustomizerForMigrations()));
         services.AddDataProtection();
         services.AddTransient<JwtService>();
         services.AddSingleton<IEmailService, ConsoleEmailService>();

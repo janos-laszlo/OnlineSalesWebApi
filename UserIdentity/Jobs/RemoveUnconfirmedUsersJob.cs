@@ -7,7 +7,7 @@ internal sealed class RemoveUnconfirmedUsersJob(
     UserIdentityDbContext dbContext)
 {
     // Runs daily at 5 AM
-    [TickerFunction("RemoveUnconfirmedUsers", cronExpression: "0 5 * * *")]
+    [TickerFunction("RemoveUnconfirmedUsers", cronExpression: "0 0 5 * * *")]
     public async Task Execute(CancellationToken cancellationToken)
     {
         var cutOffDate = DateTime.UtcNow.AddDays(-7);

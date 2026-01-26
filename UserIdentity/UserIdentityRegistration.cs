@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using TickerQ.DependencyInjection;
-using TickerQ.EntityFrameworkCore.DependencyInjection;
 using UserIdentity.Commands;
 using UserIdentity.Emails;
 
@@ -21,14 +20,14 @@ public static class UserIdentityRegistration
         services.AddTransient<IRefreshTokenCommand, RefreshTokenCommand>();
         services.AddTransient<IConfirmEmailCommand, ConfirmEmailCommand>();
         var connectionString = configuration.GetConnectionString("MariaDB");
+        if (string.IsNullOrEmpty(connectionString))
+            throw new InvalidOperationException("Connection string 'MariaDB' is not configured.");
         services.AddDbContext<UserIdentityDbContext>(options =>
             options.UseMySql(
                 connectionString,
                 ServerVersion.AutoDetect(connectionString),
                 efOptions => efOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
-        services.AddTickerQ(options =>
-            options.AddOperationalStore<UserIdentityDbContext>(efOptions =>
-                efOptions.UseModelCustomizerForMigrations()));
+        services.AddTickerQ();
         services.AddDataProtection();
         services.AddTransient<JwtService>();
         services.AddSingleton<IEmailService, ConsoleEmailService>();

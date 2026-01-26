@@ -2,7 +2,6 @@ using System.Text.Json;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.DataProtection;
 using UserIdentity.Commands;
-using UserIdentity.Entities;
 
 namespace UserIdentity.Emails;
 
@@ -18,7 +17,7 @@ internal sealed class EmailConfirmationToken(
             this.protector.Protect(
                 JsonSerializer.Serialize(
                     new EmailConfirmationTokenPayload(
-                        id,email))));
+                        id, email))));
 
     public Result<EmailConfirmationTokenPayload> ParseToken(string token)
     {

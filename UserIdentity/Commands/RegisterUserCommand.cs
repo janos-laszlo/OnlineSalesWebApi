@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UserIdentity.Emails;
 using UserIdentity.Entities;
@@ -16,10 +17,14 @@ public interface IRegisterUserCommand
 
 internal sealed class RegisterUserCommand(
     ILogger<RegisterUserCommand> logger,
+    IConfiguration configuration,
     UserIdentityDbContext dbContext,
     IDataProtectionProvider dataProtectionProvider,
     IEmailService emailService) : IRegisterUserCommand
 {
+    private readonly string baseUrl = configuration["BaseUrl"] ??
+        throw new Exception("BaseUrl configuration is missing");
+
     public async Task<Result> Execute(
         UserCredentialsDto userRegistrationDto,
         CancellationToken cancellationToken)
@@ -66,7 +71,7 @@ internal sealed class RegisterUserCommand(
             Body = $"""
                 Dear user,
                 Please confirm your email address by clicking the link below:
-                http://localhost:5152/confirm-email?token={token}
+                {baseUrl}/confirm-email?token={token}
 
                 Thank you!
             """

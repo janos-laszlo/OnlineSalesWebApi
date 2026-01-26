@@ -13,6 +13,8 @@ internal sealed class JwtService(
     IDataProtectionProvider dataProtectionProvider)
 {
     private const string EncryptionKeyConfigKey = "Jwt:EncryptionKey";
+    private readonly string baseUrl = configuration["BaseUrl"] ??
+        throw new Exception("BaseUrl configuration is missing");
     private static readonly JsonWebTokenHandler handler = new();
 
     public TokenResponseDto CreateTokens(User user) =>
@@ -32,8 +34,8 @@ internal sealed class JwtService(
         };
         var descriptor = new SecurityTokenDescriptor
         {
-            Issuer = "http://localhost:5152",
-            Audience = "http://localhost:5152",
+            Issuer = baseUrl,
+            Audience = baseUrl,
             Claims = claims,
             IssuedAt = DateTime.UtcNow,
             NotBefore = DateTime.UtcNow,

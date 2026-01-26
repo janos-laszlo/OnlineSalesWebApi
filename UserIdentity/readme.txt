@@ -16,4 +16,3 @@ TODO:
         https://github.com/ullmark/hashids.net
         https://stackoverflow.com/questions/75516793/how-can-i-use-dataprotectionprovider-to-encrypt-and-validate-user-details
 -add global error handler
--return encrypted user IDs: https://www.youtube.com/watch?v=tSuwe7FowzE

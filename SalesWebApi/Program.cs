@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using SalesWebApi.Endpoints;
 using System.Text;
+using Scalar.AspNetCore;
 using UserIdentity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,10 +25,16 @@ builder.Services
     });
 builder.Services.AddAuthorization();
 builder.Services.AddUserIdentity(builder.Configuration);
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
 app.UseUserIdentity();
 app.MapIdentityEndpoints();
+if(app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 app.Run();

@@ -1,7 +1,7 @@
 GET http://localhost:5152
 
 ###
-POST http://localhost:5152/register
+POST http://192.168.1.6:5153/register
 Content-Type: application/json
 
 {

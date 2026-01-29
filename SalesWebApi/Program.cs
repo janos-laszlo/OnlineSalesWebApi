@@ -26,15 +26,18 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddUserIdentity(builder.Configuration);
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.UseUserIdentity();
 app.MapIdentityEndpoints();
-if(app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+    app.UseDeveloperExceptionPage();
 }
 
 app.Run();

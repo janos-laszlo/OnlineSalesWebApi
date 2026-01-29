@@ -17,7 +17,10 @@ public static class IdentityEndpoints
                     userRegistrationDto, cancellationToken);
                 return registerUserCommandResult.IsSuccess
                     ? Results.Ok()
-                    : Results.BadRequest(Envelope.Failure(registerUserCommandResult.Error));
+                    : Results.Problem(
+                        title: "User registration failed",
+                        detail: registerUserCommandResult.Error,
+                        statusCode: 400);
             });
 
         app.MapPost(
@@ -28,8 +31,11 @@ public static class IdentityEndpoints
         {
             var loginResult = await loginUserCommand.Execute(userLoginDto, cancellationToken);
             return loginResult.IsSuccess
-                ? Results.Ok(Envelope.Success(loginResult.Value))
-                : Results.BadRequest(Envelope.Failure(loginResult.Error));
+                ? Results.Ok(loginResult.Value)
+                    : Results.Problem(
+                        title: "User login failed",
+                        detail: loginResult.Error,
+                        statusCode: 400);
         });
 
         app.MapPost(
@@ -41,8 +47,11 @@ public static class IdentityEndpoints
                 var refreshToken = await refreshTokenCommand.Execute(
                     refreshTokenDto.RefreshToken, cancellationToken);
                 return refreshToken.IsSuccess
-                    ? Results.Ok(Envelope.Success(refreshToken.Value))
-                    : Results.BadRequest(Envelope.Failure(refreshToken.Error));
+                    ? Results.Ok(refreshToken.Value)
+                    : Results.Problem(
+                        title: "Refreshing token failed",
+                        detail: refreshToken.Error,
+                        statusCode: 400);
             });
 
         app.MapGet(
@@ -54,7 +63,10 @@ public static class IdentityEndpoints
                 var confirmEmailCommandResult = await confirmEmailCommand.Execute(token, cancellationToken);
                 return confirmEmailCommandResult.IsSuccess
                     ? Results.Ok()
-                    : Results.BadRequest(Envelope.Failure(confirmEmailCommandResult.Error));
+                    : Results.Problem(
+                        title: "Email confirmation failed",
+                        detail: confirmEmailCommandResult.Error,
+                        statusCode: 400);
             });
 
         app.MapGet("/health", () => Results.Ok("Healthy"))

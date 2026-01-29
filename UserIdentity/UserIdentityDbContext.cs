@@ -6,6 +6,7 @@ namespace UserIdentity;
 internal sealed class UserIdentityDbContext(
     DbContextOptions<UserIdentityDbContext> options) : DbContext(options)
 {
+    public static string ConnectionStringKey = "MariaDB";
     public DbSet<User> Users { get; init; }
     public DbSet<Email> Emails { get; init; }
 

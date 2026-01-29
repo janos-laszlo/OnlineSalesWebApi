@@ -19,9 +19,10 @@ public static class UserIdentityRegistration
         services.AddTransient<ILoginUserCommand, LoginUserCommand>();
         services.AddTransient<IRefreshTokenCommand, RefreshTokenCommand>();
         services.AddTransient<IConfirmEmailCommand, ConfirmEmailCommand>();
-        var connectionString = configuration.GetConnectionString("MariaDB");
+        var connectionString = configuration.GetConnectionString(UserIdentityDbContext.ConnectionStringKey);
         if (string.IsNullOrEmpty(connectionString))
-            throw new InvalidOperationException("Connection string 'MariaDB' is not configured.");
+            throw new InvalidOperationException(
+                $"Connection string '{UserIdentityDbContext.ConnectionStringKey}' is not configured.");
         services.AddDbContext<UserIdentityDbContext>(options =>
             options.UseMySql(
                 connectionString,

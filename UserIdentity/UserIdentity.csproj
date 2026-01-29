@@ -15,4 +15,7 @@
     <PackageReference Include="TickerQ" Version="10.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SalesWebApi.IntegrationTests" />
+  </ItemGroup>
 </Project>

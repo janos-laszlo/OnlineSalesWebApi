@@ -4,14 +4,14 @@ using UserIdentity;
 
 namespace SalesWebApi.IntegrationTests;
 
-public sealed class UserRegistrationFixture : IDisposable
+public sealed class UserIdentityFixture : IDisposable
 {
     private readonly WebApplicationFactory<Program> app;
     private readonly IServiceScope scope;
     private readonly UserIdentityDbContext userIdentityDbContext;
     public HttpClient Client { get; }
 
-    public UserRegistrationFixture()
+    public UserIdentityFixture()
     {
         UserIdentityDbContext.ConnectionStringKey = "MariaDBIntegrationTests";
         app = new WebApplicationFactory<Program>();

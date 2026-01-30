@@ -3,11 +3,11 @@ using UserIdentity.Commands;
 
 namespace SalesWebApi.IntegrationTests;
 
-public sealed class UserRegistrationTests : IClassFixture<UserRegistrationFixture>
+public sealed class UserRegistrationTests : IClassFixture<UserIdentityFixture>
 {
-    private readonly UserRegistrationFixture fixture;
+    private readonly UserIdentityFixture fixture;
 
-    public UserRegistrationTests(UserRegistrationFixture fixture)
+    public UserRegistrationTests(UserIdentityFixture fixture)
     {
         this.fixture = fixture;
     }

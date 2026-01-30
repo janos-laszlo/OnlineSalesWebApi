@@ -2,15 +2,9 @@ using UserIdentity.Commands;
 
 namespace SalesWebApi.IntegrationTests;
 
-public sealed class RefreshTokenTests : IClassFixture<UserIdentityFixture>
+[Collection("User Identity")]
+public sealed class RefreshTokenTests(UserIdentityFixture fixture)
 {
-    private readonly UserIdentityFixture fixture;
-
-    public RefreshTokenTests(UserIdentityFixture fixture)
-    {
-        this.fixture = fixture;
-    }
-
     [Fact]
     public async Task Succeeds_for_valid_refresh_token()
     {
@@ -18,7 +12,7 @@ public sealed class RefreshTokenTests : IClassFixture<UserIdentityFixture>
 
         // Act & Assert
         var loginResponse = await RegisterAndLoginUser();
-        var refreshTokenResult = await this.fixture.Client.PostAsJsonAsync(
+        var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
             "refresh-token", new RefreshTokenRequestDto(loginResponse.RefreshToken));
         Assert.True(refreshTokenResult.IsSuccessStatusCode);
     }
@@ -26,19 +20,19 @@ public sealed class RefreshTokenTests : IClassFixture<UserIdentityFixture>
     [Fact]
     public async Task Fails_for_invalid_refresh_token()
     {
-        var refreshTokenResult = await this.fixture.Client.PostAsJsonAsync(
+        var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
             "refresh-token", new RefreshTokenRequestDto("some invalid refresh token"));
         Assert.False(refreshTokenResult.IsSuccessStatusCode);
     }
 
     private async Task<TokenResponseDto> RegisterAndLoginUser()
     {
-        UserCredentialsDto credentials = new("user3@test.ro", "Password1");
-        var registrationResult = await this.fixture.Client.PostAsJsonAsync(
+        UserCredentialsDto credentials = new(UserUtils.NextEmail, "Password1");
+        var registrationResult = await fixture.Client.PostAsJsonAsync(
             "register", credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
-        var loginResult = await this.fixture.Client.PostAsJsonAsync(
+        var loginResult = await fixture.Client.PostAsJsonAsync(
             "login", credentials);
         Assert.True(loginResult.IsSuccessStatusCode);
 

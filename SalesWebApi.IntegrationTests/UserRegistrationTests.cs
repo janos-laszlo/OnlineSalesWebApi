@@ -1,17 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using UserIdentity.Commands;
+﻿using UserIdentity.Commands;
 
 namespace SalesWebApi.IntegrationTests;
 
-public sealed class UserRegistrationTests : IClassFixture<UserIdentityFixture>
+[Collection("User Identity")]
+public sealed class UserRegistrationTests(UserIdentityFixture fixture)
 {
-    private readonly UserIdentityFixture fixture;
-
-    public UserRegistrationTests(UserIdentityFixture fixture)
-    {
-        this.fixture = fixture;
-    }
-
     [Fact]
     public async Task Succeeds_for_valid_email_and_password()
     {
@@ -20,7 +13,7 @@ public sealed class UserRegistrationTests : IClassFixture<UserIdentityFixture>
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
             "register", 
-            new UserCredentialsDto("test@example.com", "SecurePassword123!"));
+            new UserCredentialsDto(UserUtils.NextEmail, "SecurePassword123!"));
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);
@@ -52,7 +45,7 @@ public sealed class UserRegistrationTests : IClassFixture<UserIdentityFixture>
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
             "register", 
-            new UserCredentialsDto("test@example.com", invalidPassword));
+            new UserCredentialsDto(UserUtils.NextEmail, invalidPassword));
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);
@@ -64,15 +57,16 @@ public sealed class UserRegistrationTests : IClassFixture<UserIdentityFixture>
         // Arrange
 
         // Act & Assert
+        string email = UserUtils.NextEmail;
         var result = await fixture.Client.PostAsJsonAsync(
             "register", 
-            new UserCredentialsDto("test1@gmail.com", "SecurePassword123!"));
+            new UserCredentialsDto(email, "SecurePassword123!"));
 
         Assert.True(result.IsSuccessStatusCode);
         
         result = await fixture.Client.PostAsJsonAsync(
             "register", 
-            new UserCredentialsDto("test1@gmail.com", "Password123!"));
+            new UserCredentialsDto(email, "Password123!"));
 
         Assert.False(result.IsSuccessStatusCode);
     }

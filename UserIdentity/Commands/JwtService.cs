@@ -39,7 +39,7 @@ internal sealed class JwtService(
             Claims = claims,
             IssuedAt = DateTime.UtcNow,
             NotBefore = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddMinutes(120),
+            Expires = DateTime.UtcNow.AddMinutes(5),
             SigningCredentials = new SigningCredentials(
                 securityKey, SecurityAlgorithms.HmacSha256)
         };

@@ -17,3 +17,5 @@ TODO:
         https://stackoverflow.com/questions/75516793/how-can-i-use-dataprotectionprovider-to-encrypt-and-validate-user-details
 -add global error handler
     https://www.youtube.com/watch?v=-TGZypSinpw
+-extract magic strings into constants
+^DONE^

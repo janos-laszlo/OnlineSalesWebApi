@@ -17,11 +17,11 @@ public sealed class UserLoginTests(UserIdentityFixture fixture)
 
         // Act
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            "register", credentials);
+            Endpoints.RegisterUri, credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var result = await fixture.Client.PostAsJsonAsync(
-            "login", credentials);
+            Endpoints.LoginUri, credentials);
         Assert.True(result.IsSuccessStatusCode);
     }
 
@@ -33,7 +33,7 @@ public sealed class UserLoginTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
-            "login", credentials);
+            Endpoints.LoginUri, credentials);
         Assert.False(result.IsSuccessStatusCode);
     }
 
@@ -45,11 +45,11 @@ public sealed class UserLoginTests(UserIdentityFixture fixture)
 
         // Act
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            "register", credentials);
+            Endpoints.RegisterUri, credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var result = await fixture.Client.PostAsJsonAsync(
-            "login", credentials with { Password = "WrongPassword2"});
+            Endpoints.LoginUri, credentials with { Password = "WrongPassword2"});
         Assert.False(result.IsSuccessStatusCode);
     }
 
@@ -74,11 +74,11 @@ public sealed class UserLoginTests(UserIdentityFixture fixture)
     private async Task<TokenResponseDto> RegisterAndLoginUser(UserCredentialsDto credentials)
     {
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            "register", credentials);
+            Endpoints.RegisterUri, credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var loginResult = await fixture.Client.PostAsJsonAsync(
-            "login", credentials);
+            Endpoints.LoginUri, credentials);
         Assert.True(loginResult.IsSuccessStatusCode);
 
         var body = await loginResult.Content.ReadFromJsonAsync<TokenResponseDto>();
@@ -114,7 +114,7 @@ public sealed class UserLoginTests(UserIdentityFixture fixture)
 
     private async Task<System.Net.HttpStatusCode> GetHealthCheckWithToken(string accessToken)
     {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "health");
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, Endpoints.HealthUri);
         requestMessage.Headers.Authorization =
             new AuthenticationHeaderValue("Bearer", accessToken);
 

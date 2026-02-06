@@ -5,10 +5,21 @@ namespace SalesWebApi.Endpoints;
 
 public static class IdentityEndpoints
 {
+    public const string IdentityName = "Account";
+    public const string IdentityBase = "/account";
+    public const string Register = "/register";
+    public const string Login = "/login";
+    public const string RefreshToken = "/refresh-token";
+    public const string ConfirmEmail = "/confirm-email";
+    public const string Health = "/health";
+
     public static void MapIdentityEndpoints(this WebApplication app)
     {
-        app.MapPost(
-            "/register",
+        var accountGroup = app.MapGroup(IdentityBase)
+            .WithTags(IdentityName);
+
+        accountGroup.MapPost(
+            Register,
             [RequestSizeLimit(1024)] async (UserCredentialsDto userRegistrationDto,
             IRegisterUserCommand registerUserCommand,
             CancellationToken cancellationToken) =>
@@ -23,8 +34,8 @@ public static class IdentityEndpoints
                         statusCode: 400);
             });
 
-        app.MapPost(
-            "/login",
+        accountGroup.MapPost(
+            Login,
             async (UserCredentialsDto userLoginDto,
             ILoginUserCommand loginUserCommand,
             CancellationToken cancellationToken) =>
@@ -38,8 +49,8 @@ public static class IdentityEndpoints
                         statusCode: 400);
         });
 
-        app.MapPost(
-            "/refresh-token",
+        accountGroup.MapPost(
+            RefreshToken,
             async (RefreshTokenRequestDto refreshTokenDto,
             IRefreshTokenCommand refreshTokenCommand,
             CancellationToken cancellationToken) =>
@@ -54,8 +65,8 @@ public static class IdentityEndpoints
                         statusCode: 400);
             });
 
-        app.MapGet(
-            "/confirm-email",
+        accountGroup.MapGet(
+            ConfirmEmail,
             async (string token,
             IConfirmEmailCommand confirmEmailCommand,
             CancellationToken cancellationToken) =>
@@ -69,7 +80,7 @@ public static class IdentityEndpoints
                         statusCode: 400);
             });
 
-        app.MapGet("/health", () => Results.Ok("Healthy"))
+        accountGroup.MapGet(Health, () => Results.Ok("Healthy"))
             .RequireAuthorization();
     }
 }

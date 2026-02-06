@@ -12,7 +12,7 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.GetAsync(
-            "confirm-email?token=some-invalid-token-that-doesnt-exist");
+            Endpoints.ConfirmEmailUri + "some-invalid-token-that-doesnt-exist");
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);
@@ -23,13 +23,13 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
     {
         // Arrange
         await fixture.Client.PostAsJsonAsync(
-            "register", new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
+            Endpoints.RegisterUri, new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
 
         // Act
         string confirmationToken = ExtractConfirmationToken(
             fixture.EmailService.Emails.First().Body);
         var result = await fixture.Client.GetAsync(
-            $"confirm-email?token={confirmationToken}");
+            $"{Endpoints.ConfirmEmailUri}{confirmationToken}");
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);

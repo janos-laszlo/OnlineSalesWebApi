@@ -13,7 +13,7 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
         // Act & Assert
         var loginResponse = await RegisterAndLoginUser();
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
-            "refresh-token", new RefreshTokenRequestDto(loginResponse.RefreshToken));
+            Endpoints.RefreshTokenUri, new RefreshTokenRequestDto(loginResponse.RefreshToken));
         Assert.True(refreshTokenResult.IsSuccessStatusCode);
     }
 
@@ -21,7 +21,7 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
     public async Task Fails_for_invalid_refresh_token()
     {
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
-            "refresh-token", new RefreshTokenRequestDto("some invalid refresh token"));
+            Endpoints.RefreshTokenUri, new RefreshTokenRequestDto("some invalid refresh token"));
         Assert.False(refreshTokenResult.IsSuccessStatusCode);
     }
 
@@ -29,11 +29,11 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
     {
         UserCredentialsDto credentials = new(UserUtils.NextEmail, "Password1");
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            "register", credentials);
+            Endpoints.RegisterUri, credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var loginResult = await fixture.Client.PostAsJsonAsync(
-            "login", credentials);
+            Endpoints.LoginUri, credentials);
         Assert.True(loginResult.IsSuccessStatusCode);
 
         var body = await loginResult.Content.ReadFromJsonAsync<TokenResponseDto>();

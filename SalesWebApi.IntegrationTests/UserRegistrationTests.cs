@@ -12,7 +12,7 @@ public sealed class UserRegistrationTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
-            "register", 
+            Endpoints.RegisterUri, 
             new UserCredentialsDto(UserUtils.NextEmail, "SecurePassword123!"));
 
         // Assert
@@ -26,7 +26,7 @@ public sealed class UserRegistrationTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
-            "register", 
+            Endpoints.RegisterUri, 
             new UserCredentialsDto("invalid-email", "SecurePassword123!"));
 
         // Assert
@@ -44,7 +44,7 @@ public sealed class UserRegistrationTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
-            "register", 
+            Endpoints.RegisterUri, 
             new UserCredentialsDto(UserUtils.NextEmail, invalidPassword));
 
         // Assert
@@ -59,13 +59,13 @@ public sealed class UserRegistrationTests(UserIdentityFixture fixture)
         // Act & Assert
         string email = UserUtils.NextEmail;
         var result = await fixture.Client.PostAsJsonAsync(
-            "register", 
+            Endpoints.RegisterUri, 
             new UserCredentialsDto(email, "SecurePassword123!"));
 
         Assert.True(result.IsSuccessStatusCode);
         
         result = await fixture.Client.PostAsJsonAsync(
-            "register", 
+            Endpoints.RegisterUri, 
             new UserCredentialsDto(email, "Password123!"));
 
         Assert.False(result.IsSuccessStatusCode);

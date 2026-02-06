@@ -19,11 +19,12 @@ public static class UserIdentityRegistration
         services.AddTransient<ILoginUserCommand, LoginUserCommand>();
         services.AddTransient<IRefreshTokenCommand, RefreshTokenCommand>();
         services.AddTransient<IConfirmEmailCommand, ConfirmEmailCommand>();
+        services.AddTransient<IGetUserInfoCommand, GetUserInfoCommand>();
         var connectionString = configuration.GetConnectionString(UserIdentityDbContext.ConnectionStringKey);
         if (string.IsNullOrEmpty(connectionString))
             throw new InvalidOperationException(
                 $"Connection string '{UserIdentityDbContext.ConnectionStringKey}' is not configured.");
-        services.AddDbContext<UserIdentityDbContext>(options =>
+        services.AddPooledDbContextFactory<UserIdentityDbContext>(options =>
             options.UseMySql(
                 connectionString,
                 ServerVersion.AutoDetect(connectionString),

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using UserIdentity.Commands;
 
@@ -79,6 +80,24 @@ public static class IdentityEndpoints
                         detail: confirmEmailCommandResult.Error,
                         statusCode: 400);
             });
+
+        accountGroup.MapGet(
+            "/info",
+            async (IGetUserInfoCommand getUserInfoCommand,
+            ClaimsPrincipal httpContextUser,
+            CancellationToken cancellationToken) => 
+            {
+                var userId = int.Parse(httpContextUser.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? throw new Exception("User ID claim is missing"));
+                var result = await getUserInfoCommand.Execute(userId, cancellationToken);
+                return result.IsSuccess
+                    ? Results.Ok(result.Value)
+                    : Results.Problem(
+                        title: "Getting user info failed",
+                        detail: result.Error,
+                        statusCode: 404);
+            })
+            .RequireAuthorization();
 
         accountGroup.MapGet(Health, () => Results.Ok("Healthy"))
             .RequireAuthorization();

@@ -17,13 +17,27 @@ builder.Services
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = signingKey,
             ValidateIssuer = true,
-            ValidIssuer = "http://localhost:5152",
+            ValidIssuer = "http://192.168.0.11:5153",
             ValidateAudience = true,
-            ValidAudience = "http://localhost:5152",
+            ValidAudience = "http://192.168.0.11:5153",
             ValidateLifetime = true
         };
     });
 builder.Services.AddAuthorization();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClient", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:3000",   // React
+                "http://192.168.0.11:5153/",
+                "http://192.168.0.248:3000"    // other client
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddUserIdentity(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
@@ -31,6 +45,7 @@ builder.Services.AddProblemDetails();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseCors("AllowClient");
 app.UseUserIdentity();
 app.MapIdentityEndpoints();
 if (app.Environment.IsDevelopment())

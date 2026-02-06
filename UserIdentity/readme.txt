@@ -19,3 +19,4 @@ TODO:
     https://www.youtube.com/watch?v=-TGZypSinpw
 -extract magic strings into constants
 ^DONE^
+-add circuit breaker to email sending

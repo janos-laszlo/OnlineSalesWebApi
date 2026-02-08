@@ -13,6 +13,7 @@ public static class IdentityEndpoints
     public const string RefreshToken = "/refresh-token";
     public const string ConfirmEmail = "/confirm-email";
     public const string Health = "/health";
+    private const string Profile = "/profile";
 
     public static void MapIdentityEndpoints(this WebApplication app)
     {
@@ -82,7 +83,7 @@ public static class IdentityEndpoints
             });
 
         accountGroup.MapGet(
-            "/info",
+            Profile,
             async (IGetUserInfoCommand getUserInfoCommand,
             ClaimsPrincipal httpContextUser,
             CancellationToken cancellationToken) => 
@@ -96,6 +97,26 @@ public static class IdentityEndpoints
                         title: "Getting user info failed",
                         detail: result.Error,
                         statusCode: 404);
+            })
+            .RequireAuthorization();
+
+        accountGroup.MapPost(
+            Profile,
+            async (UserProfileRequestDto userProfile,
+            IUpdateUserProfileCommand setUserProfileCommand,
+            ClaimsPrincipal httpContextUser,
+            CancellationToken cancellationToken) =>
+            {
+                var userId = int.Parse(httpContextUser.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? throw new Exception("User ID claim is missing"));
+                var result = await setUserProfileCommand.Execute(
+                    userId, userProfile, cancellationToken);
+                return result.IsSuccess
+                    ? Results.Ok()
+                    : Results.Problem(
+                        title: "Profile update failed",
+                        detail: result.Error,
+                        statusCode: 400);
             })
             .RequireAuthorization();
 

@@ -46,7 +46,6 @@ internal sealed class GetUserInfoCommand(UserIdentityDbContext dbContext) : IGet
             });
 
         return new UserInfoDto(
-            user.Id,
             user.Email,
             user.CreatedAt,
             user.EmailConfirmed,

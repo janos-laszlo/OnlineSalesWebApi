@@ -26,18 +26,13 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowClient", policy =>
-    {
-        policy
-            .WithOrigins(
-                "http://localhost:3000",
-                "http://192.168.1.6:5153/",
-                "http://192.168.0.248:3000",
-                "http://192.168.1.7:8080"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]?>();
+    if (!(allowedOrigins?.Length > 0))
+        throw new InvalidOperationException("AllowedOrigins configuration is missing or empty.");
+    options.AddPolicy("AllowClient", policy => policy
+        .WithOrigins(allowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 builder.Services.AddUserIdentity(builder.Configuration);
 builder.Services.AddOpenApi();

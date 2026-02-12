@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using UserIdentity.Commands;
+using UserIdentity.Extensions;
 
 namespace SalesWebApi.Endpoints;
 
@@ -86,11 +87,10 @@ public static class IdentityEndpoints
             Profile,
             async (IGetUserInfoCommand getUserInfoCommand,
             ClaimsPrincipal httpContextUser,
-            CancellationToken cancellationToken) => 
+            CancellationToken cancellationToken) =>
             {
-                var userId = int.Parse(httpContextUser.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? throw new Exception("User ID claim is missing"));
-                var result = await getUserInfoCommand.Execute(userId, cancellationToken);
+                var result = await getUserInfoCommand.Execute(
+                    httpContextUser.UserId, cancellationToken);
                 return result.IsSuccess
                     ? Results.Ok(result.Value)
                     : Results.Problem(
@@ -107,10 +107,8 @@ public static class IdentityEndpoints
             ClaimsPrincipal httpContextUser,
             CancellationToken cancellationToken) =>
             {
-                var userId = int.Parse(httpContextUser.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? throw new Exception("User ID claim is missing"));
                 var result = await setUserProfileCommand.Execute(
-                    userId, userProfile, cancellationToken);
+                    httpContextUser.UserId, userProfile, cancellationToken);
                 return result.IsSuccess
                     ? Results.Ok()
                     : Results.Problem(

@@ -30,9 +30,10 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:3000",   // React
+                "http://localhost:3000",
                 "http://192.168.1.6:5153/",
-                "http://192.168.0.248:3000"    // other client
+                "http://192.168.0.248:3000",
+                "http://192.168.1.7:8080"
             )
             .AllowAnyHeader()
             .AllowAnyMethod();

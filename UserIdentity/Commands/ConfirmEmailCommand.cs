@@ -14,6 +14,8 @@ internal sealed class ConfirmEmailCommand(
     IDataProtectionProvider dataProtectionProvider,
     UserIdentityDbContext dbContext) : IConfirmEmailCommand
 {
+    private const string Error = "Couldn't confirm email";
+
     public async Task<Result> Execute(string token, CancellationToken cancellationToken)
     {
         var emailConfirmationToken = new EmailConfirmationToken(
@@ -22,9 +24,13 @@ internal sealed class ConfirmEmailCommand(
         if (userResult.IsFailure)
             return Result.Failure(userResult.Error);
 
-        var user = await dbContext.Users.FindAsync(userResult.Value.Id, cancellationToken);
-        if (user is null)
-            return Result.Failure("User not found");
+        var user = await dbContext.Users.FindAsync([userResult.Value.Id], cancellationToken);
+        if (user?.EmailConfirmed == true)
+            return Result.Success();
+        if (user?.Email != userResult.Value.Email)
+        {
+            return Result.Failure(Error);
+        }
 
         if (!user.ConfirmEmail(DateTime.UtcNow))
         {

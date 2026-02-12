@@ -27,41 +27,31 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.Ignore(u => u.Profile);
-        builder.Property<ProfileType?>("profileType")
-            .HasColumnName("ProfileType");
-        builder.Property<string?>("firstName")
-            .HasColumnName("FirstName")
+        builder.Property(u => u.ProfileType);
+        builder.Property(u => u.FirstName)
             .HasMaxLength(64);
-        builder.Property<string?>("lastName")
-            .HasColumnName("LastName")
+        builder.Property(u => u.LastName)
             .HasMaxLength(64);
-        builder.Property<string?>("cui")
-            .HasColumnName("Cui")
+        builder.Property(u => u.Cui)
             .HasMaxLength(10);
-        builder.Property<string?>("companyName")
-            .HasColumnName("CompanyName")
+        builder.Property(u => u.CompanyName)
             .HasMaxLength(128);
-        builder.Property<string?>("registrationNumber")
-            .HasColumnName("RegistrationNumber")
+        builder.Property(u => u.RegistrationNumber)
             .HasMaxLength(20);
-        builder.Property<string?>("address")
-            .HasColumnName("Address")
+        builder.Property(u => u.Address)
             .HasMaxLength(256);
-        builder.Property<string?>("county")
-            .HasColumnName("County")
+        builder.Property(u => u.County)
             .HasMaxLength(64);
-        builder.Property<string?>("locality")
-            .HasColumnName("Locality")
+        builder.Property(u => u.Locality)
             .HasMaxLength(64);
-        builder.Property<IReadOnlyList<string>?>("phoneNumbers")
-                .HasColumnName("PhoneNumbers")
-                .HasConversion(
-                    v => string.Join(';', v ?? Array.Empty<string>()),
-                    v => v.Split(';'))
-                .Metadata
-                .SetValueComparer(new ValueComparer<IReadOnlyList<string>?>(
-                    (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
-                    c => c != null ? string.Join(';', c).GetHashCode() : 0,
-                    c => c ?? Array.Empty<string>()));
+        builder.Property(u => u.PhoneNumbers)
+            .HasConversion(
+                v => string.Join(';', v ?? Array.Empty<string>()),
+                v => v.Split(';'))
+            .Metadata
+            .SetValueComparer(new ValueComparer<IReadOnlyList<string>?>(
+                (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
+                c => c != null ? string.Join(';', c).GetHashCode() : 0,
+                c => c ?? Array.Empty<string>()));
     }
 }

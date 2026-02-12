@@ -11,27 +11,33 @@ internal partial class User
     public string PasswordHash { get; private set; }
     public bool EmailConfirmed { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
-    private ProfileType? profileType;
-    private string? firstName;
-    private string? lastName;
-    private string? cui;
-    private string? companyName;
-    private string? registrationNumber;
-    private string? address;
-    private string? county;
-    private string? locality;
-    private IReadOnlyList<string>? phoneNumbers;
+    public ProfileType? ProfileType { get; private set; }
+    public string? FirstName { get; private set; }
+    public string? LastName { get; private set; }
+    public string? Cui { get; private set; }
+    public string? CompanyName { get; private set; }
+    public string? RegistrationNumber { get; private set; }
+    public string? Address { get; private set; }
+    public string? County { get; private set; }
+    public string? Locality { get; private set; }
+    public IReadOnlyList<string>? PhoneNumbers { get; private set; }
     public Profile? Profile
     {
         get
         {
-            return profileType switch
+            return ProfileType switch
             {
-                ProfileType.Regular => RegularProfile
-                    .Create(firstName, lastName, phoneNumbers)
+                Entities.ProfileType.Regular => RegularProfile
+                    .Create(Email, FirstName, LastName, PhoneNumbers)
                     .Value,
-                ProfileType.Dealer => DealerProfile
-                    .Create(cui, companyName, registrationNumber, address, county, locality, phoneNumbers)
+                Entities.ProfileType.Dealer => DealerProfile
+                    .Create(Email, Cui, CompanyName, RegistrationNumber, Address, County, Locality, PhoneNumbers)
+                    .Value,
+                Entities.ProfileType.NoProfile => NoProfile
+                    .Create(Email, PhoneNumbers)
+                    .Value,
+                null => NoProfile
+                    .Create(Email, PhoneNumbers)
                     .Value,
                 _ => throw new InvalidOperationException("Unknown profile type")
             };
@@ -41,28 +47,41 @@ internal partial class User
             switch (value)
             {
                 case RegularProfile regular:
-                    profileType = ProfileType.Regular;
-                    firstName = regular.FirstName;
-                    lastName = regular.LastName;
-                    cui = null!;
-                    companyName = null!;
-                    registrationNumber = null!;
-                    address = null!;
-                    county = null!;
-                    locality = null!;
-                    phoneNumbers = regular.PhoneNumbers;
+                    ProfileType = Entities.ProfileType.Regular;
+                    FirstName = regular.FirstName;
+                    LastName = regular.LastName;
+                    Cui = null;
+                    CompanyName = null;
+                    RegistrationNumber = null;
+                    Address = null;
+                    County = null;
+                    Locality = null;
+                    PhoneNumbers = regular.PhoneNumbers;
                     break;
                 case DealerProfile dealer:
-                    profileType = ProfileType.Dealer;
-                    firstName = null!;
-                    lastName = null!;
-                    cui = dealer.Cui;
-                    companyName = dealer.CompanyName;
-                    registrationNumber = dealer.RegistrationNumber;
-                    address = dealer.Address;
-                    county = dealer.County;
-                    locality = dealer.Locality;
-                    phoneNumbers = dealer.PhoneNumbers;
+                    ProfileType = Entities.ProfileType.Dealer;
+                    FirstName = null;
+                    LastName = null;
+                    Cui = dealer.Cui;
+                    CompanyName = dealer.CompanyName;
+                    RegistrationNumber = dealer.RegistrationNumber;
+                    Address = dealer.Address;
+                    County = dealer.County;
+                    Locality = dealer.Locality;
+                    PhoneNumbers = dealer.PhoneNumbers;
+                    break;
+                case NoProfile:
+                    ProfileType = Entities.ProfileType.NoProfile;
+                    Email = value.Email;
+                    FirstName = null;
+                    LastName = null;
+                    Cui = null;
+                    CompanyName = null;
+                    RegistrationNumber = null;
+                    Address = null;
+                    County = null;
+                    Locality = null;
+                    PhoneNumbers = value.PhoneNumbers;
                     break;
                 default:
                     throw new InvalidOperationException("Unknown profile type");
@@ -75,9 +94,6 @@ internal partial class User
 
     [GeneratedRegex("[0-9]")]
     private static partial Regex numbersRegex();
-
-    [GeneratedRegex(@"^\S+@\S+\.\S+$")]
-    private static partial Regex emailRegex();
 
     private User(
         int id,
@@ -101,28 +117,29 @@ internal partial class User
         PasswordHash = passwordHash;
         EmailConfirmed = emailConfirmed;
         CreatedAt = createdAt;
-        this.profileType = profileType;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.cui = cui;
-        this.companyName = companyName;
-        this.registrationNumber = registrationNumber;
-        this.address = address;
-        this.county = county;
-        this.locality = locality;
-        this.phoneNumbers = phoneNumbers;
+        this.ProfileType = profileType;
+        this.FirstName = firstName;
+        this.LastName = lastName;
+        this.Cui = cui;
+        this.CompanyName = companyName;
+        this.RegistrationNumber = registrationNumber;
+        this.Address = address;
+        this.County = county;
+        this.Locality = locality;
+        this.PhoneNumbers = phoneNumbers;
     }
 
     private User(string email, string hashedPassword) :
         this(0, email, hashedPassword, false, DateTimeOffset.UtcNow,
-            null, null, null, null, null, null, null, null, null, null)
+            Entities.ProfileType.NoProfile, null, null, null, null, null, null, null, null, null)
     {
     }
 
     public static Result<User> Create(string email, string password)
     {
-        if (!emailRegex().IsMatch(email))
-            return Result.Failure<User>("Invalid email format");
+        var emailResult = Profile.Validate(email);
+        if (emailResult.IsFailure)
+            return Result.Failure<User>(emailResult.Error);
 
         if (string.IsNullOrWhiteSpace(password) ||
             password.Length < 8 ||
@@ -150,33 +167,82 @@ internal partial class User
     }
 }
 
-internal abstract record Profile(IReadOnlyList<string> PhoneNumbers);
+internal abstract partial record Profile(string Email, IReadOnlyList<string>? PhoneNumbers)
+{
+
+    [GeneratedRegex(@"^\S+@\S+\.\S+$")]
+    private static partial Regex emailRegex();
+
+    public static Result Validate(string? email)
+    {
+        if (email is null || !emailRegex().IsMatch(email))
+            return Result.Failure("Invalid email format");
+
+        return Result.Success();
+    }
+
+    protected static Result Validate(string? email, IReadOnlyList<string>? phoneNumbers)
+    {
+        var emailResult = Validate(email);
+        if (emailResult.IsFailure)
+            return emailResult;
+
+        if (phoneNumbers == null || phoneNumbers.Count == 0 || phoneNumbers.Any(p => string.IsNullOrWhiteSpace(p)))
+            return Result.Failure("At least one valid phone number must be provided");
+
+        return Result.Success();
+    }
+};
+
+internal sealed record NoProfile : Profile
+{
+    private NoProfile(string email, IReadOnlyList<string>? phoneNumbers) : base(email, phoneNumbers)
+    {
+    }
+
+    internal static Result<NoProfile> Create(string? email, IReadOnlyList<string>? phoneNumbers)
+    {
+        var emailResult = Validate(email);
+        if (emailResult.IsFailure)
+            return Result.Failure<NoProfile>(emailResult.Error);
+
+        // For no profile, phone numbers are optional, but if provided, they must be valid.
+        if (phoneNumbers?.Any(p => string.IsNullOrWhiteSpace(p)) == true)
+            return Result.Failure<NoProfile>("Invalid phone number/s provided");
+
+        return new NoProfile(email!, phoneNumbers);
+    }
+}
 
 internal sealed record RegularProfile : Profile
 {
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
 
-    private RegularProfile(string firstName, string lastName, IEnumerable<string> phoneNumbers) : base(phoneNumbers.ToList())
+    private RegularProfile(string email, string firstName, string lastName, IEnumerable<string> phoneNumbers)
+        : base(email, [.. phoneNumbers])
     {
         FirstName = firstName;
         LastName = lastName;
     }
 
-    internal static Result<RegularProfile> Create(string? firstName, string? lastName, IReadOnlyList<string>? phoneNumbers)
+    internal static Result<RegularProfile> Create(
+        string? email,
+        string? firstName,
+        string? lastName,
+        IReadOnlyList<string>? phoneNumbers)
     {
+        var result = Validate(email, phoneNumbers);
+        if (result.IsFailure)
+            return Result.Failure<RegularProfile>(result.Error);
+
         if (string.IsNullOrWhiteSpace(firstName) ||
             string.IsNullOrWhiteSpace(lastName))
         {
             return Result.Failure<RegularProfile>("First name and last name must be provided");
         }
 
-        if (phoneNumbers == null || phoneNumbers.Count == 0 || phoneNumbers.Any(p => string.IsNullOrWhiteSpace(p)))
-        {
-            return Result.Failure<RegularProfile>("At least one valid phone number must be provided");
-        }
-
-        return new RegularProfile(firstName, lastName, phoneNumbers);
+        return new RegularProfile(email!, firstName, lastName, phoneNumbers!);
     }
 }
 
@@ -190,13 +256,14 @@ internal sealed record DealerProfile : Profile
     public string Locality { get; private set; }
 
     private DealerProfile(
+        string email,
         string cui,
         string companyName,
         string registrationNumber,
         string address,
         string county,
         string locality,
-        IEnumerable<string> phoneNumbers) : base(phoneNumbers.ToList())
+        IEnumerable<string> phoneNumbers) : base(email, [.. phoneNumbers])
     {
         Cui = cui;
         CompanyName = companyName;
@@ -207,14 +274,19 @@ internal sealed record DealerProfile : Profile
     }
 
     internal static Result<DealerProfile> Create(
+        string? email,
         string? cui,
         string? companyName,
         string? registrationNumber,
         string? address,
         string? county,
         string? locality,
-        IEnumerable<string>? phoneNumbers)
+        IReadOnlyList<string>? phoneNumbers)
     {
+        var result = Validate(email, phoneNumbers);
+        if (result.IsFailure)
+            return Result.Failure<DealerProfile>(result.Error);
+
         if (string.IsNullOrWhiteSpace(cui) ||
             cui.Length != 8 ||
             !cui.All(char.IsDigit) ||
@@ -227,35 +299,31 @@ internal sealed record DealerProfile : Profile
             return Result.Failure<DealerProfile>("All company details must be provided for dealers");
         }
 
-        if (phoneNumbers?.Any(p => string.IsNullOrWhiteSpace(p)) ?? false)
-        {
-            return Result.Failure<DealerProfile>("At least one valid phone number must be provided");
-        }
-
-        return new DealerProfile(cui, companyName, registrationNumber, address, county, locality, phoneNumbers ?? []);
+        return new DealerProfile(email!, cui, companyName, registrationNumber, address, county, locality, phoneNumbers!);
     }
 }
 
 internal static class ProfileExtensions
 {
-    public static void Match(this Profile? profile, Action<RegularProfile> regularAction, Action<DealerProfile> dealerAction)
+    public static T Match<T>(
+        this Profile? profile,
+        Func<RegularProfile, T> regularFunc,
+        Func<DealerProfile, T> dealerFunc,
+        Func<NoProfile, T> noProfileFunc)
     {
-        switch (profile)
+        return profile switch
         {
-            case RegularProfile regular:
-                regularAction(regular);
-                break;
-            case DealerProfile dealer:
-                dealerAction(dealer);
-                break;
-            default:
-                throw new InvalidOperationException("Unknown profile type");
-        }
+            RegularProfile regular => regularFunc(regular),
+            DealerProfile dealer => dealerFunc(dealer),
+            NoProfile noProfile => noProfileFunc(noProfile),
+            _ => throw new InvalidOperationException("Unknown profile type"),
+        };
     }
 }
 
 internal enum ProfileType
 {
     Regular,
-    Dealer
+    Dealer,
+    NoProfile
 }

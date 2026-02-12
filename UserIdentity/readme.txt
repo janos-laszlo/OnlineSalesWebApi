@@ -19,4 +19,10 @@ TODO:
     https://www.youtube.com/watch?v=-TGZypSinpw
 -extract magic strings into constants
 ^DONE^
--add circuit breaker to email sending
+-add circuit breaker to email sending. Maybe not needed as the job crashes on the first failed attempt
+-encrypt the user ID in the JWT payload using https://github.com/ullmark/hashids.net
+-extract CORS configuration
+-request email confirmation on email address update
+-tests for profile update
+-all fields in a profile must have a value
+-add test case for email already confirmed or wrong email

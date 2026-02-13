@@ -34,6 +34,7 @@ public static class UserIdentityRegistration
         services.AddDataProtection();
         services.AddTransient<JwtService>();
         services.AddSingleton<IEmailService, ConsoleEmailService>();
+        services.AddTransient<EmailConfirmationRequest>();
 
         return services;
     }

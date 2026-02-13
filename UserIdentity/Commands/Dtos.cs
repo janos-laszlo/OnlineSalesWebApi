@@ -28,24 +28,24 @@ public record UserProfileRequestDto(
                     this.PhoneNumbers)
                 .Map(x => (Profile)x)
             : this.IsDealer == true
-                ? DealerProfile
-                    .Create(
-                        this.Email,
-                        this.Cui,
-                        this.CompanyName,
-                        this.RegistrationNumber,
-                        this.Address,
-                        this.County,
-                        this.Locality,
-                        this.PhoneNumbers)
-                    .Map(x => (Profile)x)
-                : RegularProfile
-                    .Create(
-                        this.Email,
-                        this.FirstName!,
-                        this.LastName!,
-                        this.PhoneNumbers)
-                    .Map(x => (Profile)x);
+            ? DealerProfile
+                .Create(
+                    this.Email,
+                    this.Cui,
+                    this.CompanyName,
+                    this.RegistrationNumber,
+                    this.Address,
+                    this.County,
+                    this.Locality,
+                    this.PhoneNumbers)
+                .Map(x => (Profile)x)
+            : RegularProfile
+                .Create(
+                    this.Email,
+                    this.FirstName!,
+                    this.LastName!,
+                    this.PhoneNumbers)
+                .Map(x => (Profile)x);
 }
 
 public sealed record UserInfoDto(string Email)

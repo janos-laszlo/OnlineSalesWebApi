@@ -23,30 +23,25 @@ internal partial class User
     public IReadOnlyList<string>? PhoneNumbers { get; private set; }
     public Profile? Profile
     {
-        get
+        get => ProfileType switch
         {
-            return ProfileType switch
-            {
-                Entities.ProfileType.Regular => RegularProfile
-                    .Create(Email, FirstName, LastName, PhoneNumbers)
-                    .Value,
-                Entities.ProfileType.Dealer => DealerProfile
-                    .Create(Email, Cui, CompanyName, RegistrationNumber, Address, County, Locality, PhoneNumbers)
-                    .Value,
-                Entities.ProfileType.NoProfile => NoProfile
-                    .Create(Email, PhoneNumbers)
-                    .Value,
-                null => NoProfile
-                    .Create(Email, PhoneNumbers)
-                    .Value,
-                _ => throw new InvalidOperationException("Unknown profile type")
-            };
-        }
+            null => NoProfile
+                .Create(Email, PhoneNumbers)
+                .Value,
+            Entities.ProfileType.Regular => RegularProfile
+                .Create(Email, FirstName, LastName, PhoneNumbers)
+                .Value,
+            Entities.ProfileType.Dealer => DealerProfile
+                .Create(Email, Cui, CompanyName, RegistrationNumber, Address, County, Locality, PhoneNumbers)
+                .Value,
+            _ => throw new InvalidOperationException("Unknown profile type")
+        };
         set
         {
             switch (value)
             {
                 case RegularProfile regular:
+                    Email = regular.Email;
                     ProfileType = Entities.ProfileType.Regular;
                     FirstName = regular.FirstName;
                     LastName = regular.LastName;
@@ -59,6 +54,7 @@ internal partial class User
                     PhoneNumbers = regular.PhoneNumbers;
                     break;
                 case DealerProfile dealer:
+                    Email = dealer.Email;
                     ProfileType = Entities.ProfileType.Dealer;
                     FirstName = null;
                     LastName = null;
@@ -71,8 +67,8 @@ internal partial class User
                     PhoneNumbers = dealer.PhoneNumbers;
                     break;
                 case NoProfile:
-                    ProfileType = Entities.ProfileType.NoProfile;
                     Email = value.Email;
+                    ProfileType = null;
                     FirstName = null;
                     LastName = null;
                     Cui = null;
@@ -131,7 +127,7 @@ internal partial class User
 
     private User(string email, string hashedPassword) :
         this(0, email, hashedPassword, false, DateTimeOffset.UtcNow,
-            Entities.ProfileType.NoProfile, null, null, null, null, null, null, null, null, null)
+            null, null, null, null, null, null, null, null, null, null)
     {
     }
 
@@ -324,6 +320,5 @@ internal static class ProfileExtensions
 internal enum ProfileType
 {
     Regular,
-    Dealer,
-    NoProfile
+    Dealer
 }

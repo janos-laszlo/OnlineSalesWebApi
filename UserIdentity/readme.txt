@@ -2,6 +2,7 @@ To use this project:
 -Add the following to the configuration:
     -'ConnectionStrings:MariaDB': a connection string to MariaDB
     -'Jwt:EncryptionKey': the key used to encrypt the JWT
+    -'BaseUrl': the web API base URL
 -call AddUserIdentity on the service collection
 -call UseUserIdentity on the IApplicationBuilder
 
@@ -20,9 +21,9 @@ TODO:
 -extract magic strings into constants
 -add circuit breaker to email sending. Maybe not needed as the job crashes on the first failed attempt
 -extract CORS configuration
-^DONE^
 -encrypt the user ID in the JWT payload using https://github.com/ullmark/hashids.net
 -request email confirmation on email address update
+^DONE^
 -tests for profile update
 -all fields in a profile must have a value
 -add test case for email already confirmed or wrong email

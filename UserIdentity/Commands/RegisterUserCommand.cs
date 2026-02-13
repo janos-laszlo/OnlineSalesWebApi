@@ -17,14 +17,9 @@ public interface IRegisterUserCommand
 
 internal sealed class RegisterUserCommand(
     ILogger<RegisterUserCommand> logger,
-    IConfiguration configuration,
     UserIdentityDbContext dbContext,
-    IDataProtectionProvider dataProtectionProvider,
-    IEmailService emailService) : IRegisterUserCommand
+    EmailConfirmationRequest emailConfirmationRequest) : IRegisterUserCommand
 {
-    private readonly string baseUrl = configuration["BaseUrl"] ??
-        throw new Exception("BaseUrl configuration is missing");
-
     public async Task<Result> Execute(
         UserCredentialsDto userRegistrationDto,
         CancellationToken cancellationToken)
@@ -52,40 +47,8 @@ internal sealed class RegisterUserCommand(
         
         // Save user to generate Id
         await dbContext.SaveChangesAsync(cancellationToken);
-        await RequestEmailConfirmation(userResult.Value, cancellationToken);
+        await emailConfirmationRequest.Send(userResult.Value, cancellationToken);
 
         return Result.Success();
-    }
-
-    private async Task RequestEmailConfirmation(
-        User user, CancellationToken cancellationToken)
-    {
-        var emailConfirmationToken = new EmailConfirmationToken(
-            dataProtectionProvider);
-        var token = emailConfirmationToken.GenerateToken(
-            user.Id, user.Email);
-        var email = new Email
-        {
-            To = user.Email,
-            Subject = "Please confirm your email address",
-            Body = $"""
-                Dear user,
-                Please confirm your email address by clicking the link below:
-                {baseUrl}/confirm-email?token={token}
-
-                Thank you!
-            """
-        };
-        
-        try
-        {
-            await emailService.Send(email, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to send email confirmation request to {Email}", user.Email);
-            dbContext.Emails.Add(email);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
     }
 }

@@ -16,7 +16,8 @@ internal sealed class ConfirmEmailCommand(
 {
     private const string Error = "Couldn't confirm email";
 
-    public async Task<Result> Execute(string token, CancellationToken cancellationToken)
+    public async Task<Result> Execute(
+        string token, CancellationToken cancellationToken)
     {
         var emailConfirmationToken = new EmailConfirmationToken(
             dataProtectionProvider);
@@ -24,20 +25,20 @@ internal sealed class ConfirmEmailCommand(
         if (userResult.IsFailure)
             return Result.Failure(userResult.Error);
 
-        var user = await dbContext.Users.FindAsync([userResult.Value.Id], cancellationToken);
+        var user = await dbContext.Users.FindAsync(
+            [userResult.Value.Id], cancellationToken);
+        
         if (user?.EmailConfirmed == true)
             return Result.Success();
         if (user?.Email != userResult.Value.Email)
-        {
             return Result.Failure(Error);
-        }
 
         if (!user.ConfirmEmail(DateTime.UtcNow))
         {
             await dbContext.Users
                 .Where(u => u.Id == user.Id)
                 .ExecuteDeleteAsync(cancellationToken);
-            return Result.Failure("Email confirmation token has expired");
+            return Result.Failure(Error);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);

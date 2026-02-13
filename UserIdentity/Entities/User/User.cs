@@ -131,28 +131,24 @@ internal partial class User
     {
     }
 
-    public static Result<User> Create(string email, string password)
-    {
-        var emailResult = Profile.Validate(email);
-        if (emailResult.IsFailure)
-            return Result.Failure<User>(emailResult.Error);
-
-        if (string.IsNullOrWhiteSpace(password) ||
-            password.Length < 8 ||
-            password.Length > 32 ||
-            !charactersRegex().IsMatch(password) ||
-            !numbersRegex().IsMatch(password))
-        {
-            return Result.Failure<User>("Password must be between 8 and 32 characters long, and contain upper and lowercase characters and numbers");
-        }
-
-        var passwordhasher = new PasswordHasher<User>();
+    public static Result<User> Create(string email, string password) => 
+        Profile.Validate(email)
+            .Bind(() =>
+                string.IsNullOrWhiteSpace(password) ||
+                password.Length < 8 ||
+                password.Length > 32 ||
+                !charactersRegex().IsMatch(password) ||
+                !numbersRegex().IsMatch(password)
+                    ? Result.Failure<User>("Password must be between 8 and 32 characters long, and contain upper and lowercase characters and numbers")
+                    : Result.Success())
+            .Map(() =>
+            {
+                var passwordhasher = new PasswordHasher<User>();
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        // In this context, passing null is acceptable because we are not using any user-specific data for hashing.
-        var hashedPassword = passwordhasher.HashPassword(null, password);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-        return new User(email.ToLowerInvariant(), hashedPassword);
-    }
+                // In this context, passing null is acceptable because we are not using any user-specific data for hashing.
+                var hashedPassword = passwordhasher.HashPassword(null, password);
+                return new User(email.ToLowerInvariant(), hashedPassword);
+            });
 
     internal bool ConfirmEmail(DateTime confirmedAt)
     {
@@ -165,29 +161,21 @@ internal partial class User
 
 internal abstract partial record Profile(string Email, IReadOnlyList<string>? PhoneNumbers)
 {
-
     [GeneratedRegex(@"^\S+@\S+\.\S+$")]
     private static partial Regex emailRegex();
 
-    public static Result Validate(string? email)
-    {
-        if (email is null || !emailRegex().IsMatch(email))
-            return Result.Failure("Invalid email format");
+    public static Result Validate(string? email) =>
+        Result.FailureIf(
+            email is null || !emailRegex().IsMatch(email),
+            "Invalid email format");
 
-        return Result.Success();
-    }
-
-    protected static Result Validate(string? email, IReadOnlyList<string>? phoneNumbers)
-    {
-        var emailResult = Validate(email);
-        if (emailResult.IsFailure)
-            return emailResult;
-
-        if (phoneNumbers == null || phoneNumbers.Count == 0 || phoneNumbers.Any(p => string.IsNullOrWhiteSpace(p)))
-            return Result.Failure("At least one valid phone number must be provided");
-
-        return Result.Success();
-    }
+    protected static Result Validate(string? email, IReadOnlyList<string>? phoneNumbers) =>
+        Validate(email)
+            .Bind(() => phoneNumbers == null ||
+                phoneNumbers.Count == 0 ||
+                phoneNumbers.Any(p => string.IsNullOrWhiteSpace(p))
+                    ? Result.Failure("Invalid phone number/s provided")
+                    : Result.Success());
 };
 
 internal sealed record NoProfile : Profile
@@ -196,18 +184,12 @@ internal sealed record NoProfile : Profile
     {
     }
 
-    internal static Result<NoProfile> Create(string? email, IReadOnlyList<string>? phoneNumbers)
-    {
-        var emailResult = Validate(email);
-        if (emailResult.IsFailure)
-            return Result.Failure<NoProfile>(emailResult.Error);
-
-        // For no profile, phone numbers are optional, but if provided, they must be valid.
-        if (phoneNumbers?.Any(p => string.IsNullOrWhiteSpace(p)) == true)
-            return Result.Failure<NoProfile>("Invalid phone number/s provided");
-
-        return new NoProfile(email!, phoneNumbers);
-    }
+    internal static Result<NoProfile> Create(string? email, IReadOnlyList<string>? phoneNumbers) =>
+        Validate(email)
+            .Bind(() => phoneNumbers?.Any(p => string.IsNullOrWhiteSpace(p)) == true
+                ? Result.Failure<NoProfile>("Invalid phone number/s provided")
+                : Result.Success())
+            .Map(() => new NoProfile(email!, phoneNumbers));
 }
 
 internal sealed record RegularProfile : Profile
@@ -227,19 +209,14 @@ internal sealed record RegularProfile : Profile
         string? firstName,
         string? lastName,
         IReadOnlyList<string>? phoneNumbers)
-    {
-        var result = Validate(email, phoneNumbers);
-        if (result.IsFailure)
-            return Result.Failure<RegularProfile>(result.Error);
-
-        if (string.IsNullOrWhiteSpace(firstName) ||
-            string.IsNullOrWhiteSpace(lastName))
-        {
-            return Result.Failure<RegularProfile>("First name and last name must be provided");
-        }
-
-        return new RegularProfile(email!, firstName, lastName, phoneNumbers!);
-    }
+    =>
+        Validate(email, phoneNumbers)
+            .Bind(() =>
+                string.IsNullOrWhiteSpace(firstName) ||
+                string.IsNullOrWhiteSpace(lastName)
+                    ? (Result)Result.Failure<RegularProfile>("First name and last name must be provided")
+                    : Result.Success())
+            .Map(() => new RegularProfile(email!, firstName!, lastName!, phoneNumbers!));
 }
 
 internal sealed record DealerProfile : Profile
@@ -278,25 +255,20 @@ internal sealed record DealerProfile : Profile
         string? county,
         string? locality,
         IReadOnlyList<string>? phoneNumbers)
-    {
-        var result = Validate(email, phoneNumbers);
-        if (result.IsFailure)
-            return Result.Failure<DealerProfile>(result.Error);
-
-        if (string.IsNullOrWhiteSpace(cui) ||
-            cui.Length != 8 ||
-            !cui.All(char.IsDigit) ||
-            string.IsNullOrWhiteSpace(companyName) ||
-            string.IsNullOrWhiteSpace(registrationNumber) ||
-            string.IsNullOrWhiteSpace(address) ||
-            string.IsNullOrWhiteSpace(county) ||
-            string.IsNullOrWhiteSpace(locality))
-        {
-            return Result.Failure<DealerProfile>("All company details must be provided for dealers");
-        }
-
-        return new DealerProfile(email!, cui, companyName, registrationNumber, address, county, locality, phoneNumbers!);
-    }
+    =>
+        Validate(email, phoneNumbers)
+            .Bind(() =>
+                string.IsNullOrWhiteSpace(cui) ||
+                cui.Length != 8 ||
+                !cui.All(char.IsDigit) ||
+                string.IsNullOrWhiteSpace(companyName) ||
+                string.IsNullOrWhiteSpace(registrationNumber) ||
+                string.IsNullOrWhiteSpace(address) ||
+                string.IsNullOrWhiteSpace(county) ||
+                string.IsNullOrWhiteSpace(locality)
+                    ? (Result)Result.Failure<DealerProfile>("All company details must be provided for dealers")
+                    : Result.Success())
+            .Map(() => new DealerProfile(email!, cui!, companyName!, registrationNumber!, address!, county!, locality!, phoneNumbers!));
 }
 
 internal static class ProfileExtensions
@@ -306,15 +278,14 @@ internal static class ProfileExtensions
         Func<RegularProfile, T> regularFunc,
         Func<DealerProfile, T> dealerFunc,
         Func<NoProfile, T> noProfileFunc)
-    {
-        return profile switch
+    =>
+        profile switch
         {
             RegularProfile regular => regularFunc(regular),
             DealerProfile dealer => dealerFunc(dealer),
             NoProfile noProfile => noProfileFunc(noProfile),
             _ => throw new InvalidOperationException("Unknown profile type"),
         };
-    }
 }
 
 internal enum ProfileType

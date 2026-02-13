@@ -3,7 +3,7 @@
 namespace SalesWebApi.IntegrationTests;
 
 [Collection("User Identity")]
-public sealed class UserRegistrationTests(UserIdentityFixture fixture)
+public sealed class RegisterUserTests(UserIdentityFixture fixture)
 {
     [Fact]
     public async Task Succeeds_for_valid_email_and_password()
@@ -20,7 +20,7 @@ public sealed class UserRegistrationTests(UserIdentityFixture fixture)
     }
 
     [Fact]
-    public async Task Not_allowed_for_invalid_email()
+    public async Task Fails_for_invalid_email()
     {
         // Arrange
 
@@ -38,7 +38,7 @@ public sealed class UserRegistrationTests(UserIdentityFixture fixture)
     [InlineData("UPPERCASEONLY")]
     [InlineData("NoNumbers!")]
     [InlineData("Short1")]
-    public async Task Not_allowed_for_invalid_password(string invalidPassword)
+    public async Task Fails_for_invalid_password(string invalidPassword)
     {
         // Arrange
 
@@ -52,7 +52,7 @@ public sealed class UserRegistrationTests(UserIdentityFixture fixture)
     }
 
     [Fact]
-    public async Task Not_allowed_for_existing_email()
+    public async Task Fails_for_existing_email()
     {
         // Arrange
 

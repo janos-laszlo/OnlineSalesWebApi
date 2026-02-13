@@ -63,7 +63,7 @@ public sealed record UserInfoDto(string Email)
     public string? Locality { get; init; }
     public IReadOnlyList<string>? PhoneNumbers { get; init; }
 
-    internal static Result<UserInfoDto> From(User user) =>
+    internal static UserInfoDto From(User user) =>
         user.Profile.Match(
             regular => new UserInfoDto(regular.Email)
             {

@@ -85,7 +85,7 @@ public static class IdentityEndpoints
 
         accountGroup.MapGet(
             Profile,
-            async (IGetUserInfoCommand getUserInfoCommand,
+            async (IGetUserProfileCommand getUserInfoCommand,
             ClaimsPrincipal httpContextUser,
             CancellationToken cancellationToken) =>
             {

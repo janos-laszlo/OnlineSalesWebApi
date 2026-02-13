@@ -19,7 +19,7 @@ public static class UserIdentityRegistration
         services.AddTransient<ILoginUserCommand, LoginUserCommand>();
         services.AddTransient<IRefreshTokenCommand, RefreshTokenCommand>();
         services.AddTransient<IConfirmEmailCommand, ConfirmEmailCommand>();
-        services.AddTransient<IGetUserInfoCommand, GetUserInfoCommand>();
+        services.AddTransient<IGetUserProfileCommand, GetUserProfileCommand>();
         services.AddTransient<IUpdateUserProfileCommand, UpdateUserProfileCommand>();
         var connectionString = configuration.GetConnectionString(UserIdentityDbContext.ConnectionStringKey);
         if (string.IsNullOrEmpty(connectionString))

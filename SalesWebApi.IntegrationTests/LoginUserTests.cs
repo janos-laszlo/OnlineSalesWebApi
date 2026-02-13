@@ -7,7 +7,7 @@ using UserIdentity.Commands;
 namespace SalesWebApi.IntegrationTests;
 
 [Collection("User Identity")]
-public sealed class UserLoginTests(UserIdentityFixture fixture)
+public sealed class LoginUserTests(UserIdentityFixture fixture)
 {
     [Fact]
     public async Task Succeeds_for_existing_credentials()

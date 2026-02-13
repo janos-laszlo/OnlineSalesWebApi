@@ -1,5 +1,4 @@
 using CSharpFunctionalExtensions;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using UserIdentity.Emails;
 
@@ -11,7 +10,7 @@ public interface IConfirmEmailCommand
 }
 
 internal sealed class ConfirmEmailCommand(
-    IDataProtectionProvider dataProtectionProvider,
+    EmailConfirmationToken emailConfirmationToken,
     UserIdentityDbContext dbContext) : IConfirmEmailCommand
 {
     private const string Error = "Couldn't confirm email";
@@ -19,19 +18,17 @@ internal sealed class ConfirmEmailCommand(
     public async Task<Result> Execute(
         string token, CancellationToken cancellationToken)
     {
-        var emailConfirmationToken = new EmailConfirmationToken(
-            dataProtectionProvider);
-        var userResult = emailConfirmationToken.ParseToken(token);
-        if (userResult.IsFailure)
-            return Result.Failure(userResult.Error);
+        var confirmationTokenPayload = emailConfirmationToken.ParseToken(token);
+        if (confirmationTokenPayload.IsFailure)
+            return Result.Failure(confirmationTokenPayload.Error);
 
         var user = await dbContext.Users.FindAsync(
-            [userResult.Value.Id], cancellationToken);
+            [confirmationTokenPayload.Value.Id], cancellationToken);
         
-        if (user?.EmailConfirmed == true)
-            return Result.Success();
-        if (user?.Email != userResult.Value.Email)
+        if (user is null)
             return Result.Failure(Error);
+        if (user.EmailConfirmed == true)
+            return Result.Success();
 
         if (!user.ConfirmEmail(DateTime.UtcNow))
         {

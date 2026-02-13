@@ -9,9 +9,9 @@ namespace UserIdentity.Commands;
 internal sealed class EmailConfirmationRequest(
     IEmailService emailService,
     ILogger<EmailConfirmationRequest> logger,
-    IDataProtectionProvider dataProtectionProvider,
     UserIdentityDbContext dbContext,
-    IConfiguration configuration)
+    IConfiguration configuration,
+    EmailConfirmationToken emailConfirmationToken)
 {
     private readonly string baseUrl = configuration["BaseUrl"] ??
         throw new Exception("BaseUrl configuration is missing");
@@ -19,8 +19,6 @@ internal sealed class EmailConfirmationRequest(
     internal async Task Send(
         User user, CancellationToken cancellationToken)
     {
-        var emailConfirmationToken = new EmailConfirmationToken(
-            dataProtectionProvider);
         var token = emailConfirmationToken.GenerateToken(
             user.Id, user.Email);
         var email = new Email

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,8 @@ public sealed class UserIdentityFixture : IDisposable
     private readonly IServiceScope scope;
     private readonly UserIdentityDbContext userIdentityDbContext;
     internal HttpClient Client { get; }
-    internal EmailServiceStub EmailService { get; }    
+    internal EmailServiceStub EmailService { get; }
+    internal EmailConfirmationToken AnotherEmailConfirmationToken { get; }
 
     public UserIdentityFixture()
     {
@@ -28,8 +30,20 @@ public sealed class UserIdentityFixture : IDisposable
         Client = app.CreateClient();
         scope = app.Services.CreateScope();
         EmailService = (EmailServiceStub)app.Services.GetRequiredService<IEmailService>();
+        AnotherEmailConfirmationToken = CreateAnotherEmailConfirmationToken(app.Services);
         userIdentityDbContext = scope.ServiceProvider.GetRequiredService<UserIdentityDbContext>();
         userIdentityDbContext.Database.EnsureCreated();
+    }
+
+    private static EmailConfirmationToken CreateAnotherEmailConfirmationToken(IServiceProvider sp)
+    {
+        var dataProtectionProvider = sp.GetRequiredService<IDataProtectionProvider>();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection()
+            .Build();
+        configuration[EmailConfirmationToken.PurposeKey] = 
+            "some different key than the one used in the app, to ensure that tokens created by this instance are not valid in the app";
+        return new EmailConfirmationToken(dataProtectionProvider, configuration);
     }
 
     public void Dispose()
@@ -43,4 +57,4 @@ public sealed class UserIdentityFixture : IDisposable
 
 [CollectionDefinition("User Identity")]
 public class UserIdentityCollection : ICollectionFixture<UserIdentityFixture>
-{}
+{ }

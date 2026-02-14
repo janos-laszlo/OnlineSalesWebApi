@@ -169,7 +169,7 @@ internal abstract partial record Profile(string Email, IReadOnlyList<string>? Ph
             email is null || !emailRegex().IsMatch(email),
             "Invalid email format");
 
-    protected static Result Validate(string? email, IReadOnlyList<string>? phoneNumbers) =>
+    protected static Result Validate(string? email, IReadOnlyList<string?>? phoneNumbers) =>
         Validate(email)
             .Bind(() => phoneNumbers == null ||
                 phoneNumbers.Count == 0 ||
@@ -184,12 +184,12 @@ internal sealed record NoProfile : Profile
     {
     }
 
-    internal static Result<NoProfile> Create(string? email, IReadOnlyList<string>? phoneNumbers) =>
+    internal static Result<NoProfile> Create(string? email, IReadOnlyList<string?>? phoneNumbers) =>
         Validate(email)
             .Bind(() => phoneNumbers?.Any(p => string.IsNullOrWhiteSpace(p)) == true
                 ? Result.Failure<NoProfile>("Invalid phone number/s provided")
                 : Result.Success())
-            .Map(() => new NoProfile(email!, phoneNumbers));
+            .Map(() => new NoProfile(email!, phoneNumbers!));
 }
 
 internal sealed record RegularProfile : Profile
@@ -208,7 +208,7 @@ internal sealed record RegularProfile : Profile
         string? email,
         string? firstName,
         string? lastName,
-        IReadOnlyList<string>? phoneNumbers)
+        IReadOnlyList<string?>? phoneNumbers)
     =>
         Validate(email, phoneNumbers)
             .Bind(() =>
@@ -254,7 +254,7 @@ internal sealed record DealerProfile : Profile
         string? address,
         string? county,
         string? locality,
-        IReadOnlyList<string>? phoneNumbers)
+        IReadOnlyList<string?>? phoneNumbers)
     =>
         Validate(email, phoneNumbers)
             .Bind(() =>

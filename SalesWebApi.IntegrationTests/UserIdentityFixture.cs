@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using UserIdentity;
+using UserIdentity.Commands;
 using UserIdentity.Emails;
 
 namespace SalesWebApi.IntegrationTests;
@@ -44,6 +45,21 @@ public sealed class UserIdentityFixture : IDisposable
         configuration[EmailConfirmationToken.PurposeKey] = 
             "some different key than the one used in the app, to ensure that tokens created by this instance are not valid in the app";
         return new EmailConfirmationToken(dataProtectionProvider, configuration);
+    }
+
+    internal async Task<TokenResponseDto> RegisterAndLoginUser(UserCredentialsDto credentials)
+    {
+        var registrationResult = await this.Client.PostAsJsonAsync(
+            Endpoints.RegisterUri, credentials);
+        Assert.True(registrationResult.IsSuccessStatusCode);
+
+        var loginResult = await this.Client.PostAsJsonAsync(
+            Endpoints.LoginUri, credentials);
+        Assert.True(loginResult.IsSuccessStatusCode);
+
+        var body = await loginResult.Content.ReadFromJsonAsync<TokenResponseDto>();
+        Assert.NotNull(body);
+        return body;
     }
 
     public void Dispose()

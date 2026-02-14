@@ -4,7 +4,10 @@ namespace UserIdentity.Commands;
 
 public interface IUpdateUserProfileCommand
 {
-    Task<Result> Execute(int userId, UserProfileRequestDto userProfile, CancellationToken cancellationToken);
+    Task<Result> Execute(
+        int userId,
+        UserProfileRequestDto userProfile,
+        CancellationToken cancellationToken);
 }
 
 internal sealed class UpdateUserProfileCommand(

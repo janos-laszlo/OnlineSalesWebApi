@@ -58,7 +58,7 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
     {
         // Arrange
         UserCredentialsDto credentials = new(UserUtils.NextEmail, "Password1");
-        var tokenResponse = await RegisterAndLoginUser(credentials);
+        var tokenResponse = await fixture.RegisterAndLoginUser(credentials);
 
         // Act
         var statusCode = await GetHealthCheckWithToken(tokenResponse.AccessToken);
@@ -69,21 +69,6 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
         // Try to use the tampered token for a protected endpoint
         var protectedResult = await GetHealthCheckWithToken(token);
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, protectedResult);
-    }
-    
-    private async Task<TokenResponseDto> RegisterAndLoginUser(UserCredentialsDto credentials)
-    {
-        var registrationResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri, credentials);
-        Assert.True(registrationResult.IsSuccessStatusCode);
-
-        var loginResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.LoginUri, credentials);
-        Assert.True(loginResult.IsSuccessStatusCode);
-
-        var body = await loginResult.Content.ReadFromJsonAsync<TokenResponseDto>();
-        Assert.NotNull(body);
-        return body;
     }
     
     private static string CreateAccessedTokenWithIncorrectSignatureKey(string userId, string email)

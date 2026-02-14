@@ -6,7 +6,7 @@ using UserIdentity.Extensions;
 
 namespace SalesWebApi.Endpoints;
 
-public static class IdentityEndpoints
+public static class UserIdentityEndpoints
 {
     public const string IdentityName = "Account";
     public const string IdentityBase = "/account";
@@ -15,7 +15,7 @@ public static class IdentityEndpoints
     public const string RefreshToken = "/refresh-token";
     public const string ConfirmEmail = "/confirm-email";
     public const string Health = "/health";
-    private const string Profile = "/profile";
+    public const string Profile = "/profile";
 
     public static void MapIdentityEndpoints(this WebApplication app)
     {
@@ -101,7 +101,7 @@ public static class IdentityEndpoints
             .RequireAuthorization();
 
         accountGroup
-            .MapPost(
+            .MapPut(
                 Profile,
                 async (UserProfileRequestDto userProfile,
                     IUpdateUserProfileCommand setUserProfileCommand,

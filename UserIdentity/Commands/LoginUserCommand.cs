@@ -27,7 +27,7 @@ internal sealed class LoginUserCommand(
             .Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == userLoginDto.Email, cancellationToken);
-        if (user == null)
+        if (user == null) // TODO: || !user.EmailConfirmed
             return Result.Failure<TokenResponseDto>(Error);
 
         var passwordVerificationResult = passwordHasher.VerifyHashedPassword(

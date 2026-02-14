@@ -11,7 +11,8 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
         // Arrange
 
         // Act & Assert
-        var loginResponse = await RegisterAndLoginUser();
+        var loginResponse = await fixture.RegisterAndLoginUser(
+            new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
             Endpoints.RefreshTokenUri, new RefreshTokenRequestDto(loginResponse.RefreshToken));
         Assert.True(refreshTokenResult.IsSuccessStatusCode);
@@ -23,21 +24,5 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
             Endpoints.RefreshTokenUri, new RefreshTokenRequestDto("some invalid refresh token"));
         Assert.False(refreshTokenResult.IsSuccessStatusCode);
-    }
-
-    private async Task<TokenResponseDto> RegisterAndLoginUser()
-    {
-        UserCredentialsDto credentials = new(UserUtils.NextEmail, "Password1");
-        var registrationResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri, credentials);
-        Assert.True(registrationResult.IsSuccessStatusCode);
-
-        var loginResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.LoginUri, credentials);
-        Assert.True(loginResult.IsSuccessStatusCode);
-
-        var body = await loginResult.Content.ReadFromJsonAsync<TokenResponseDto>();
-        Assert.NotNull(body);
-        return body;
     }
 }

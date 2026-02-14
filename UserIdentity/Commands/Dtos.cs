@@ -18,7 +18,7 @@ public record UserProfileRequestDto(
     string? Address,
     string? County,
     string? Locality,
-    IReadOnlyList<string>? PhoneNumbers)
+    IReadOnlyList<string?>? PhoneNumbers)
 {
     internal Result<Profile> ToProfile() =>
         this.IsDealer is null

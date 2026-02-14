@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using UserIdentity.Commands;
 
-namespace SalesWebApi.IntegrationTests;
+namespace SalesWebApi.IntegrationTests.Commands;
 
 [Collection("User Identity")]
 public sealed class LoginUserTests(UserIdentityFixture fixture)

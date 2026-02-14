@@ -25,7 +25,7 @@ TODO:
 -encrypt the user ID in the JWT payload using https://github.com/ullmark/hashids.net
 -request email confirmation on email address update
 -all fields in a profile must have a value
+-add test case for email already confirmed or wrong email
 ^DONE^
 -tests for profile update
--add test case for email already confirmed or wrong email
 -log errors, where Result.Failure is

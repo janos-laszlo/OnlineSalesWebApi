@@ -1,6 +1,6 @@
 using UserIdentity.Commands;
 
-namespace SalesWebApi.IntegrationTests;
+namespace SalesWebApi.IntegrationTests.Commands;
 
 [Collection("User Identity")]
 public sealed class RefreshTokenTests(UserIdentityFixture fixture)

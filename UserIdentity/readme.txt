@@ -26,6 +26,6 @@ TODO:
 -request email confirmation on email address update
 -all fields in a profile must have a value
 -add test case for email already confirmed or wrong email
-^DONE^
 -tests for profile update
 -log errors, where Result.Failure is
+^DONE^

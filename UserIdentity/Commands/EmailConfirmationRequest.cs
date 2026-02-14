@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UserIdentity.Emails;
@@ -33,7 +32,7 @@ internal sealed class EmailConfirmationRequest(
                 Thank you!
             """
         };
-        
+
         try
         {
             await emailService.Send(email, cancellationToken);

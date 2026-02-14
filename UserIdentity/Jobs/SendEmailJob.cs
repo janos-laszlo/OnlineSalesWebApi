@@ -19,7 +19,7 @@ internal sealed class SendEmailJob(
         CancellationToken cancellationToken)
     {
         context.CronOccurrenceOperations.SkipIfAlreadyRunning();
-        
+
         do
         {
             var emails = await dbContext

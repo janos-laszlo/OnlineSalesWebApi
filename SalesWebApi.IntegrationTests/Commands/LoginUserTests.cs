@@ -49,7 +49,7 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var result = await fixture.Client.PostAsJsonAsync(
-            Endpoints.LoginUri, credentials with { Password = "WrongPassword2"});
+            Endpoints.LoginUri, credentials with { Password = "WrongPassword2" });
         Assert.False(result.IsSuccessStatusCode);
     }
 
@@ -63,14 +63,14 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
         // Act
         var statusCode = await GetHealthCheckWithToken(tokenResponse.AccessToken);
         Assert.Equal(System.Net.HttpStatusCode.OK, statusCode);
-        
+
         // Tamper with the token
         var token = CreateAccessedTokenWithIncorrectSignatureKey("1", credentials.Email);
         // Try to use the tampered token for a protected endpoint
         var protectedResult = await GetHealthCheckWithToken(token);
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, protectedResult);
     }
-    
+
     private static string CreateAccessedTokenWithIncorrectSignatureKey(string userId, string email)
     {
         var data = Encoding.UTF8.GetBytes("some incorrect very_secret key h4iot-");

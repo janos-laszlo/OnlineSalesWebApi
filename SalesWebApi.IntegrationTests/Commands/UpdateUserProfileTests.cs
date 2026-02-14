@@ -120,7 +120,7 @@ public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
 
         // Act
         var request = new HttpRequestMessage(HttpMethod.Put, Endpoints.Profile)
-            { Content = JsonContent.Create(updateProfileRequest) };
+        { Content = JsonContent.Create(updateProfileRequest) };
 
         var result = await fixture.Client.SendAsync(request);
 

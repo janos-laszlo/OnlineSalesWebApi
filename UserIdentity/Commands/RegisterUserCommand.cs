@@ -1,9 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using UserIdentity.Emails;
 using UserIdentity.Entities;
 
 namespace UserIdentity.Commands;
@@ -44,7 +41,7 @@ internal sealed class RegisterUserCommand(
         dbContext.Users.Add(userResult.Value);
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("User with email {Email} registered successfully", userRegistrationDto.Email);
-        
+
         // Save user to generate Id
         await dbContext.SaveChangesAsync(cancellationToken);
         await emailConfirmationRequest.Send(userResult.Value, cancellationToken);

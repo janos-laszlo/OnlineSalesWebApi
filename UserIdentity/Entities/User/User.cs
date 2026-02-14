@@ -131,7 +131,7 @@ internal partial class User
     {
     }
 
-    public static Result<User> Create(string email, string password) => 
+    public static Result<User> Create(string email, string password) =>
         Profile.Validate(email)
             .Bind(() =>
                 string.IsNullOrWhiteSpace(password) ||

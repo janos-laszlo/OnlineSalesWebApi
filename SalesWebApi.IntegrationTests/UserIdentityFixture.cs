@@ -42,7 +42,7 @@ public sealed class UserIdentityFixture : IDisposable
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection()
             .Build();
-        configuration[EmailConfirmationToken.PurposeKey] = 
+        configuration[EmailConfirmationToken.PurposeKey] =
             "some different key than the one used in the app, to ensure that tokens created by this instance are not valid in the app";
         return new EmailConfirmationToken(dataProtectionProvider, configuration);
     }

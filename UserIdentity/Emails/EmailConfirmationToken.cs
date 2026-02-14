@@ -14,7 +14,7 @@ internal sealed class EmailConfirmationToken(
     internal const string PurposeKey = "DataProtection:EmailConfirmationTokenPurpose";
     private readonly IDataProtector protector =
         dataProtectionProvider.CreateProtector(
-            configuration[PurposeKey] ?? 
+            configuration[PurposeKey] ??
             throw new Exception($"{PurposeKey} configuration is missing"));
 
     public string GenerateToken(int id, string email) =>

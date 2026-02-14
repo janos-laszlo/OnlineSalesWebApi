@@ -3,6 +3,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace UserIdentity.Commands;
 
@@ -14,6 +15,7 @@ public interface IRefreshTokenCommand
 }
 
 internal sealed class RefreshTokenCommand(
+    ILogger<RefreshTokenCommand> logger,
     IConfiguration configuration,
     UserIdentityDbContext dbContext,
     IDataProtectionProvider dataProtectionProvider,
@@ -35,17 +37,20 @@ internal sealed class RefreshTokenCommand(
         }
         catch
         {
+            logger.LogWarning("Failed to unprotect refresh token {RefreshToken}", refreshToken);
             return Result.Failure<TokenResponseDto>(Error);
         }
 
         var refreshTokenObj = JsonSerializer.Deserialize<RefreshTokenDto>(refreshTokenString);
         if (refreshTokenObj is null)
         {
+            logger.LogWarning("Failed to deserialize refresh token {RefreshToken}", refreshToken);
             return Result.Failure<TokenResponseDto>(Error);
         }
 
         if (DateTime.UtcNow > refreshTokenObj.ExpiresAt)
         {
+            logger.LogWarning("Refresh token expired {RefreshToken}", refreshToken);
             return Result.Failure<TokenResponseDto>(Error);
         }
 
@@ -55,6 +60,7 @@ internal sealed class RefreshTokenCommand(
             .FirstOrDefaultAsync(u => u.Id == refreshTokenObj.UserId, cancellationToken);
         if (user == null)
         {
+            logger.LogWarning("User not found for refresh token {RefreshToken}", refreshToken);
             return Result.Failure<TokenResponseDto>(Error);
         }
 

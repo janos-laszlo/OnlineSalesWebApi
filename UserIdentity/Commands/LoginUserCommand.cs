@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using UserIdentity.Entities;
 
 namespace UserIdentity.Commands;
@@ -13,6 +14,7 @@ public interface ILoginUserCommand
 }
 
 internal sealed class LoginUserCommand(
+    ILogger<LoginUserCommand> logger,
     UserIdentityDbContext dbContext,
     JwtService jwtService) : ILoginUserCommand
 {
@@ -28,12 +30,18 @@ internal sealed class LoginUserCommand(
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == userLoginDto.Email, cancellationToken);
         if (user == null) // TODO: || !user.EmailConfirmed
+        {
+            logger.LogWarning("User not found for email: {Email}", userLoginDto.Email);
             return Result.Failure<TokenResponseDto>(Error);
+        }
 
         var passwordVerificationResult = passwordHasher.VerifyHashedPassword(
             user, user.PasswordHash, userLoginDto.Password);
         if (passwordVerificationResult == PasswordVerificationResult.Failed)
+        {
+            logger.LogWarning("Invalid password for email: {Email}", userLoginDto.Email);
             return Result.Failure<TokenResponseDto>(Error);
+        }
 
         return jwtService.CreateTokens(user);
     }

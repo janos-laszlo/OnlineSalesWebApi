@@ -1,3 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using CarSales;
 
 Console.WriteLine($"Processors: {Environment.ProcessorCount}");
+Register<CarSalesDbContext>();
+
+static void Register<TDbContext>()
+{
+    Console.WriteLine($"Registering {typeof(TDbContext).Name}...");
+}

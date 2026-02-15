@@ -29,3 +29,4 @@ TODO:
 -tests for profile update
 -log errors, where Result.Failure is
 ^DONE^
+-extract email sending into a separate project from UserIdentity project

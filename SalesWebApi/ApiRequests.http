@@ -20,7 +20,7 @@ POST {{baseUrl}}/account/login
 Content-Type: application/json
 
 {
-    "email": "test5@example.com",
+    "email": "test10@example.com",
     "password": "passs1Ddsfs#"
 }
 
@@ -42,4 +42,4 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vM
 
 ###
 GET {{baseUrl}}/car-sales/test
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4xLjY6NTE1MyIsImlzcyI6Imh0dHA6Ly8xOTIuMTY4LjEuNjo1MTUzIiwiZXhwIjoxNzcxMTc4MzkyLCJpYXQiOjE3NzExNzgwOTIsIm5iZiI6MTc3MTE3ODA5Miwic3ViIjo1LCJlbWFpbCI6InRlc3Q1QGV4YW1wbGUuY29tIn0.rOZP-D_dKTfYAkel0J5gZnn3kKL1xnXKzvrQGxjhnuM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4xLjY6NTE1MyIsImlzcyI6Imh0dHA6Ly8xOTIuMTY4LjEuNjo1MTUzIiwiZXhwIjoxNzcxMTg1ODMyLCJpYXQiOjE3NzExODU1MzIsIm5iZiI6MTc3MTE4NTUzMiwic3ViIjoxMCwiZW1haWwiOiJ0ZXN0MTBAZXhhbXBsZS5jb20ifQ.xR_bMzcQvVRblCHgXMc6cyBEt5LWUVddwJhEiiJp4pI

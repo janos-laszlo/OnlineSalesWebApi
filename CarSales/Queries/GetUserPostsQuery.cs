@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace CarSales.Queries;
 
 public interface IGetUserPostsQuery
@@ -10,7 +12,7 @@ internal class GetUserPostsQuery(
 {
     public object? Get(int userId)
     {
-        return context.Users
+        return context.UsersReadOnly
             .Where(u => u.Id == userId)
             .Select(u => new
             {

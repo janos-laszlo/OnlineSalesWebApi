@@ -33,6 +33,11 @@ public static class CommonRegistration
             options.UseMySql(
                 connectionString,
                 ServerVersion.AutoDetect(connectionString),
-                efOptions => efOptions.SchemaBehavior(MySqlSchemaBehavior.Throw)));
+                efOptions =>
+                {
+                    efOptions.SchemaBehavior(MySqlSchemaBehavior.Throw);
+                    efOptions.MigrationsHistoryTable(
+                        $"__EFMigrationsHistory_{typeof(TDbContext).Name}");
+                }));
     }
 }

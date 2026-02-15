@@ -18,4 +18,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SalesWebApi.IntegrationTests" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
 </Project>

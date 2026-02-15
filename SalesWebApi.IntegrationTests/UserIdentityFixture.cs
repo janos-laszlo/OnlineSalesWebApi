@@ -1,3 +1,4 @@
+using Common;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -19,7 +20,7 @@ public sealed class UserIdentityFixture : IDisposable
 
     public UserIdentityFixture()
     {
-        UserIdentityDbContext.ConnectionStringKey = "MariaDBIntegrationTests";
+        Constants.ConnectionStringKey = "MariaDBIntegrationTests";
         app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {

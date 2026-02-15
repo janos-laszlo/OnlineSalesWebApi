@@ -1,8 +1,7 @@
+using Common;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using TickerQ.DependencyInjection;
 using UserIdentity.Commands;
 using UserIdentity.Emails;
@@ -21,15 +20,7 @@ public static class UserIdentityRegistration
         services.AddTransient<IConfirmEmailCommand, ConfirmEmailCommand>();
         services.AddTransient<IGetUserProfileCommand, GetUserProfileCommand>();
         services.AddTransient<IUpdateUserProfileCommand, UpdateUserProfileCommand>();
-        var connectionString = configuration.GetConnectionString(UserIdentityDbContext.ConnectionStringKey);
-        if (string.IsNullOrEmpty(connectionString))
-            throw new InvalidOperationException(
-                $"Connection string '{UserIdentityDbContext.ConnectionStringKey}' is not configured.");
-        services.AddDbContext<UserIdentityDbContext>(options =>
-            options.UseMySql(
-                connectionString,
-                ServerVersion.AutoDetect(connectionString),
-                efOptions => efOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
+        services.RegisterDbContext<UserIdentityDbContext>(configuration);
         services.AddTickerQ();
         services.AddDataProtection();
         services.AddTransient<JwtService>();

@@ -1,7 +1,10 @@
-GET http://localhost:5152
+@baseUrl = http://192.168.1.6:5153
 
 ###
-POST http://192.168.1.6:5153/register
+GET {{baseUrl}}
+
+###
+POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
@@ -10,19 +13,19 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:5152/confirm-email?token=S67Yui2DPBBU5gDGC0I_02cxiWV65MEXVtyxW3wfrJq7632sDu330v-c9yOaGiz5ghzqiBIFsciEey5azay4DtKgQn9AEqO3i0zVCkXfxRbDGUvIg2eYzcDKwXpYni7aKRCRQbPzkJPba2zyK-VT8fz2h_91rN9riZpF-OvR8pCwed4M13RWwZB3ZtUMqny8WPFZMCZddO6KWJRCPEwxyfLx9twi8PN1L4b0PsAmIUp6jT7CMX8OcPliF5fOIAw9Jp5pVe7KWc1eVWTMS3AzwfUX1gvg-Q3xrMjlHT3CILyB5uOrgdmIALj3SwIuXpZk80ZX5k9NanLAj4uLs3obEUFWkrU
+GET {{baseUrl}}/confirm-email?token=S67Yui2DPBBU5gDGC0I_02cxiWV65MEXVtyxW3wfrJq7632sDu330v-c9yOaGiz5ghzqiBIFsciEey5azay4DtKgQn9AEqO3i0zVCkXfxRbDGUvIg2eYzcDKwXpYni7aKRCRQbPzkJPba2zyK-VT8fz2h_91rN9riZpF-OvR8pCwed4M13RWwZB3ZtUMqny8WPFZMCZddO6KWJRCPEwxyfLx9twi8PN1L4b0PsAmIUp6jT7CMX8OcPliF5fOIAw9Jp5pVe7KWc1eVWTMS3AzwfUX1gvg-Q3xrMjlHT3CILyB5uOrgdmIALj3SwIuXpZk80ZX5k9NanLAj4uLs3obEUFWkrU
 
 ###
-POST http://localhost:5152/login
+POST {{baseUrl}}/account/login
 Content-Type: application/json
 
 {
-    "email": "test2@example.com",
+    "email": "test5@example.com",
     "password": "passs1Ddsfs#"
 }
 
 ###
-POST http://localhost:5152/refresh-token
+POST {{baseUrl}}/refresh-token
 Content-Type: application/json
 
 {
@@ -30,5 +33,9 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:5152/health
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxNTIiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUxNTIiLCJleHAiOjE3NjkwNDA4NTgsImlhdCI6MTc2OTAzMzY1OCwibmJmIjoxNzY5MDMzNjU4LCJzdWIiOjIsImVtYWlsIjoidGVzdDJAZXhhbXBsZS5jb20ifQ.1M_51pds6t5-JzcQnR1LZCMLfvPpmAyAZB7-yJSQKkQ
+GET {{baseUrl}}/account/health
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4xLjY6NTE1MyIsImlzcyI6Imh0dHA6Ly8xOTIuMTY4LjEuNjo1MTUzIiwiZXhwIjoxNzcxMTc1NTc0LCJpYXQiOjE3NzExNzUyNzQsIm5iZiI6MTc3MTE3NTI3NCwic3ViIjo1LCJlbWFpbCI6InRlc3Q1QGV4YW1wbGUuY29tIn0.m44WI6LpoYhoIyIPG4igcXUivXamuydrX-iHyD9JpoU
+
+###
+GET {{baseUrl}}/account/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4xLjY6NTE1MyIsImlzcyI6Imh0dHA6Ly8xOTIuMTY4LjEuNjo1MTUzIiwiZXhwIjoxNzcxMTc1NTc0LCJpYXQiOjE3NzExNzUyNzQsIm5iZiI6MTc3MTE3NTI3NCwic3ViIjo1LCJlbWFpbCI6InRlc3Q1QGV4YW1wbGUuY29tIn0.m44WI6LpoYhoIyIPG4igcXUivXamuydrX-iHyD9JpoU

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Common;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,6 @@ internal sealed class RefreshTokenCommand(
     IDataProtectionProvider dataProtectionProvider,
     JwtService jwtService) : IRefreshTokenCommand
 {
-    private const string EncryptionKeyConfigKey = "Jwt:EncryptionKey";
     private const string Error = "Invalid refresh token";
 
     public async Task<Result<TokenResponseDto>> Execute(
@@ -29,7 +29,7 @@ internal sealed class RefreshTokenCommand(
         CancellationToken cancellationToken)
     {
         var protector = dataProtectionProvider.CreateProtector(
-            configuration.GetValue<string>(EncryptionKeyConfigKey)!);
+            configuration.GetValue<string>(Constants.ConfigKeys.JwtEncryptionKey)!);
         string refreshTokenString;
         try
         {

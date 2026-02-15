@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UserIdentity\UserIdentity.csproj" />
+    <ProjectReference Include="..\CarSales\CarSales.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -20,7 +20,7 @@ public sealed class UserIdentityFixture : IDisposable
 
     public UserIdentityFixture()
     {
-        Constants.ConnectionStringKey = "MariaDBIntegrationTests";
+        Constants.ConfigKeys.ConnectionStringKey = "MariaDBIntegrationTests";
         app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {

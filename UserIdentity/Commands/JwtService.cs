@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Common;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -12,7 +13,6 @@ internal sealed class JwtService(
     IConfiguration configuration,
     IDataProtectionProvider dataProtectionProvider)
 {
-    private const string EncryptionKeyConfigKey = "Jwt:EncryptionKey";
     private readonly string baseUrl = configuration["BaseUrl"] ??
         throw new Exception("BaseUrl configuration is missing");
     private static readonly JsonWebTokenHandler handler = new();
@@ -24,7 +24,7 @@ internal sealed class JwtService(
     private string CreateToken(User user)
     {
         var data = Encoding.UTF8.GetBytes(
-            configuration.GetValue<string>(EncryptionKeyConfigKey)!);
+            configuration.GetValue<string>(Constants.ConfigKeys.JwtEncryptionKey)!);
         var securityKey = new SymmetricSecurityKey(data);
 
         var claims = new Dictionary<string, object>
@@ -52,7 +52,7 @@ internal sealed class JwtService(
         var refreshTokenObj = new RefreshTokenDto(user.Id, DateTime.UtcNow.AddMonths(1));
         var refreshTokenString = JsonSerializer.Serialize(refreshTokenObj);
         var protector = dataProtectionProvider.CreateProtector(
-            configuration.GetValue<string>(EncryptionKeyConfigKey)!);
+            configuration.GetValue<string>(Constants.ConfigKeys.JwtEncryptionKey)!);
         return protector.Protect(refreshTokenString);
     }
 }

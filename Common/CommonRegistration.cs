@@ -7,7 +7,11 @@ namespace Common;
 
 public static class Constants
 {
-    public static string ConnectionStringKey { get; set; } = "MariaDB";
+    public static class ConfigKeys
+    {
+        public const string JwtEncryptionKey = "Jwt:EncryptionKey";
+        public static string ConnectionStringKey { get; set; } = "MariaDB";
+    }
 
     public static class Tables
     {
@@ -21,10 +25,10 @@ public static class CommonRegistration
         this IServiceCollection services,
         IConfiguration configuration) where TDbContext : DbContext
     {
-        var connectionString = configuration.GetConnectionString(Constants.ConnectionStringKey);
+        var connectionString = configuration.GetConnectionString(Constants.ConfigKeys.ConnectionStringKey);
         if (string.IsNullOrEmpty(connectionString))
             throw new InvalidOperationException(
-                $"Connection string '{Constants.ConnectionStringKey}' is not configured.");
+                $"Connection string '{Constants.ConfigKeys.ConnectionStringKey}' is not configured.");
         services.AddDbContext<TDbContext>(options =>
             options.UseMySql(
                 connectionString,

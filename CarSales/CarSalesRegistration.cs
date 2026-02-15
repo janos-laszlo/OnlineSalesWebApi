@@ -7,12 +7,14 @@ namespace CarSales;
 
 public static class CarSalesRegistration
 {
-    public static void AddCarSales(
-        IServiceCollection services,
+    public static IServiceCollection AddCarSales(
+        this IServiceCollection services,
         IConfiguration configuration)
     {
         services.RegisterDbContext<CarSalesDbContext>(configuration);
 
         services.AddScoped<IGetUserPostsQuery, GetUserPostsQuery>();
+        
+        return services;
     }
 }

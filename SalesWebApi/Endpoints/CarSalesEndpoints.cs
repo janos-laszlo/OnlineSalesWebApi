@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using CarSales.Queries;
+using UserIdentity.Extensions;
 
 namespace SalesWebApi.Endpoints;
 
@@ -13,6 +16,10 @@ internal static class CarSalesEndpoints
             .WithTags(CarSalesName);
 
         carSalesGroup
-            .MapGet("", () => Results.Ok("Car sales endpoint is working"));
+            .MapGet(
+                "test",
+                (IGetUserPostsQuery query,
+                ClaimsPrincipal claimsPrincipal) => Results.Ok(query.Get(claimsPrincipal.UserId)))
+            .RequireAuthorization();
     }
 }

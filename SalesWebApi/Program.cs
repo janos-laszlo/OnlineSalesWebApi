@@ -3,14 +3,46 @@ using SalesWebApi.Endpoints;
 using System.Text;
 using Scalar.AspNetCore;
 using UserIdentity;
+using Common;
+using CarSales;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+
+const string CorsPolicyName = "AllowClient";
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddAuthentication()
-    .AddJwtBearer(options =>
+    .AddJwtBearer(ConfigureJwtBearer(builder));
+builder.Services
+    .AddAuthorization()
+    .AddCors(ConfigureCors(builder))
+    .AddUserIdentity(builder.Configuration)
+    .AddCarSales(builder.Configuration)
+    .AddOpenApi()
+    .AddProblemDetails();
+
+var app = builder.Build();
+
+app.UseExceptionHandler()
+    .UseCors(CorsPolicyName)
+    .UseUserIdentity();
+app.MapIdentityEndpoints();
+app.MapCarSalesEndpoints();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+    app.UseDeveloperExceptionPage();
+}
+
+app.Run();
+
+static Action<JwtBearerOptions> ConfigureJwtBearer(WebApplicationBuilder builder) =>
+    options =>
     {
-        var jwtKey = builder.Configuration.GetValue<string>("Jwt:EncryptionKey")!;
+        var jwtKey = builder.Configuration.GetValue<string>(Constants.ConfigKeys.JwtEncryptionKey)!;
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -22,33 +54,16 @@ builder.Services
             ValidAudience = "http://192.168.1.6:5153",
             ValidateLifetime = true
         };
-    });
-builder.Services.AddAuthorization();
-builder.Services.AddCors(options =>
-{
-    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]?>();
-    if (!(allowedOrigins?.Length > 0))
-        throw new InvalidOperationException("AllowedOrigins configuration is missing or empty.");
-    options.AddPolicy("AllowClient", policy => policy
-        .WithOrigins(allowedOrigins)
-        .AllowAnyHeader()
-        .AllowAnyMethod());
-});
-builder.Services.AddUserIdentity(builder.Configuration);
-builder.Services.AddOpenApi();
-builder.Services.AddProblemDetails();
+    };
 
-var app = builder.Build();
-
-app.UseExceptionHandler();
-app.UseCors("AllowClient");
-app.UseUserIdentity();
-app.MapIdentityEndpoints();
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-    app.UseDeveloperExceptionPage();
-}
-
-app.Run();
+static Action<CorsOptions> ConfigureCors(WebApplicationBuilder builder) =>
+    options =>
+    {
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]?>();
+        if (!(allowedOrigins?.Length > 0))
+            throw new InvalidOperationException("AllowedOrigins configuration is missing or empty.");
+        options.AddPolicy(CorsPolicyName, policy => policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+    };

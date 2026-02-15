@@ -31,8 +31,9 @@ public static class UserIdentityRegistration
         return services;
     }
 
-    public static void UseUserIdentity(this IApplicationBuilder app)
+    public static IApplicationBuilder UseUserIdentity(this IApplicationBuilder app)
     {
         app.UseTickerQ();
+        return app;
     }
 }

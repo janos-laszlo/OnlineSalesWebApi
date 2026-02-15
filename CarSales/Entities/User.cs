@@ -2,8 +2,8 @@ namespace CarSales.Entities;
 
 internal sealed class User
 {
-    public int Id { get; private set; }
-    public string Email { get; private set; }
+    internal int Id { get; private set; }
+    internal string Email { get; private set; }
 
     private User(int id, string email)
     {

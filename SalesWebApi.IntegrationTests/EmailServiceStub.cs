@@ -7,7 +7,7 @@ namespace SalesWebApi.IntegrationTests;
 internal sealed class EmailServiceStub : IEmailService
 {
     private readonly Collection<Email> emails = [];
-    public IReadOnlyCollection<Email> Emails => emails;
+    internal IReadOnlyCollection<Email> Emails => emails;
     public Task Send(Email email, CancellationToken cancellationToken)
     {
         emails.Add(email);

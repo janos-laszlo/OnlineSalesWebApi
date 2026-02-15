@@ -6,18 +6,18 @@ using UserIdentity.Extensions;
 
 namespace SalesWebApi.Endpoints;
 
-public static class UserIdentityEndpoints
+internal static class UserIdentityEndpoints
 {
-    public const string IdentityName = "Account";
-    public const string IdentityBase = "/account";
-    public const string Register = "/register";
-    public const string Login = "/login";
-    public const string RefreshToken = "/refresh-token";
-    public const string ConfirmEmail = "/confirm-email";
-    public const string Health = "/health";
-    public const string Profile = "/profile";
+    internal const string IdentityName = "Account";
+    internal const string IdentityBase = "/account";
+    internal const string Register = "/register";
+    internal const string Login = "/login";
+    internal const string RefreshToken = "/refresh-token";
+    internal const string ConfirmEmail = "/confirm-email";
+    internal const string Health = "/health";
+    internal const string Profile = "/profile";
 
-    public static void MapIdentityEndpoints(this WebApplication app)
+    internal static void MapIdentityEndpoints(this WebApplication app)
     {
         var accountGroup = app.MapGroup(IdentityBase)
             .WithTags(IdentityName);

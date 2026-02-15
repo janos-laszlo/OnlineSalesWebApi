@@ -6,5 +6,5 @@ namespace CarSales;
 internal sealed class CarSalesDbContext(
     DbContextOptions<CarSalesDbContext> options) : DbContext(options)
 {
-    public DbSet<User> Users { get; private set; }
+    internal DbSet<User> Users { get; private set; }
 }

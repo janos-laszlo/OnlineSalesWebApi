@@ -17,14 +17,14 @@ internal sealed class EmailConfirmationToken(
             configuration[PurposeKey] ??
             throw new Exception($"{PurposeKey} configuration is missing"));
 
-    public string GenerateToken(int id, string email) =>
+    internal string GenerateToken(int id, string email) =>
         Uri.EscapeDataString(
             this.protector.Protect(
                 JsonSerializer.Serialize(
                     new EmailConfirmationTokenPayload(
                         id, email))));
 
-    public Result<EmailConfirmationTokenPayload> ParseToken(string token)
+    internal Result<EmailConfirmationTokenPayload> ParseToken(string token)
     {
         try
         {

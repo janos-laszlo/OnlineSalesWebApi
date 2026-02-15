@@ -1,5 +1,3 @@
-using System;
-
 namespace CarSales.Queries;
 
 public interface IGetUserPostsQuery

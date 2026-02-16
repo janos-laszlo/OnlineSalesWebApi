@@ -2,7 +2,7 @@ using Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CarSales.Entities;
+namespace CarSales.Entities.User;
 
 internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {

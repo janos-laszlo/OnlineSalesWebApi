@@ -1,4 +1,4 @@
-namespace CarSales.Entities;
+namespace CarSales.Entities.User;
 
 internal sealed class User
 {

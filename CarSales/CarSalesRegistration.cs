@@ -13,7 +13,8 @@ public static class CarSalesRegistration
     {
         services.RegisterDbContext<CarSalesDbContext>(configuration);
 
-        services.AddScoped<IGetUserPostsQuery, GetUserPostsQuery>();
+        services.AddTransient<IGetCarMakesQuery, GetCarMakesQuery>();
+        services.AddTransient<IGetMakeModelsQuery, GetMakeModelsQuery>();
         
         return services;
     }

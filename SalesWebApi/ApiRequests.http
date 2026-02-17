@@ -41,5 +41,7 @@ GET {{baseUrl}}/account/profile
 Authorization: Bearer ...
 
 ###
-GET {{baseUrl}}/car-sales/test
-Authorization: Bearer ...
+GET {{baseUrl}}/car-sales/makes
+
+###
+GET {{baseUrl}}/car-sales/models?makeName=bmw

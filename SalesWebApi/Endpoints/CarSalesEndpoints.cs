@@ -1,6 +1,4 @@
-using System.Security.Claims;
 using CarSales.Queries;
-using UserIdentity.Extensions;
 
 namespace SalesWebApi.Endpoints;
 
@@ -17,9 +15,17 @@ internal static class CarSalesEndpoints
 
         carSalesGroup
             .MapGet(
-                "test",
-                (IGetUserPostsQuery query,
-                ClaimsPrincipal claimsPrincipal) => Results.Ok(query.Get(claimsPrincipal.UserId)))
-            .RequireAuthorization();
+                "makes",
+                async (IGetCarMakesQuery query,
+                CancellationToken cancellationToken) =>
+                    Results.Ok(await query.Get(cancellationToken)));
+
+        carSalesGroup
+            .MapGet(
+                "models",
+                async (string makeName,
+                IGetMakeModelsQuery query,
+                CancellationToken cancellationToken) =>
+                    Results.Ok(await query.Get(makeName, cancellationToken)));
     }
 }

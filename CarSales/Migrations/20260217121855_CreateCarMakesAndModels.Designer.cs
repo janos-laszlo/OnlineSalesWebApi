@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarSales.Migrations
 {
     [DbContext(typeof(CarSalesDbContext))]
-    [Migration("20260216152639_CreateCarMakesAndModels")]
+    [Migration("20260217121855_CreateCarMakesAndModels")]
     partial class CreateCarMakesAndModels
     {
         /// <inheritdoc />
@@ -34,10 +34,13 @@ namespace CarSales.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("varchar(32)");
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("car_makes", (string)null);
                 });
@@ -55,12 +58,15 @@ namespace CarSales.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("varchar(32)");
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CarMakeId");
+
+                    b.HasIndex("Name", "CarMakeId")
+                        .IsUnique();
 
                     b.ToTable("car_models", (string)null);
                 });

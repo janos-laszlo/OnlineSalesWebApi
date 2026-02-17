@@ -426,5 +426,4 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-/notes.txt
-/scripts.sql
+/Local

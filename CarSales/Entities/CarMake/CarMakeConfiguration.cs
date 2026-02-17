@@ -11,6 +11,8 @@ internal sealed class CarMakeConfiguration : IEntityTypeConfiguration<CarMake>
         builder.HasKey(cm => cm.Id);
         builder.Property(cm => cm.Name)
             .IsRequired()
-            .HasMaxLength(32);
+            .HasMaxLength(64);
+        builder.HasIndex(cm => cm.Name)
+            .IsUnique();
     }
 }

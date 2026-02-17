@@ -20,7 +20,7 @@ namespace CarSales.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
+                    Name = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -35,7 +35,7 @@ namespace CarSales.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
+                    Name = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CarMakeId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -52,9 +52,21 @@ namespace CarSales.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateIndex(
+                name: "IX_car_makes_Name",
+                table: "car_makes",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_car_models_CarMakeId",
                 table: "car_models",
                 column: "CarMakeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_car_models_Name_CarMakeId",
+                table: "car_models",
+                columns: new[] { "Name", "CarMakeId" },
+                unique: true);
         }
 
         /// <inheritdoc />

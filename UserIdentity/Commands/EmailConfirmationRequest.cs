@@ -1,14 +1,12 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using UserIdentity.Emails;
 using UserIdentity.Entities;
+using EmailSending;
 
 namespace UserIdentity.Commands;
 
 internal sealed class EmailConfirmationRequest(
-    IEmailService emailService,
-    ILogger<EmailConfirmationRequest> logger,
-    UserIdentityDbContext dbContext,
+    IResilientEmailService emailService,
     IConfiguration configuration,
     EmailConfirmationToken emailConfirmationToken)
 {
@@ -24,24 +22,16 @@ internal sealed class EmailConfirmationRequest(
         {
             To = user.Email,
             Subject = "Please confirm your email address",
+            // TODO: Use a proper email template and use button instead of link
             Body = $"""
                 Dear user,
-                Please confirm your email address by clicking the link below:
+                Please confirm your email address by accessing the link below:
                 {baseUrl}/confirm-email?token={token}
 
                 Thank you!
             """
         };
-
-        try
-        {
-            await emailService.Send(email, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to send email confirmation request to {Email}", user.Email);
-            dbContext.Emails.Add(email);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
+        
+        await emailService.Send(email, cancellationToken);
     }
 }

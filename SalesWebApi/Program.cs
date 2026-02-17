@@ -7,6 +7,7 @@ using Common;
 using CarSales;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using EmailSending;
 
 const string CorsPolicyName = "AllowClient";
 
@@ -18,6 +19,7 @@ builder.Services
 builder.Services
     .AddAuthorization()
     .AddCors(ConfigureCors(builder))
+    .AddEmailSending(builder.Configuration)
     .AddUserIdentity(builder.Configuration)
     .AddCarSales(builder.Configuration)
     .AddOpenApi()
@@ -26,8 +28,8 @@ builder.Services
 var app = builder.Build();
 
 app.UseExceptionHandler()
-    .UseCors(CorsPolicyName)
-    .UseUserIdentity();
+    .UseCors(CorsPolicyName);
+app.UseUserIdentity();
 app.MapIdentityEndpoints();
 app.MapCarSalesEndpoints();
 if (app.Environment.IsDevelopment())

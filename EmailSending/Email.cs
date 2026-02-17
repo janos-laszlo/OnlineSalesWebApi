@@ -1,8 +1,8 @@
-namespace UserIdentity.Entities;
+namespace EmailSending;
 
-internal sealed class Email
+public sealed class Email
 {
-    public int Id { get; init; }
+    public int Id { get; private set; }
 
     public required string To { get; init; }
 

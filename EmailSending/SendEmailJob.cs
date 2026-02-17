@@ -1,17 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using TickerQ.Utilities.Base;
-using UserIdentity.Emails;
 
-namespace UserIdentity.Jobs;
+namespace EmailSending;
 
 /// <summary>
 /// Send any queued emails.
 /// </summary>
 internal sealed class SendEmailJob(
-    UserIdentityDbContext dbContext,
-    IEmailService emailService)
+    EmailSendingDbContext dbContext,
+    INonResilientEmailService emailService)
 {
-    public const string Name = "SendEmail";
+    private const string Name = "SendEmail";
 
     [TickerFunction(Name, "0 */5 * * * *")] // Every 5 minutes
     public async Task Execute(

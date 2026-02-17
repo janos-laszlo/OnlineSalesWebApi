@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SalesWebApi\SalesWebApi.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\EmailSending\EmailSending.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="CarSales/CarSales.csproj" />
   <Project Path="Common/Common.csproj" />
+  <Project Path="EmailSending/EmailSending.csproj" />
   <Project Path="Playground/Playground.csproj" />
   <Project Path="SalesWebApi.IntegrationTests/SalesWebApi.IntegrationTests.csproj" />
   <Project Path="SalesWebApi/SalesWebApi.csproj" />

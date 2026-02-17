@@ -4,23 +4,23 @@
 GET {{baseUrl}}
 
 ###
-POST {{baseUrl}}/register
+POST {{baseUrl}}/account/register
 Content-Type: application/json
 
 {
-    "email": "test37@example.com",
+    "email": "test1@example.com",
     "password": "passs1Ddsfs#"
 }
 
 ###
-GET {{baseUrl}}/confirm-email?token=S67Yui2DPBBU5gDGC0I_02cxiWV65MEXVtyxW3wfrJq7632sDu330v-c9yOaGiz5ghzqiBIFsciEey5azay4DtKgQn9AEqO3i0zVCkXfxRbDGUvIg2eYzcDKwXpYni7aKRCRQbPzkJPba2zyK-VT8fz2h_91rN9riZpF-OvR8pCwed4M13RWwZB3ZtUMqny8WPFZMCZddO6KWJRCPEwxyfLx9twi8PN1L4b0PsAmIUp6jT7CMX8OcPliF5fOIAw9Jp5pVe7KWc1eVWTMS3AzwfUX1gvg-Q3xrMjlHT3CILyB5uOrgdmIALj3SwIuXpZk80ZX5k9NanLAj4uLs3obEUFWkrU
+GET {{baseUrl}}/account/confirm-email?token=
 
 ###
 POST {{baseUrl}}/account/login
 Content-Type: application/json
 
 {
-    "email": "test10@example.com",
+    "email": "test1@example.com",
     "password": "passs1Ddsfs#"
 }
 
@@ -29,7 +29,7 @@ POST {{baseUrl}}/refresh-token
 Content-Type: application/json
 
 {
-    "refreshToken": "CfDJ8Oh10UJTx_1DhG3oXzBOYDdWgfa8NRHTZACFOKENNKvrd8tD9BGClXbu4yVEMCa6xqpk6cC4XGC063YES6bZpX3b3iNcY9lJlV9Al0mHfbnMKbD3Xqfv1slShclXzkuxLFmJD90qcZxyukQ46aiGOU3TywZi1WjyEEtadaY2c3PeeqO1d4-0-OJ_bECStc-POg"
+    "refreshToken": ""
 }
 
 ###
@@ -42,4 +42,4 @@ Authorization: Bearer ...
 
 ###
 GET {{baseUrl}}/car-sales/test
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4xLjY6NTE1MyIsImlzcyI6Imh0dHA6Ly8xOTIuMTY4LjEuNjo1MTUzIiwiZXhwIjoxNzcxMjU2NjUzLCJpYXQiOjE3NzEyNTYzNTMsIm5iZiI6MTc3MTI1NjM1Mywic3ViIjoxMCwiZW1haWwiOiJ0ZXN0MTBAZXhhbXBsZS5jb20ifQ.bHVpc3R2Pr0QB9JvP421B9Ic6ziKsXZegh3LS7Vl7u0
+Authorization: Bearer ...

@@ -1,4 +1,5 @@
 using Common;
+using EmailSending;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -26,12 +27,12 @@ public sealed class UserIdentityFixture : IDisposable
             {
                 builder.ConfigureTestServices(services =>
                 {
-                    services.AddSingleton<IEmailService, EmailServiceStub>();
+                    services.AddSingleton<IResilientEmailService, EmailServiceStub>();
                 });
             });
         Client = app.CreateClient();
         scope = app.Services.CreateScope();
-        EmailService = (EmailServiceStub)app.Services.GetRequiredService<IEmailService>();
+        EmailService = (EmailServiceStub)app.Services.GetRequiredService<IResilientEmailService>();
         AnotherEmailConfirmationToken = CreateAnotherEmailConfirmationToken(app.Services);
         userIdentityDbContext = scope.ServiceProvider.GetRequiredService<UserIdentityDbContext>();
         userIdentityDbContext.Database.EnsureCreated();

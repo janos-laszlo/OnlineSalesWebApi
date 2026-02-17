@@ -12,7 +12,7 @@ internal sealed class CarSalesDbContext(
     /// </summary>
     internal DbSet<User> UsersReadOnly { get; private set; }
     internal DbSet<CarMake> CarMakes { get; private set; }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CarSalesDbContext).Assembly);

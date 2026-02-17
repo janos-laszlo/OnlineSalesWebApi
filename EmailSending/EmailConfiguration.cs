@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace UserIdentity.Entities;
+namespace EmailSending;
 
 internal sealed class EmailConfiguration : IEntityTypeConfiguration<Email>
 {

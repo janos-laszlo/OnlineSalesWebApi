@@ -1,10 +1,9 @@
 using System.Collections.ObjectModel;
-using UserIdentity.Emails;
-using UserIdentity.Entities;
+using EmailSending;
 
 namespace SalesWebApi.IntegrationTests;
 
-internal sealed class EmailServiceStub : IEmailService
+internal sealed class EmailServiceStub : IResilientEmailService
 {
     private readonly Collection<Email> emails = [];
     internal IReadOnlyCollection<Email> Emails => emails;

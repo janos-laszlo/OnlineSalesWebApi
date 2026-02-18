@@ -45,3 +45,9 @@ GET {{baseUrl}}/car-sales/makes
 
 ###
 GET {{baseUrl}}/car-sales/models?makeName=bmw
+
+###
+PUT https://presigned-url-here
+Content-Type: application/txt
+
+### full local file path here

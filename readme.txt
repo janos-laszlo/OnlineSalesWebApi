@@ -3,3 +3,6 @@ setup:
 -apply the configuration instructions in each project that has a readme.txt
 -apply the migrations to the database for each DbContext
 -run insert car makes and models.sql
+
+notes:
+-use romarg, datahost, mioritichost or hostinger for hosting

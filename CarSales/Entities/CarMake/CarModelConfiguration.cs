@@ -13,7 +13,7 @@ internal sealed class CarModelConfiguration : IEntityTypeConfiguration<CarModel>
         builder.Property(cm => cm.Name)
             .IsRequired()
             .HasMaxLength(64);
-            
+
         builder.HasIndex(cm => new { cm.Name, cm.CarMakeId })
             .IsUnique();
 

@@ -24,7 +24,7 @@ namespace CarSales.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("CarSales.Entities.CarMake.CarMake", b =>
+            modelBuilder.Entity("CarSales.Entities.CarMake", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -45,7 +45,7 @@ namespace CarSales.Migrations
                     b.ToTable("car_makes", (string)null);
                 });
 
-            modelBuilder.Entity("CarSales.Entities.CarMake.CarModel", b =>
+            modelBuilder.Entity("CarSales.Entities.CarModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,9 +85,9 @@ namespace CarSales.Migrations
                     b.ToView("Users", (string)null);
                 });
 
-            modelBuilder.Entity("CarSales.Entities.CarMake.CarModel", b =>
+            modelBuilder.Entity("CarSales.Entities.CarModel", b =>
                 {
-                    b.HasOne("CarSales.Entities.CarMake.CarMake", "CarMake")
+                    b.HasOne("CarSales.Entities.CarMake", "CarMake")
                         .WithMany("CarModels")
                         .HasForeignKey("CarMakeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -96,7 +96,7 @@ namespace CarSales.Migrations
                     b.Navigation("CarMake");
                 });
 
-            modelBuilder.Entity("CarSales.Entities.CarMake.CarMake", b =>
+            modelBuilder.Entity("CarSales.Entities.CarMake", b =>
                 {
                     b.Navigation("CarModels");
                 });

@@ -1,4 +1,3 @@
-using System;
 using UserIdentity.Commands;
 
 namespace SalesWebApi.IntegrationTests.Commands;

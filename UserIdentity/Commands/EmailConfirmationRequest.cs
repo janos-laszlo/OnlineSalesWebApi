@@ -1,7 +1,7 @@
+using EmailSending;
 using Microsoft.Extensions.Configuration;
 using UserIdentity.Emails;
 using UserIdentity.Entities;
-using EmailSending;
 
 namespace UserIdentity.Commands;
 
@@ -31,7 +31,7 @@ internal sealed class EmailConfirmationRequest(
                 Thank you!
             """
         };
-        
+
         await emailService.Send(email, cancellationToken);
     }
 }

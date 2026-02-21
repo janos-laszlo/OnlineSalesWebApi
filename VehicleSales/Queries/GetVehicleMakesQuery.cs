@@ -2,22 +2,23 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace CarSales.Queries;
+namespace VehicleSales.Queries;
 
-public interface IGetCarMakesQuery
+public interface IGetVehicleMakesQuery
 {
     Task<IReadOnlyList<string>> Get(CancellationToken cancellationToken);
 }
 
-internal class GetCarMakesQuery(
-    CarSalesDbContext context,
-    IAmazonS3 amazonS3) : IGetCarMakesQuery
+internal class GetVehicleMakesQuery(
+    VehicleSalesDbContext context,
+    IAmazonS3 amazonS3) : IGetVehicleMakesQuery
 {
     public async Task<IReadOnlyList<string>> Get(CancellationToken cancellationToken)
     {
         var request = new GetPreSignedUrlRequest
         {
-            BucketName = "car-sales",
+            // TODO: Rename bucket in R2
+            BucketName = "vehicle-sales",
             Key = "log.txt",
             Verb = HttpVerb.PUT,
             Expires = DateTime.Now.AddMinutes(5)
@@ -25,8 +26,8 @@ internal class GetCarMakesQuery(
 
         var response = await amazonS3.GetPreSignedURLAsync(request);
 
-        return await context.CarMakes
-            .Select(carMake => carMake.Name)
+        return await context.VehicleMakes
+            .Select(vehicleMake => vehicleMake.Name)
             .ToArrayAsync(cancellationToken);
     }
 }

@@ -1,7 +1,7 @@
-using System.Text.Json;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 using UserIdentity.Commands;
 
 namespace UserIdentity.Emails;

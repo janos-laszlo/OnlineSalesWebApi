@@ -1,22 +1,21 @@
-using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
-using CarSales.Queries;
 using Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using VehicleSales.Queries;
 
-namespace CarSales;
+namespace VehicleSales;
 
-public static class CarSalesRegistration
+public static class VehicleSalesRegistration
 {
-    public static IServiceCollection AddCarSales(
+    public static IServiceCollection AddVehicleSales(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.RegisterDbContext<CarSalesDbContext>(configuration);
+        services.RegisterDbContext<VehicleSalesDbContext>(configuration);
 
-        services.AddTransient<IGetCarMakesQuery, GetCarMakesQuery>();
+        services.AddTransient<IGetVehicleMakesQuery, GetVehicleMakesQuery>();
         services.AddTransient<IGetMakeModelsQuery, GetMakeModelsQuery>();
 
         RegisterCloudflareR2(services, configuration);

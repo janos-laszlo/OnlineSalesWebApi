@@ -1,13 +1,13 @@
-using Microsoft.IdentityModel.Tokens;
-using SalesWebApi.Endpoints;
-using System.Text;
-using Scalar.AspNetCore;
-using UserIdentity;
 using Common;
-using CarSales;
+using EmailSending;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using EmailSending;
+using Microsoft.IdentityModel.Tokens;
+using SalesWebApi.Endpoints;
+using Scalar.AspNetCore;
+using System.Text;
+using UserIdentity;
+using VehicleSales;
 
 const string CorsPolicyName = "AllowClient";
 
@@ -21,7 +21,7 @@ builder.Services
     .AddCors(ConfigureCors(builder))
     .AddEmailSending(builder.Configuration)
     .AddUserIdentity(builder.Configuration)
-    .AddCarSales(builder.Configuration)
+    .AddVehicleSales(builder.Configuration)
     .AddOpenApi()
     .AddProblemDetails();
 
@@ -31,7 +31,7 @@ app.UseExceptionHandler()
     .UseCors(CorsPolicyName);
 app.UseUserIdentity();
 app.MapIdentityEndpoints();
-app.MapCarSalesEndpoints();
+app.MapVehicleSalesEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

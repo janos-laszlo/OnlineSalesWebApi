@@ -6,5 +6,5 @@ To use this project:
         "AccessKeyId": "",
         "SecretAccessKey": ""
       }
--call AddCarSales on the service collection
+-call AddVehicleSales on the service collection
 -it depends on the UserIdentity.User entity/table existing. 

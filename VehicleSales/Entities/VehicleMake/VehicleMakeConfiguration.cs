@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CarSales.Entities.CarMake;
+namespace VehicleSales.Entities.VehicleMake;
 
-internal sealed class CarMakeConfiguration : IEntityTypeConfiguration<CarMake>
+internal sealed class VehicleMakeConfiguration : IEntityTypeConfiguration<VehicleMake>
 {
-    public void Configure(EntityTypeBuilder<CarMake> builder)
+    public void Configure(EntityTypeBuilder<VehicleMake> builder)
     {
-        builder.ToTable("car_makes");
+        builder.ToTable("vehicle_makes");
         builder.HasKey(cm => cm.Id);
         builder.Property(cm => cm.Name)
             .IsRequired()

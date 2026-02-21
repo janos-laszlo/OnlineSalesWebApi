@@ -1,7 +1,7 @@
-using System.Net.Http.Headers;
-using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Http.Headers;
+using System.Text;
 using UserIdentity.Commands;
 
 namespace SalesWebApi.IntegrationTests.Commands;

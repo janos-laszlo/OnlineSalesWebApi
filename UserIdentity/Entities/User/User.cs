@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
 
 namespace UserIdentity.Entities;
 

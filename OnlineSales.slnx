@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="CarSales/CarSales.csproj" />
+  <Project Path="VehicleSales/VehicleSales.csproj" />
   <Project Path="Common/Common.csproj" />
   <Project Path="EmailSending/EmailSending.csproj" />
   <Project Path="Playground/Playground.csproj" />

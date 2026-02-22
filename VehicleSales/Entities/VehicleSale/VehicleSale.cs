@@ -74,7 +74,7 @@ internal sealed class VehicleSale(
 // TODO: Configure this as a complex type in EF
 internal sealed record Sale
 {
-    public required User.User User { get; init; }
+    public required User.User Seller { get; init; }
     public required SaleTitle Title { get; set; }
     public required SaleDescription Description { get; set; }
     public required Money SalePrice { get; set; }

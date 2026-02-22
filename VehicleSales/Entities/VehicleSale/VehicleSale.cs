@@ -4,97 +4,84 @@ using VehicleSales.Entities.VehicleMake;
 
 namespace VehicleSales.Entities.VehicleSale;
 
-// TODO: properties to add
-//Listing Metadata
-//•	CreatedAt / UpdatedAt(DateTimeOffset) — when the listing was posted / modified
-//•	ListingStatus — e.g., Active, Sold, Expired
-//•	Location — city/region where the vehicle is sold
-//Vehicle Details
-//•	DriveType — FWD, RWD, AWD/4WD — very commonly filtered by buyers
-//•	NumberOfSeats — important for families
-//•	InteriorColor — separate from exterior color
-//•	EmissionStandard — e.g., Euro4, Euro5, Euro6
-//•	VIN — Vehicle Identification Number, useful for validation
-//History & Condition
-//•	NumberOfPreviousOwners — strong buying signal
-//•	HasServiceHistory(bool) — very relevant for used vehicles
-//•	HasAccidentHistory(bool)
-//EV-Specific(since you have Electric/Hybrid in FuelType)
-//•	BatteryCapacityInKwh(Energy from UnitsNet)
-//•	RangeInKilometers(Length from UnitsNet)
-
-// TODO: Group properties into ListingMetadata, VehicleDetails, History, etc.
+// TODO: Group properties into SaleDetails, VehicleDetails, History, etc.
 // TODO: Put immutable properties at the top of the entity.
-// TODO: Add types of vehicles: family car, truck, jeep, tractor, motorbike
 internal sealed class VehicleSale(
     int id,
-    SaleTitle title,
-    SaleDescription description,
+    Sale sale,
+
+    // Vehicle details
     VehicleModel vehicleModel,
-    string version,
+    VehicleCategory vehicleCategory,
+    string vehicleVersion,
     Power horsePower,
     BodyType bodyType,
     Length mileageInKilometers,
-    Volume engineVolume,
+    Volume engineVolumeInCm3,
     MinLength3String exteriorColor,
     MinLength3String interiorColor,
     FuelType fuelType,
-    Money salePrice,
     VehicleManufacturingYear vehicleManufacturingYear,
     NumberBetween1And9 vehicleNumberOfDoors,
     VehicleCondition vehicleCondition,
     GearboxType gearboxType,
-    Side wheelSide,
-    Location location,
-    DateTimeOffset createdAt,
-    DateTimeOffset updatedAt,
-    SaleStatus status,
-    VehicleDriveType driveType,
+    Side steeringWheelSide,
+    DriveType driveType,
     NumberBetween1And9 numberOfSeats,
     EmissionStandard emissionStandard,
     VIN? vin,
     ushort? numberOfPreviousOwners,
     bool hasServiceHistory,
     bool hasAccidentHistory,
-    ushort batteryCapacity,
+    Energy batteryCapacityInKWh,
     Length rangeInKilometers,
     FuelEfficiency averageFuelConsumptionPer100Km,
-    ushort? averageBatteryConsumptionPer100Km)
+    ushort? averageBatteryConsumptionPer100Km,
+    Mass mass)
 {
     public int Id { get; init; } = id;
-    public SaleTitle Title { get; set; } = title;
-    public SaleDescription Description { get; set; } = description;
+    public Sale Sale { get; init; } = sale;
     public VehicleModel VehicleModel { get; set; } = vehicleModel;
-    public string Version { get; set; } = version;
+    public VehicleCategory VehicleCategory { get; set; } = vehicleCategory;
+    public string VehicleVersion { get; set; } = vehicleVersion;
     public Power HorsePower { get; set; } = horsePower;
     public BodyType BodyType { get; set; } = bodyType;
     public Length MileageInKilometers { get; set; } = mileageInKilometers;
-    public Volume EngineVolume { get; set; } = engineVolume;
+    public Volume EngineVolumeInCm3 { get; set; } = engineVolumeInCm3;
     public MinLength3String ExteriorColor { get; set; } = exteriorColor;
     public MinLength3String InteriorColor { get; set; } = interiorColor;
     // TODO: create a discriminated union for fuel type specific properties (e.g., battery capacity for electric vehicles)
     public FuelType FuelType { get; set; } = fuelType;
-    public Money SalePrice { get; set; } = salePrice;
     public VehicleManufacturingYear VehicleManufacturingYear { get; set; } = vehicleManufacturingYear;
     public NumberBetween1And9 VehicleNumberOfDoors { get; set; } = vehicleNumberOfDoors;
     public VehicleCondition VehicleCondition { get; set; } = vehicleCondition;
     public GearboxType GearboxType { get; set; } = gearboxType;
-    public Side WheelSide { get; set; } = wheelSide;
-    public Location Location { get; set; } = location;
-    public DateTimeOffset CreatedAt { get; private set; } = createdAt;
-    public DateTimeOffset UpdatedAt { get; set; } = updatedAt;
-    public SaleStatus Status { get; set; } = status;
-    public VehicleDriveType DriveType { get; set; } = driveType;
+    public Side SteeringWheelSide { get; set; } = steeringWheelSide;
+    public DriveType DriveType { get; set; } = driveType;
     public NumberBetween1And9 NumberOfSeats { get; set; } = numberOfSeats;
     public EmissionStandard EmissionStandard { get; set; } = emissionStandard;
     public VIN? Vin { get; set; } = vin;
     public ushort? NumberOfPreviousOwners { get; set; } = numberOfPreviousOwners;
     public bool HasServiceHistory { get; set; } = hasServiceHistory;
     public bool HasAccidentHistory { get; set; } = hasAccidentHistory;
-    public ushort BatteryCapacity { get; set; } = batteryCapacity;
+    public Energy BatteryCapacityInKWh { get; set; } = batteryCapacityInKWh;
     public Length RangeInKilometers { get; set; } = rangeInKilometers;
     public FuelEfficiency AverageFuelConsumptionPer100Km { get; set; } = averageFuelConsumptionPer100Km;
     public ushort? AverageBatteryConsumptionPer100Km { get; set; } = averageBatteryConsumptionPer100Km;
+    public Mass? Mass { get; set; } = mass;
+}
+
+// TODO: Configure this as a complex type in EF
+internal sealed record Sale
+{
+    public required User.User User { get; init; }
+    public required SaleTitle Title { get; set; }
+    public required SaleDescription Description { get; set; }
+    public required Money SalePrice { get; set; }
+    public required Location Location { get; set; }
+    public SaleStatus Status { get; set; } = SaleStatus.InValidation;
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.Now;
+    public DateTimeOffset? UpdatedAt { get; private set; }
 }
 
 internal sealed record Money
@@ -284,9 +271,23 @@ internal enum SaleStatus
     Expired
 }
 
-internal enum VehicleDriveType
+/// <summary>
+/// Describes the vehicle's drive-wheel configuration (which wheels receive power).
+/// Use this enum to specify the drivetrain layout for listings, filters and domain logic.
+/// </summary>
+internal enum DriveType
 {
-    FWD, RWD, AWD, FourWD
+    /// <summary>Front-wheel drive: the engine drives the front wheels.</summary>
+    FrontWheelDrive,
+
+    /// <summary>Rear-wheel drive: the engine drives the rear wheels.</summary>
+    RearWheelDrive,
+
+    /// <summary>All-wheel drive: power can be distributed to all wheels as needed.</summary>
+    AllWheelDrive,
+
+    /// <summary>Four-wheel drive: typically selectable 4x4 drive for off-road or heavy-duty use.</summary>
+    FourWheelDrive
 }
 
 internal enum EmissionStandard
@@ -308,4 +309,41 @@ internal sealed record VIN
         value?.Length >= 5 && value?.Length <= 17
             ? Result.Success(new VIN(value))
             : Result.Failure<VIN>("Value must be between 5 and 17");
+}
+
+// Pseudocode plan:
+// 1. Provide a clearer name for the enum currently called `VehicleType`.
+//    - Choose `VehicleCategory` to express that the enum classifies categories/classes of vehicles
+//      rather than a low-level "type" which can be ambiguous with C# type terminology.
+// 2. Keep existing enum members unchanged to preserve semantics:
+//    Car, Truck, Van, Motorcycle, Trailer, Agricultural, Construction.
+// 3. Add XML doc comments for the enum and each member to clarify intent for future maintainers.
+// 4. Keep `internal` accessibility to match the original visibility.
+// 5. Note for caller: search-and-replace references from `VehicleType` to `VehicleCategory` in the codebase.
+//    - This file only updates the enum definition; update usages elsewhere as part of the refactor.
+//
+// Rationale:
+// - `VehicleCategory` communicates classification intent and reduces confusion with the word "type".
+// - Minimal change to maintainers: same values, improved name, documentation added.
+
+/// <summary>
+/// Classifies vehicles into broad categories used by the domain (e.g., listings, filters).
+/// Use this enum where you need to distinguish between high-level vehicle categories.
+/// </summary>
+internal enum VehicleCategory
+{
+    /// <summary>Standard passenger car.</summary>
+    Car,
+    /// <summary>Large goods vehicle / lorry.</summary>
+    Truck,
+    /// <summary>Light commercial van.</summary>
+    Van,
+    /// <summary>Two-wheeled motorcycle.</summary>
+    Motorcycle,
+    /// <summary>Trailers and towed units.</summary>
+    Trailer,
+    /// <summary>Agricultural machinery.</summary>
+    Agricultural,
+    /// <summary>Construction machinery and equipment.</summary>
+    Construction
 }

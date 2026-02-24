@@ -8,8 +8,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder
-            .HasNoKey()
-            .ToView(Constants.Tables.Users);
+        builder.HasKey(u => u.Id);
+        builder.ToView(Constants.Tables.Users);
     }
 }

@@ -1,97 +1,76 @@
 ﻿using CSharpFunctionalExtensions;
-using UnitsNet;
 using VehicleSales.Entities.VehicleMake;
 
 namespace VehicleSales.Entities.VehicleSale;
 
-// TODO: Group properties into SaleDetails, VehicleDetails, History, etc.
-// TODO: Put immutable properties at the top of the entity.
-internal sealed class VehicleSale(
-    int id,
-    Sale sale,
-
-    // Vehicle details
-    VehicleModel vehicleModel,
-    VehicleCategory vehicleCategory,
-    string vehicleVersion,
-    Power horsePower,
-    BodyType bodyType,
-    Length mileageInKilometers,
-    Volume engineVolumeInCm3,
-    MinLength3String exteriorColor,
-    MinLength3String interiorColor,
-    FuelType fuelType,
-    VehicleManufacturingYear vehicleManufacturingYear,
-    NumberBetween1And9 vehicleNumberOfDoors,
-    VehicleCondition vehicleCondition,
-    GearboxType gearboxType,
-    Side steeringWheelSide,
-    DriveType driveType,
-    NumberBetween1And9 numberOfSeats,
-    EmissionStandard emissionStandard,
-    VIN? vin,
-    ushort? numberOfPreviousOwners,
-    bool hasServiceHistory,
-    bool hasAccidentHistory,
-    Energy batteryCapacityInKWh,
-    Length rangeInKilometers,
-    FuelEfficiency averageFuelConsumptionPer100Km,
-    ushort? averageBatteryConsumptionPer100Km,
-    Mass mass)
+internal sealed class VehicleSale
 {
-    public int Id { get; init; } = id;
-    public Sale Sale { get; init; } = sale;
-    public VehicleModel VehicleModel { get; set; } = vehicleModel;
-    public VehicleCategory VehicleCategory { get; set; } = vehicleCategory;
-    public string VehicleVersion { get; set; } = vehicleVersion;
-    public Power HorsePower { get; set; } = horsePower;
-    public BodyType BodyType { get; set; } = bodyType;
-    public Length MileageInKilometers { get; set; } = mileageInKilometers;
-    public Volume EngineVolumeInCm3 { get; set; } = engineVolumeInCm3;
-    public MinLength3String ExteriorColor { get; set; } = exteriorColor;
-    public MinLength3String InteriorColor { get; set; } = interiorColor;
-    // TODO: create a discriminated union for fuel type specific properties (e.g., battery capacity for electric vehicles)
-    public FuelType FuelType { get; set; } = fuelType;
-    public VehicleManufacturingYear VehicleManufacturingYear { get; set; } = vehicleManufacturingYear;
-    public NumberBetween1And9 VehicleNumberOfDoors { get; set; } = vehicleNumberOfDoors;
-    public VehicleCondition VehicleCondition { get; set; } = vehicleCondition;
-    public GearboxType GearboxType { get; set; } = gearboxType;
-    public Side SteeringWheelSide { get; set; } = steeringWheelSide;
-    public DriveType DriveType { get; set; } = driveType;
-    public NumberBetween1And9 NumberOfSeats { get; set; } = numberOfSeats;
-    public EmissionStandard EmissionStandard { get; set; } = emissionStandard;
-    public VIN? Vin { get; set; } = vin;
-    public ushort? NumberOfPreviousOwners { get; set; } = numberOfPreviousOwners;
-    public bool HasServiceHistory { get; set; } = hasServiceHistory;
-    public bool HasAccidentHistory { get; set; } = hasAccidentHistory;
-    public Energy BatteryCapacityInKWh { get; set; } = batteryCapacityInKWh;
-    public Length RangeInKilometers { get; set; } = rangeInKilometers;
-    public FuelEfficiency AverageFuelConsumptionPer100Km { get; set; } = averageFuelConsumptionPer100Km;
-    public ushort? AverageBatteryConsumptionPer100Km { get; set; } = averageBatteryConsumptionPer100Km;
-    public Mass? Mass { get; set; } = mass;
+    public int Id { get; }
+    public required int SellerId { get; init; }
+    public required User.User Seller { get; init; }
+    public required Sale Sale { get; set; }
+    public required VehicleDetails VehicleDetails { get; set; }
 }
 
-// TODO: Configure this as a complex type in EF
 internal sealed record Sale
 {
-    public required User.User Seller { get; init; }
     public required SaleTitle Title { get; set; }
     public required SaleDescription Description { get; set; }
     public required Money SalePrice { get; set; }
     public required Location Location { get; set; }
     public SaleStatus Status { get; set; } = SaleStatus.InValidation;
+    /// <summary>
+    /// By default it's DateTimeOffset.Now, but it can be set to a 
+    /// custom value for testing purposes or if the creation time needs 
+    /// to be specified explicitly.
+    /// </summary>
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.Now;
     public DateTimeOffset? UpdatedAt { get; private set; }
 }
 
+internal sealed record VehicleDetails
+{
+    public required int VehicleModelId { get; set; }
+    public required VehicleModel VehicleModel { get; set; }
+    public uint? MileageInKilometers { get; set; }
+    public uint? HorsePower { get; set; }
+    public string? VehicleVersion { get; set; }
+    public BodyType? BodyType { get; set; }
+    public uint? EngineVolumeInCm3 { get; set; }
+    public MinLength3String? ExteriorColor { get; set; }
+    public MinLength3String? InteriorColor { get; set; }
+    public FuelType? FuelType { get; set; }
+    public VehicleManufacturingYear? VehicleManufacturingYear { get; set; }
+    public NumberBetween1And9? VehicleNumberOfDoors { get; set; }
+    public VehicleCondition? VehicleCondition { get; set; }
+    public GearboxType? GearboxType { get; set; }
+    public Side? SteeringWheelSide { get; set; }
+    public DriveType? DriveType { get; set; }
+    public NumberBetween1And9? NumberOfSeats { get; set; }
+    public EmissionStandard? EmissionStandard { get; set; }
+    public bool? HasServiceHistory { get; set; }
+    public bool? HasAccidentHistory { get; set; }
+    public VIN? Vin { get; set; }
+    public ushort? NumberOfPreviousOwners { get; set; }
+    public uint? BatteryCapacityInKWh { get; set; }
+    public uint? RangeInKilometers { get; set; }
+    public uint? AverageFuelConsumptionInLitersPer100Km { get; set; }
+    public ushort? AverageBatteryConsumptionInKWhPer100Km { get; set; }
+    public uint? Mass { get; set; }
+    /// <summary>
+    /// The maximum load capacity that the vehicle can support.
+    /// </summary>
+    public uint? MaximumLoad { get; set; }
+}
+
 internal sealed record Money
 {
-    public decimal AmountInCents { get; private set; }
+    public int AmountInCents { get; private set; }
     public Currency Currency { get; private set; }
 
-    private Money(decimal amount, Currency currency)
+    private Money(int amountInCents, Currency currency)
     {
-        AmountInCents = amount;
+        AmountInCents = amountInCents;
         Currency = currency;
     }
 
@@ -183,12 +162,11 @@ internal sealed record MinLength3String
         Value = value;
     }
 
-    public static Result<MinLength3String> Create(string value) =>
+    public static Result<MinLength3String> Create(string? value) =>
         value?.Length >= 3
             ? Result.Success(new MinLength3String(value))
             : Result.Failure<MinLength3String>("Value must be at least 3 characters");
 }
-
 
 internal sealed record VehicleManufacturingYear
 {
@@ -199,9 +177,9 @@ internal sealed record VehicleManufacturingYear
         Value = value;
     }
 
-    public static Result<VehicleManufacturingYear> Create(int value, int currentYear) =>
+    public static Result<VehicleManufacturingYear> Create(int? value, int currentYear) =>
         value > 1880 && value <= currentYear
-            ? Result.Success(new VehicleManufacturingYear(value))
+            ? Result.Success(new VehicleManufacturingYear(value.Value))
             : Result.Failure<VehicleManufacturingYear>("Value must be greater than 1880");
 }
 
@@ -239,28 +217,9 @@ internal enum VehicleCondition
     Used
 }
 
-internal sealed record Location
-{
-    public string County { get; }
-    public string Locality { get; }
-
-    private Location(string county, string locality)
-    {
-        County = county;
-        Locality = locality;
-    }
-
-    public static Result<Location> Create(string county, string locality)
-    {
-        if (!(county?.Length >= 3))
-            return Result.Failure<Location>("County must be at least 3 characters");
-
-        if (!(locality?.Length >= 3))
-            return Result.Failure<Location>("Locality must be at least 3 characters");
-
-        return Result.Success(new Location(county, locality));
-    }
-}
+internal sealed record Location(
+    MinLength3String County,
+    MinLength3String Locality);
 
 internal enum SaleStatus
 {
@@ -295,7 +254,6 @@ internal enum EmissionStandard
     EURO1, EURO2, EURO3, EURO4, EURO5, EURO6, EURO7
 }
 
-
 internal sealed record VIN
 {
     public string Value { get; }
@@ -305,45 +263,8 @@ internal sealed record VIN
         Value = value;
     }
 
-    public static Result<VIN> Create(string value) =>
+    public static Result<VIN> Create(string? value) =>
         value?.Length >= 5 && value?.Length <= 17
             ? Result.Success(new VIN(value))
             : Result.Failure<VIN>("Value must be between 5 and 17");
-}
-
-// Pseudocode plan:
-// 1. Provide a clearer name for the enum currently called `VehicleType`.
-//    - Choose `VehicleCategory` to express that the enum classifies categories/classes of vehicles
-//      rather than a low-level "type" which can be ambiguous with C# type terminology.
-// 2. Keep existing enum members unchanged to preserve semantics:
-//    Car, Truck, Van, Motorcycle, Trailer, Agricultural, Construction.
-// 3. Add XML doc comments for the enum and each member to clarify intent for future maintainers.
-// 4. Keep `internal` accessibility to match the original visibility.
-// 5. Note for caller: search-and-replace references from `VehicleType` to `VehicleCategory` in the codebase.
-//    - This file only updates the enum definition; update usages elsewhere as part of the refactor.
-//
-// Rationale:
-// - `VehicleCategory` communicates classification intent and reduces confusion with the word "type".
-// - Minimal change to maintainers: same values, improved name, documentation added.
-
-/// <summary>
-/// Classifies vehicles into broad categories used by the domain (e.g., listings, filters).
-/// Use this enum where you need to distinguish between high-level vehicle categories.
-/// </summary>
-internal enum VehicleCategory
-{
-    /// <summary>Standard passenger car.</summary>
-    Car,
-    /// <summary>Large goods vehicle / lorry.</summary>
-    Truck,
-    /// <summary>Light commercial van.</summary>
-    Van,
-    /// <summary>Two-wheeled motorcycle.</summary>
-    Motorcycle,
-    /// <summary>Trailers and towed units.</summary>
-    Trailer,
-    /// <summary>Agricultural machinery.</summary>
-    Agricultural,
-    /// <summary>Construction machinery and equipment.</summary>
-    Construction
 }

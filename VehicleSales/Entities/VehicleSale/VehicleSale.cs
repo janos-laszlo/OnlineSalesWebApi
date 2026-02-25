@@ -65,33 +65,6 @@ internal sealed record VehicleDetails
     // TODO: Add photo URLs as JSON array in one column.
 }
 
-internal sealed record Money
-{
-    public uint AmountInCents { get; private set; }
-    public Currency Currency { get; private set; }
-
-    private Money(uint amountInCents, Currency currency)
-    {
-        AmountInCents = amountInCents;
-        Currency = currency;
-    }
-
-    public static Result<Money> Create(uint? amountInCents, Currency currency) =>
-        amountInCents >= 0
-            ? new Money(amountInCents.Value, currency)
-            : Result.Failure<Money>("Amount must be positive");
-}
-
-public enum Currency
-{
-    EUR,
-    RON
-}
-
-/// <summary>
-/// Represents the title of a vehicle sale, ensuring it meets specific 
-/// length requirements.
-/// </summary>
 internal sealed record SaleTitle
 {
     public const int MaxLength = 100;
@@ -112,10 +85,6 @@ internal sealed record SaleTitle
             : Result.Failure<SaleTitle>(Error);
 }
 
-/// <summary>
-/// Represents the description of a vehicle sale,
-/// ensuring it meets specific length requirements.
-/// </summary>
 internal sealed record SaleDescription
 {
     public const int MaxLength = 5000;
@@ -135,6 +104,65 @@ internal sealed record SaleDescription
             ? Result.Success(new SaleDescription(value))
             : Result.Failure<SaleDescription>(Error);
 }
+
+internal sealed record Money
+{
+    public uint AmountInCents { get; private set; }
+    public Currency Currency { get; private set; }
+
+    private Money(uint amountInCents, Currency currency)
+    {
+        AmountInCents = amountInCents;
+        Currency = currency;
+    }
+
+    public static Result<Money> Create(uint? amountInCents, Currency currency) =>
+        amountInCents >= 0
+            ? new Money(amountInCents.Value, currency)
+            : Result.Failure<Money>("Amount must be positive");
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum Currency
+{
+    EUR,
+    RON
+}
+
+internal sealed record Location(
+    LocationName County,
+    LocationName Locality);
+
+internal sealed record LocationName
+{
+    public const int MinLength = 3;
+    public const int MaxLength = 30;
+    private static readonly string Error =
+        $"String length must be between {MinLength} and {MaxLength}.";
+
+    public string Value { get; }
+
+    private LocationName(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<LocationName> Create(string? value) =>
+        value?.Length >= MinLength
+            ? Result.Success(new LocationName(value))
+            : Result.Failure<LocationName>(Error);
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+internal enum SaleStatus
+{
+    InValidation,
+    Active,
+    Sold,
+    Deactivated,
+    Expired
+}
+
 internal sealed record VehicleVersion
 {
     public const int MaxLength = 100;
@@ -153,14 +181,6 @@ internal sealed record VehicleVersion
         value?.Length >= MinLength && value.Length <= MaxLength
             ? Result.Success(new VehicleVersion(value))
             : Result.Failure<VehicleVersion>(Error);
-}
-
-public enum FuelType
-{
-    Petrol,
-    Diesel,
-    Electric,
-    Hybrid
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -194,6 +214,15 @@ internal sealed record ColorName
         value?.Length >= MinLength
             ? Result.Success(new ColorName(value))
             : Result.Failure<ColorName>(Error);
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum FuelType
+{
+    Petrol,
+    Diesel,
+    Electric,
+    Hybrid
 }
 
 internal sealed record VehicleManufacturingYear
@@ -231,12 +260,21 @@ internal sealed record NumberBetween1And9
             : Result.Failure<NumberBetween1And9>(Error);
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum VehicleCondition
+{
+    New,
+    Used
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum GearboxType
 {
     Manual,
     Automatic
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Side
 {
     Left,
@@ -244,65 +282,16 @@ public enum Side
     Middle
 }
 
-public enum VehicleCondition
-{
-    New,
-    Used
-}
-
-internal sealed record Location(
-    LocationName County,
-    LocationName Locality)
-{
-}
-internal sealed record LocationName
-{
-    public const int MinLength = 3;
-    public const int MaxLength = 30;
-    private static readonly string Error =
-        $"String length must be between {MinLength} and {MaxLength}.";
-
-    public string Value { get; }
-
-    private LocationName(string value)
-    {
-        Value = value;
-    }
-
-    public static Result<LocationName> Create(string? value) =>
-        value?.Length >= MinLength
-            ? Result.Success(new LocationName(value))
-            : Result.Failure<LocationName>(Error);
-}
-
-internal enum SaleStatus
-{
-    InValidation,
-    Active,
-    Sold,
-    Deactivated,
-    Expired
-}
-
-/// <summary>
-/// Describes the vehicle's drive-wheel configuration (which wheels receive power).
-/// Use this enum to specify the drivetrain layout for listings, filters and domain logic.
-/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum DriveType
 {
-    /// <summary>Front-wheel drive: the engine drives the front wheels.</summary>
     FrontWheelDrive,
-
-    /// <summary>Rear-wheel drive: the engine drives the rear wheels.</summary>
     RearWheelDrive,
-
-    /// <summary>All-wheel drive: power can be distributed to all wheels as needed.</summary>
     AllWheelDrive,
-
-    /// <summary>Four-wheel drive: typically selectable 4x4 drive for off-road or heavy-duty use.</summary>
     FourWheelDrive
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum EmissionStandard
 {
     EURO1, EURO2, EURO3, EURO4, EURO5, EURO6, EURO7

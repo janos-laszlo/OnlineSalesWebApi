@@ -51,3 +51,44 @@ PUT https://presigned-url-here
 Content-Type: application/txt
 
 ### full local file path here
+
+###
+POST {{baseUrl}}/vehicle-sales
+Content-Type: application/json
+Authorization: Bearer ...
+
+{
+  "title": "2019 BMW 3 Series - Excellent Condition",
+  "description": "Well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+  "amountInCents": 2499900,
+  "currency": "EUR",
+  "county": "Los Angeles",
+  "locality": "Santa Monica",
+  "vehicleModelId": 42,
+  "mileageInKilometers": 45000,
+  "horsePower": 255,
+  "vehicleVersion": "Sport Line",
+  "bodyType": "Sedan",
+  "engineVolumeInCm3": 1998,
+  "exteriorColor": "Alpine White",
+  "interiorColor": "Black",
+  "fuelType": "Petrol",
+  "vehicleManufacturingYear": 2019,
+  "vehicleNumberOfDoors": 4,
+  "vehicleCondition": "Used",
+  "gearboxType": "Automatic",
+  "steeringWheelSide": "Left",
+  "driveType": "RearWheelDrive",
+  "numberOfSeats": 5,
+  "emissionStandard": "EURO6",
+  "hasServiceHistory": true,
+  "hasAccidentHistory": false,
+  "vin": "WBA5R1C50KAK12345",
+  "numberOfPreviousOwners": 1,
+  "batteryCapacityInKWh": null,
+  "rangeInKilometers": null,
+  "averageFuelConsumptionInLitersPer100Km": 6,
+  "averageBatteryConsumptionInKWhPer100Km": null,
+  "massInKg": 1520,
+  "maximumLoadInKg": 480
+}

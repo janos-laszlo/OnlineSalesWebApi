@@ -1,26 +1,26 @@
-using CarSales.Queries;
+using VehicleSales.Queries;
 
 namespace SalesWebApi.Endpoints;
 
-internal static class CarSalesEndpoints
+internal static class VehicleSalesEndpoints
 {
-    internal const string CarSalesName = "CarSales";
-    internal const string CarSalesBase = "/car-sales";
+    internal const string VehicleSalesName = "VehicleSales";
+    internal const string VehicleSalesBase = "/vehicle-sales";
 
 
-    internal static void MapCarSalesEndpoints(this WebApplication app)
+    internal static void MapVehicleSalesEndpoints(this WebApplication app)
     {
-        var carSalesGroup = app.MapGroup(CarSalesBase)
-            .WithTags(CarSalesName);
+        var vehicleSalesGroup = app.MapGroup(VehicleSalesBase)
+            .WithTags(VehicleSalesName);
 
-        carSalesGroup
+        vehicleSalesGroup
             .MapGet(
                 "makes",
-                async (IGetCarMakesQuery query,
+                async (IGetVehicleMakesQuery query,
                 CancellationToken cancellationToken) =>
                     Results.Ok(await query.Get(cancellationToken)));
 
-        carSalesGroup
+        vehicleSalesGroup
             .MapGet(
                 "models",
                 async (string makeName,

@@ -1,5 +1,5 @@
-using System.Collections.ObjectModel;
 using EmailSending;
+using System.Collections.ObjectModel;
 
 namespace SalesWebApi.IntegrationTests;
 

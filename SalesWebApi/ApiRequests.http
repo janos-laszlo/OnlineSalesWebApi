@@ -1,4 +1,4 @@
-@baseUrl = http://192.168.1.6:5153
+@baseUrl = http://192.168.1.8:5153
 
 ###
 GET {{baseUrl}}
@@ -41,7 +41,13 @@ GET {{baseUrl}}/account/profile
 Authorization: Bearer ...
 
 ###
-GET {{baseUrl}}/car-sales/makes
+GET {{baseUrl}}/vehicle-sales/makes
 
 ###
-GET {{baseUrl}}/car-sales/models?makeName=bmw
+GET {{baseUrl}}/vehicle-sales/models?makeName=bmw
+
+###
+PUT https://presigned-url-here
+Content-Type: application/txt
+
+### full local file path here

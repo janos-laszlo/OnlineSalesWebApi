@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace CarSales.Queries;
+namespace VehicleSales.Queries;
 
 public interface IGetMakeModelsQuery
 {
@@ -8,12 +8,12 @@ public interface IGetMakeModelsQuery
 }
 
 internal sealed class GetMakeModelsQuery(
-    CarSalesDbContext dbContext) : IGetMakeModelsQuery
+    VehicleSalesDbContext dbContext) : IGetMakeModelsQuery
 {
     public async Task<IReadOnlyList<string>> Get(string makeName, CancellationToken cancellationToken) =>
-        await dbContext.CarMakes
-            .Where(carMake => carMake.Name == makeName)
-            .SelectMany(carMake => carMake.CarModels)
-            .Select(carModel => carModel.Name)
+        await dbContext.VehicleMakes
+            .Where(vehicleMake => vehicleMake.Name == makeName)
+            .SelectMany(vehicleMake => vehicleMake.VehicleModels)
+            .Select(vehicleModel => vehicleModel.Name)
             .ToArrayAsync(cancellationToken);
 }

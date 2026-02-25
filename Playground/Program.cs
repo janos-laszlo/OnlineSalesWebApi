@@ -1,7 +1,5 @@
-﻿using CarSales;
-
-Console.WriteLine($"Processors: {Environment.ProcessorCount}");
-Register<CarSalesDbContext>();
+﻿Console.WriteLine($"Processors: {Environment.ProcessorCount}");
+//Register<VehicleSalesDbContext>();
 
 static void Register<TDbContext>()
 {

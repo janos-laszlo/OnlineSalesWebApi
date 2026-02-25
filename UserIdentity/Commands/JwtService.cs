@@ -1,10 +1,10 @@
-using System.Text;
-using System.Text.Json;
 using Common;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Text.Json;
 using UserIdentity.Entities;
 
 namespace UserIdentity.Commands;

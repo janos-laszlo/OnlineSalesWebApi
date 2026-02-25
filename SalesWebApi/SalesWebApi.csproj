@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UserIdentity\UserIdentity.csproj" />
-    <ProjectReference Include="..\CarSales\CarSales.csproj" />
+    <ProjectReference Include="..\VehicleSales\VehicleSales.csproj" />
   </ItemGroup>
 
   <ItemGroup>

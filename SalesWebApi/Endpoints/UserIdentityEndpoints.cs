@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using UserIdentity.Commands;
 using UserIdentity.Extensions;
 

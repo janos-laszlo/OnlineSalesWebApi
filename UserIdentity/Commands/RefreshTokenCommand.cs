@@ -1,10 +1,10 @@
-using System.Text.Json;
 using Common;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace UserIdentity.Commands;
 

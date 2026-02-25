@@ -1,3 +1,7 @@
+using System.Security.Claims;
+using CSharpFunctionalExtensions;
+using UserIdentity.Extensions;
+using VehicleSales.Commands;
 using VehicleSales.Queries;
 
 namespace SalesWebApi.Endpoints;
@@ -27,5 +31,22 @@ internal static class VehicleSalesEndpoints
                 IGetMakeModelsQuery query,
                 CancellationToken cancellationToken) =>
                     Results.Ok(await query.Get(makeName, cancellationToken)));
+
+        vehicleSalesGroup
+            .MapPost(
+                string.Empty,
+                async (CreateVehicleSaleDto dto,
+                    ICreateVehicleSale create,
+                    ClaimsPrincipal principal,
+                    CancellationToken cancellationToken)
+                =>
+                    await create.Execute(dto, principal.UserId, cancellationToken)
+                        .Finally(result => result.IsSuccess
+                            ? Results.Ok()
+                            : Results.Problem(
+                                title: "Vehicle sale creation failed",
+                                detail: result.Error,
+                                statusCode: StatusCodes.Status400BadRequest)))
+            .RequireAuthorization();
     }
 }

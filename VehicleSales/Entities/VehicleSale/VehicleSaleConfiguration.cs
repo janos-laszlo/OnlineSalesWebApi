@@ -21,7 +21,7 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
             {
                 saleBuilder.Property(s => s.Title)
                     .HasColumnName(nameof(Sale.Title))
-                    .HasColumnType("VARCHAR(100)")
+                    .HasColumnType($"VARCHAR({SaleTitle.MaxLength})")
                     .HasConversion(
                         title => title.Value,
                         value => SaleTitle.Create(value).Value)
@@ -29,7 +29,7 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
 
                 saleBuilder.Property(s => s.Description)
                     .HasColumnName(nameof(Sale.Description))
-                    .HasColumnType("VARCHAR(5000)")
+                    .HasColumnType($"VARCHAR({SaleDescription.MaxLength})")
                     .HasConversion(
                         description => description.Value,
                         value => SaleDescription.Create(value).Value)
@@ -52,12 +52,18 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
                     locationBuilder =>
                     {
                         locationBuilder.Property(m => m.County)
+                            .HasConversion(
+                                value => value.Value,
+                                str => LocationName.Create(str).Value)
                             .HasColumnName(nameof(Location.County))
-                            .HasColumnType("VARCHAR(100)")
+                            .HasColumnType($"VARCHAR({LocationName.MaxLength})")
                             .IsRequired();
                         locationBuilder.Property(m => m.Locality)
+                            .HasConversion(
+                                value => value.Value,
+                                str => LocationName.Create(str).Value)
                             .HasColumnName(nameof(Location.Locality))
-                            .HasColumnType("VARCHAR(100)")
+                            .HasColumnType($"VARCHAR({LocationName.MaxLength})")
                             .IsRequired();
                     });
 
@@ -93,7 +99,10 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
 
                 vehicleDetailsBuilder.Property(v => v.VehicleVersion)
                     .HasColumnName(nameof(VehicleDetails.VehicleVersion))
-                    .HasColumnType("VARCHAR(100)");
+                    .HasColumnType($"VARCHAR({VehicleVersion.MaxLength})")
+                    .HasConversion(
+                        value => value == null ? null : value.Value,
+                        str => str == null ? null : VehicleVersion.Create(str).Value);
 
                 vehicleDetailsBuilder.Property(v => v.BodyType)
                     .HasColumnName(nameof(VehicleDetails.BodyType));
@@ -103,17 +112,17 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
 
                 vehicleDetailsBuilder.Property(v => v.ExteriorColor)
                     .HasColumnName(nameof(VehicleDetails.ExteriorColor))
-                    .HasColumnType("VARCHAR(30)")
+                    .HasColumnType($"VARCHAR({ColorName.MaxLength})")
                     .HasConversion(
                         value => value == null ? null : value.Value,
-                        str => str == null ? null : MinLength3String.Create(str).Value);
+                        str => str == null ? null : ColorName.Create(str).Value);
 
                 vehicleDetailsBuilder.Property(v => v.InteriorColor)
                     .HasColumnName(nameof(VehicleDetails.InteriorColor))
-                    .HasColumnType("VARCHAR(30)")
+                    .HasColumnType($"VARCHAR({ColorName.MaxLength})")
                     .HasConversion(
                         value => value == null ? null : value.Value,
-                        str => str == null ? null : MinLength3String.Create(str).Value);
+                        str => str == null ? null : ColorName.Create(str).Value);
 
                 vehicleDetailsBuilder.Property(v => v.FuelType)
                     .HasColumnName(nameof(VehicleDetails.FuelType));
@@ -143,10 +152,7 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
                     .HasColumnName(nameof(VehicleDetails.DriveType));
 
                 vehicleDetailsBuilder.Property(v => v.NumberOfSeats)
-                    .HasColumnName(nameof(VehicleDetails.NumberOfSeats))
-                    .HasConversion(
-                        value => value == null ? (int?)null : value.Value,
-                        seats => seats == null ? null : NumberBetween1And9.Create(seats).Value);
+                    .HasColumnName(nameof(VehicleDetails.NumberOfSeats));
 
                 vehicleDetailsBuilder.Property(v => v.EmissionStandard)
                     .HasColumnName(nameof(VehicleDetails.EmissionStandard));
@@ -159,7 +165,7 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
 
                 vehicleDetailsBuilder.Property(v => v.Vin)
                     .HasColumnName(nameof(VehicleDetails.Vin))
-                    .HasColumnType("VARCHAR(17)")
+                    .HasColumnType($"VARCHAR({VIN.MaxLength})")
                     .HasConversion(
                         value => value == null ? null : value.Value,
                         vin => vin == null ? null : VIN.Create(vin).Value);
@@ -179,11 +185,11 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
                 vehicleDetailsBuilder.Property(v => v.AverageBatteryConsumptionInKWhPer100Km)
                     .HasColumnName(nameof(VehicleDetails.AverageBatteryConsumptionInKWhPer100Km));
 
-                vehicleDetailsBuilder.Property(v => v.Mass)
-                    .HasColumnName(nameof(VehicleDetails.Mass));
+                vehicleDetailsBuilder.Property(v => v.MassInKg)
+                    .HasColumnName(nameof(VehicleDetails.MassInKg));
 
-                vehicleDetailsBuilder.Property(v => v.MaximumLoad)
-                    .HasColumnName(nameof(VehicleDetails.MaximumLoad));
+                vehicleDetailsBuilder.Property(v => v.MaximumLoadInKg)
+                    .HasColumnName(nameof(VehicleDetails.MaximumLoadInKg));
             });
     }
 }

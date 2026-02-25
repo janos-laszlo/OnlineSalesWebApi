@@ -17,8 +17,7 @@ internal class GetVehicleMakesQuery(
     {
         var request = new GetPreSignedUrlRequest
         {
-            // TODO: Rename bucket in R2
-            BucketName = "vehicle-sales",
+            BucketName = BucketNames.VehicleSales,
             Key = "log.txt",
             Verb = HttpVerb.PUT,
             Expires = DateTime.Now.AddMinutes(5)

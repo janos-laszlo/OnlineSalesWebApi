@@ -13,7 +13,7 @@ using VehicleSales;
 namespace VehicleSales.Migrations
 {
     [DbContext(typeof(VehicleSalesDbContext))]
-    [Migration("20260224150744_CreateVehicleSale")]
+    [Migration("20260225182729_CreateVehicleSale")]
     partial class CreateVehicleSale
     {
         /// <inheritdoc />
@@ -132,12 +132,12 @@ namespace VehicleSales.Migrations
 
                                     b2.Property<string>("County")
                                         .IsRequired()
-                                        .HasColumnType("VARCHAR(100)")
+                                        .HasColumnType("VARCHAR(30)")
                                         .HasColumnName("County");
 
                                     b2.Property<string>("Locality")
                                         .IsRequired()
-                                        .HasColumnType("VARCHAR(100)")
+                                        .HasColumnType("VARCHAR(30)")
                                         .HasColumnName("Locality");
                                 });
 
@@ -145,8 +145,8 @@ namespace VehicleSales.Migrations
                                 {
                                     b2.IsRequired();
 
-                                    b2.Property<int>("AmountInCents")
-                                        .HasColumnType("int")
+                                    b2.Property<uint>("AmountInCents")
+                                        .HasColumnType("int unsigned")
                                         .HasColumnName("AmountInCents");
 
                                     b2.Property<int>("Currency")
@@ -242,13 +242,13 @@ namespace VehicleSales.Migrations
                                 .HasColumnType("VARCHAR(30)")
                                 .HasColumnName("InteriorColor");
 
-                            b1.Property<uint?>("Mass")
+                            b1.Property<uint?>("MassInKg")
                                 .HasColumnType("int unsigned")
-                                .HasColumnName("Mass");
+                                .HasColumnName("MassInKg");
 
-                            b1.Property<uint?>("MaximumLoad")
+                            b1.Property<uint?>("MaximumLoadInKg")
                                 .HasColumnType("int unsigned")
-                                .HasColumnName("MaximumLoad");
+                                .HasColumnName("MaximumLoadInKg");
 
                             b1.Property<uint?>("MileageInKilometers")
                                 .HasColumnType("int unsigned")
@@ -258,8 +258,8 @@ namespace VehicleSales.Migrations
                                 .HasColumnType("smallint unsigned")
                                 .HasColumnName("NumberOfPreviousOwners");
 
-                            b1.Property<int?>("NumberOfSeats")
-                                .HasColumnType("int")
+                            b1.Property<ushort?>("NumberOfSeats")
+                                .HasColumnType("smallint unsigned")
                                 .HasColumnName("NumberOfSeats");
 
                             b1.Property<uint?>("RangeInKilometers")

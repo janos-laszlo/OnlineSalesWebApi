@@ -29,12 +29,19 @@ internal sealed class LoginUserCommand(
             .Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == userLoginDto.Email, cancellationToken);
-        if (user == null) // TODO: || !user.EmailConfirmed
+
+        if (user == null)
         {
             logger.LogWarning("User not found for email: {Email}", userLoginDto.Email);
             return Result.Failure<TokenResponseDto>(Error);
         }
-
+#if !DEBUG
+        if (!user.EmailConfirmed)
+        {
+            logger.LogWarning("User not found for email: {Email}", userLoginDto.Email);
+            return Result.Failure<TokenResponseDto>(Error);
+        }
+#endif
         var passwordVerificationResult = passwordHasher.VerifyHashedPassword(
             user, user.PasswordHash, userLoginDto.Password);
         if (passwordVerificationResult == PasswordVerificationResult.Failed)

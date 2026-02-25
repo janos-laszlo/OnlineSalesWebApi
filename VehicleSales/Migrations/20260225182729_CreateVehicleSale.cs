@@ -61,10 +61,10 @@ namespace VehicleSales.Migrations
                     SellerId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "VARCHAR(100)", nullable: false),
                     Description = table.Column<string>(type: "VARCHAR(5000)", nullable: false),
-                    AmountInCents = table.Column<int>(type: "int", nullable: false),
+                    AmountInCents = table.Column<uint>(type: "int unsigned", nullable: false),
                     Currency = table.Column<int>(type: "int", nullable: false),
-                    County = table.Column<string>(type: "VARCHAR(100)", nullable: false),
-                    Locality = table.Column<string>(type: "VARCHAR(100)", nullable: false),
+                    County = table.Column<string>(type: "VARCHAR(30)", nullable: false),
+                    Locality = table.Column<string>(type: "VARCHAR(30)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true),
@@ -86,7 +86,7 @@ namespace VehicleSales.Migrations
                     GearboxType = table.Column<int>(type: "int", nullable: true),
                     SteeringWheelSide = table.Column<int>(type: "int", nullable: true),
                     DriveType = table.Column<int>(type: "int", nullable: true),
-                    NumberOfSeats = table.Column<int>(type: "int", nullable: true),
+                    NumberOfSeats = table.Column<ushort>(type: "smallint unsigned", nullable: true),
                     EmissionStandard = table.Column<int>(type: "int", nullable: true),
                     HasServiceHistory = table.Column<bool>(type: "tinyint(1)", nullable: true),
                     HasAccidentHistory = table.Column<bool>(type: "tinyint(1)", nullable: true),
@@ -97,8 +97,8 @@ namespace VehicleSales.Migrations
                     RangeInKilometers = table.Column<uint>(type: "int unsigned", nullable: true),
                     AverageFuelConsumptionInLitersPer100Km = table.Column<uint>(type: "int unsigned", nullable: true),
                     AverageBatteryConsumptionInKWhPer100Km = table.Column<ushort>(type: "smallint unsigned", nullable: true),
-                    Mass = table.Column<uint>(type: "int unsigned", nullable: true),
-                    MaximumLoad = table.Column<uint>(type: "int unsigned", nullable: true)
+                    MassInKg = table.Column<uint>(type: "int unsigned", nullable: true),
+                    MaximumLoadInKg = table.Column<uint>(type: "int unsigned", nullable: true)
                 },
                 constraints: table =>
                 {

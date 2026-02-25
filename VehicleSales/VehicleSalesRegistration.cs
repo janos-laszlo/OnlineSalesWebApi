@@ -3,6 +3,7 @@ using Amazon.S3;
 using Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using VehicleSales.Commands;
 using VehicleSales.Queries;
 
 namespace VehicleSales;
@@ -17,6 +18,7 @@ public static class VehicleSalesRegistration
 
         services.AddTransient<IGetVehicleMakesQuery, GetVehicleMakesQuery>();
         services.AddTransient<IGetMakeModelsQuery, GetMakeModelsQuery>();
+        services.AddTransient<ICreateVehicleSale, CreateVehicleSale>();
 
         RegisterCloudflareR2(services, configuration);
 

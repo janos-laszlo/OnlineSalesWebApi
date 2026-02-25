@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Text.Json.Serialization;
+using CSharpFunctionalExtensions;
 using VehicleSales.Entities.VehicleMake;
 
 namespace VehicleSales.Entities.VehicleSale;
@@ -7,7 +8,7 @@ internal sealed class VehicleSale
 {
     public int Id { get; }
     public required int SellerId { get; init; }
-    public required User.User Seller { get; init; }
+    public User.User? Seller { get; init; }
     public required Sale Sale { get; set; }
     public required VehicleDetails VehicleDetails { get; set; }
 }
@@ -31,14 +32,14 @@ internal sealed record Sale
 internal sealed record VehicleDetails
 {
     public required int VehicleModelId { get; set; }
-    public required VehicleModel VehicleModel { get; set; }
+    public VehicleModel? VehicleModel { get; set; }
     public uint? MileageInKilometers { get; set; }
     public uint? HorsePower { get; set; }
-    public string? VehicleVersion { get; set; }
+    public VehicleVersion? VehicleVersion { get; set; }
     public BodyType? BodyType { get; set; }
     public uint? EngineVolumeInCm3 { get; set; }
-    public MinLength3String? ExteriorColor { get; set; }
-    public MinLength3String? InteriorColor { get; set; }
+    public ColorName? ExteriorColor { get; set; }
+    public ColorName? InteriorColor { get; set; }
     public FuelType? FuelType { get; set; }
     public VehicleManufacturingYear? VehicleManufacturingYear { get; set; }
     public NumberBetween1And9? VehicleNumberOfDoors { get; set; }
@@ -46,7 +47,7 @@ internal sealed record VehicleDetails
     public GearboxType? GearboxType { get; set; }
     public Side? SteeringWheelSide { get; set; }
     public DriveType? DriveType { get; set; }
-    public NumberBetween1And9? NumberOfSeats { get; set; }
+    public ushort? NumberOfSeats { get; set; }
     public EmissionStandard? EmissionStandard { get; set; }
     public bool? HasServiceHistory { get; set; }
     public bool? HasAccidentHistory { get; set; }
@@ -56,44 +57,48 @@ internal sealed record VehicleDetails
     public uint? RangeInKilometers { get; set; }
     public uint? AverageFuelConsumptionInLitersPer100Km { get; set; }
     public ushort? AverageBatteryConsumptionInKWhPer100Km { get; set; }
-    public uint? Mass { get; set; }
+    public uint? MassInKg { get; set; }
     /// <summary>
     /// The maximum load capacity that the vehicle can support.
     /// </summary>
-    public uint? MaximumLoad { get; set; }
+    public uint? MaximumLoadInKg { get; set; }
+    // TODO: Add photo URLs as JSON array in one column.
 }
 
 internal sealed record Money
 {
-    public int AmountInCents { get; private set; }
+    public uint AmountInCents { get; private set; }
     public Currency Currency { get; private set; }
 
-    private Money(int amountInCents, Currency currency)
+    private Money(uint amountInCents, Currency currency)
     {
         AmountInCents = amountInCents;
         Currency = currency;
     }
 
-    public static Result<Money> Create(int? amountInCents, Currency currency) =>
+    public static Result<Money> Create(uint? amountInCents, Currency currency) =>
         amountInCents >= 0
             ? new Money(amountInCents.Value, currency)
             : Result.Failure<Money>("Amount must be positive");
 }
 
-internal enum Currency
+public enum Currency
 {
     EUR,
     RON
 }
 
 /// <summary>
-/// Represents the title of a vehicle sale, ensuring it meets specific length requirements.
+/// Represents the title of a vehicle sale, ensuring it meets specific 
+/// length requirements.
 /// </summary>
-/// <remarks>The title must be between 15 and 64 characters in length. Attempting to create a SaleTitle with an
-/// invalid title will result in an ArgumentException. Use the Create method to instantiate a SaleTitle
-/// safely.</remarks>
 internal sealed record SaleTitle
 {
+    public const int MaxLength = 100;
+    public const int MinLength = 15;
+    private static readonly string Error =
+        $"Title must be between {MinLength} and {MaxLength} characters";
+
     public string Value { get; }
 
     private SaleTitle(string value)
@@ -102,19 +107,22 @@ internal sealed record SaleTitle
     }
 
     public static Result<SaleTitle> Create(string? value) =>
-        value?.Length >= 15 && value.Length <= 50
+        value?.Length >= MinLength && value.Length <= MaxLength
             ? Result.Success(new SaleTitle(value))
-            : Result.Failure<SaleTitle>("Title must be between 15 and 64 characters");
+            : Result.Failure<SaleTitle>(Error);
 }
 
 /// <summary>
-/// Represents the description of a vehicle sale, ensuring it meets specific length requirements.
+/// Represents the description of a vehicle sale,
+/// ensuring it meets specific length requirements.
 /// </summary>
-/// <remarks>The description must be between 100 and 1000 characters in length. Attempting to create a SaleDescription with an
-/// invalid description will result in an ArgumentException. Use the Create method to instantiate a SaleDescription
-/// safely.</remarks>
 internal sealed record SaleDescription
 {
+    public const int MaxLength = 5000;
+    public const int MinLength = 100;
+    private static readonly string Error =
+        $"Description must be between {MinLength} and {MaxLength} characters";
+
     public string Value { get; }
 
     private SaleDescription(string value)
@@ -123,12 +131,31 @@ internal sealed record SaleDescription
     }
 
     public static Result<SaleDescription> Create(string? value) =>
-        value?.Length >= 100 && value.Length <= 1000
+        value?.Length >= MinLength && value.Length <= MaxLength
             ? Result.Success(new SaleDescription(value))
-            : Result.Failure<SaleDescription>("Description must be between 100 and 1000 characters");
+            : Result.Failure<SaleDescription>(Error);
+}
+internal sealed record VehicleVersion
+{
+    public const int MaxLength = 100;
+    public const int MinLength = 3;
+    private static readonly string Error =
+        $"String must be between {MinLength} and {MaxLength} characters";
+
+    public string Value { get; }
+
+    private VehicleVersion(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<VehicleVersion> Create(string? value) =>
+        value?.Length >= MinLength && value.Length <= MaxLength
+            ? Result.Success(new VehicleVersion(value))
+            : Result.Failure<VehicleVersion>(Error);
 }
 
-internal enum FuelType
+public enum FuelType
 {
     Petrol,
     Diesel,
@@ -136,7 +163,8 @@ internal enum FuelType
     Hybrid
 }
 
-internal enum BodyType
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum BodyType
 {
     Sedan,
     Hatchback,
@@ -148,24 +176,24 @@ internal enum BodyType
     Pickup
 }
 
-/// <summary>
-/// Represents a string value that must contain at least three characters.
-/// </summary>
-/// <remarks>Use this type to enforce a minimum length constraint on string values. Instances can only be created
-/// through the provided factory method, which ensures the value meets the required length.</remarks>
-internal sealed record MinLength3String
+internal sealed record ColorName
 {
+    public const int MinLength = 3;
+    public const int MaxLength = 30;
+    private static readonly string Error =
+        $"String length must be between {MinLength} and {MaxLength}.";
+
     public string Value { get; }
 
-    private MinLength3String(string value)
+    private ColorName(string value)
     {
         Value = value;
     }
 
-    public static Result<MinLength3String> Create(string? value) =>
-        value?.Length >= 3
-            ? Result.Success(new MinLength3String(value))
-            : Result.Failure<MinLength3String>("Value must be at least 3 characters");
+    public static Result<ColorName> Create(string? value) =>
+        value?.Length >= MinLength
+            ? Result.Success(new ColorName(value))
+            : Result.Failure<ColorName>(Error);
 }
 
 internal sealed record VehicleManufacturingYear
@@ -178,13 +206,18 @@ internal sealed record VehicleManufacturingYear
     }
 
     public static Result<VehicleManufacturingYear> Create(int? value, int currentYear) =>
-        value > 1880 && value <= currentYear
+        value >= 1880 && value <= currentYear
             ? Result.Success(new VehicleManufacturingYear(value.Value))
-            : Result.Failure<VehicleManufacturingYear>("Value must be greater than 1880");
+            : Result.Failure<VehicleManufacturingYear>($"Value must be between 1880 and {currentYear}");
 }
 
 internal sealed record NumberBetween1And9
 {
+    public const int One = 1;
+    public const int Nine = 9;
+    private static readonly string Error =
+        $"Value must be between {One} and {Nine}";
+
     public int Value { get; }
 
     private NumberBetween1And9(int value)
@@ -193,33 +226,54 @@ internal sealed record NumberBetween1And9
     }
 
     public static Result<NumberBetween1And9> Create(int? value) =>
-        value > 0 && value < 10
+        value >= One && value <= Nine
             ? Result.Success(new NumberBetween1And9(value.Value))
-            : Result.Failure<NumberBetween1And9>("Value must be between 1 and 9");
+            : Result.Failure<NumberBetween1And9>(Error);
 }
 
-internal enum GearboxType
+public enum GearboxType
 {
     Manual,
     Automatic
 }
 
-internal enum Side
+public enum Side
 {
     Left,
     Right,
     Middle
 }
 
-internal enum VehicleCondition
+public enum VehicleCondition
 {
     New,
     Used
 }
 
 internal sealed record Location(
-    MinLength3String County,
-    MinLength3String Locality);
+    LocationName County,
+    LocationName Locality)
+{
+}
+internal sealed record LocationName
+{
+    public const int MinLength = 3;
+    public const int MaxLength = 30;
+    private static readonly string Error =
+        $"String length must be between {MinLength} and {MaxLength}.";
+
+    public string Value { get; }
+
+    private LocationName(string value)
+    {
+        Value = value;
+    }
+
+    public static Result<LocationName> Create(string? value) =>
+        value?.Length >= MinLength
+            ? Result.Success(new LocationName(value))
+            : Result.Failure<LocationName>(Error);
+}
 
 internal enum SaleStatus
 {
@@ -234,7 +288,7 @@ internal enum SaleStatus
 /// Describes the vehicle's drive-wheel configuration (which wheels receive power).
 /// Use this enum to specify the drivetrain layout for listings, filters and domain logic.
 /// </summary>
-internal enum DriveType
+public enum DriveType
 {
     /// <summary>Front-wheel drive: the engine drives the front wheels.</summary>
     FrontWheelDrive,
@@ -249,13 +303,18 @@ internal enum DriveType
     FourWheelDrive
 }
 
-internal enum EmissionStandard
+public enum EmissionStandard
 {
     EURO1, EURO2, EURO3, EURO4, EURO5, EURO6, EURO7
 }
 
 internal sealed record VIN
 {
+    public const int MinLength = 5;
+    public const int MaxLength = 17;
+    private static readonly string Error =
+        $"Value must be between {MinLength} and {MaxLength}";
+
     public string Value { get; }
 
     private VIN(string value)
@@ -264,7 +323,7 @@ internal sealed record VIN
     }
 
     public static Result<VIN> Create(string? value) =>
-        value?.Length >= 5 && value?.Length <= 17
+        value?.Length >= MinLength && value?.Length <= MaxLength
             ? Result.Success(new VIN(value))
-            : Result.Failure<VIN>("Value must be between 5 and 17");
+            : Result.Failure<VIN>(Error);
 }

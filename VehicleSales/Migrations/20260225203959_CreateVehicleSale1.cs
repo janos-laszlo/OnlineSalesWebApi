@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -7,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VehicleSales.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateVehicleSale : Migration
+    public partial class CreateVehicleSale1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -80,8 +79,8 @@ namespace VehicleSales.Migrations
                     InteriorColor = table.Column<string>(type: "VARCHAR(30)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     FuelType = table.Column<int>(type: "int", nullable: true),
-                    VehicleManufacturingYear = table.Column<int>(type: "int", nullable: true),
-                    VehicleNumberOfDoors = table.Column<int>(type: "int", nullable: true),
+                    VehicleManufacturingYear = table.Column<ushort>(type: "smallint unsigned", nullable: true),
+                    VehicleNumberOfDoors = table.Column<ushort>(type: "smallint unsigned", nullable: true),
                     VehicleCondition = table.Column<int>(type: "int", nullable: true),
                     GearboxType = table.Column<int>(type: "int", nullable: true),
                     SteeringWheelSide = table.Column<int>(type: "int", nullable: true),

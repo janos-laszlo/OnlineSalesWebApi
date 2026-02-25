@@ -48,5 +48,13 @@ internal static class VehicleSalesEndpoints
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
             .RequireAuthorization();
+
+        vehicleSalesGroup
+            .MapGet(
+                string.Empty,
+                async ([AsParameters] PagedRequest request,
+                IGetVehicleSales query,
+                CancellationToken cancellationToken) =>
+                    Results.Ok(await query.Execute(request, cancellationToken)));
     }
 }

@@ -85,10 +85,10 @@ Authorization: Bearer ...
   "hasAccidentHistory": false,
   "vin": "WBA5R1C50KAK12345",
   "numberOfPreviousOwners": 1,
-  "batteryCapacityInKWh": null,
-  "rangeInKilometers": null,
+  "batteryCapacityInKWh": 11000,
+  "rangeInKilometers": 1000,
   "averageFuelConsumptionInLitersPer100Km": 6,
-  "averageBatteryConsumptionInKWhPer100Km": null,
+  "averageBatteryConsumptionInKWhPer100Km": 90,
   "massInKg": 1520,
   "maximumLoadInKg": 480
 }

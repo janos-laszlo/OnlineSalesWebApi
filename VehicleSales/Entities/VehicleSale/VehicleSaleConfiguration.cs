@@ -130,13 +130,13 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
                 vehicleDetailsBuilder.Property(v => v.VehicleManufacturingYear)
                     .HasColumnName(nameof(VehicleDetails.VehicleManufacturingYear))
                     .HasConversion(
-                        value => value == null ? (int?)null : value.Value,
+                        value => value == null ? (ushort?)null : value.Value,
                         year => year == null ? null : VehicleManufacturingYear.Create(year, DateTimeOffset.Now.Year).Value);
 
                 vehicleDetailsBuilder.Property(v => v.VehicleNumberOfDoors)
                     .HasColumnName(nameof(VehicleDetails.VehicleNumberOfDoors))
                     .HasConversion(
-                        value => value == null ? (int?)null : value.Value,
+                        value => value == null ? (ushort?)null : value.Value,
                         doors => doors == null ? null : NumberBetween1And9.Create(doors).Value);
 
                 vehicleDetailsBuilder.Property(v => v.VehicleCondition)

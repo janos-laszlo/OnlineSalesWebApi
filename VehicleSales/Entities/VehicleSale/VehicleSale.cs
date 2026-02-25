@@ -227,14 +227,14 @@ public enum FuelType
 
 internal sealed record VehicleManufacturingYear
 {
-    public int Value { get; }
+    public ushort Value { get; }
 
-    private VehicleManufacturingYear(int value)
+    private VehicleManufacturingYear(ushort value)
     {
         Value = value;
     }
 
-    public static Result<VehicleManufacturingYear> Create(int? value, int currentYear) =>
+    public static Result<VehicleManufacturingYear> Create(ushort? value, int currentYear) =>
         value >= 1880 && value <= currentYear
             ? Result.Success(new VehicleManufacturingYear(value.Value))
             : Result.Failure<VehicleManufacturingYear>($"Value must be between 1880 and {currentYear}");
@@ -247,14 +247,14 @@ internal sealed record NumberBetween1And9
     private static readonly string Error =
         $"Value must be between {One} and {Nine}";
 
-    public int Value { get; }
+    public ushort Value { get; }
 
-    private NumberBetween1And9(int value)
+    private NumberBetween1And9(ushort value)
     {
         Value = value;
     }
 
-    public static Result<NumberBetween1And9> Create(int? value) =>
+    public static Result<NumberBetween1And9> Create(ushort? value) =>
         value >= One && value <= Nine
             ? Result.Success(new NumberBetween1And9(value.Value))
             : Result.Failure<NumberBetween1And9>(Error);

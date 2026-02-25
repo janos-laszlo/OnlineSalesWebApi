@@ -271,16 +271,16 @@ namespace VehicleSales.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("VehicleCondition");
 
-                            b1.Property<int?>("VehicleManufacturingYear")
-                                .HasColumnType("int")
+                            b1.Property<ushort?>("VehicleManufacturingYear")
+                                .HasColumnType("smallint unsigned")
                                 .HasColumnName("VehicleManufacturingYear");
 
                             b1.Property<int>("VehicleModelId")
                                 .HasColumnType("int")
                                 .HasColumnName("VehicleModelId");
 
-                            b1.Property<int?>("VehicleNumberOfDoors")
-                                .HasColumnType("int")
+                            b1.Property<ushort?>("VehicleNumberOfDoors")
+                                .HasColumnType("smallint unsigned")
                                 .HasColumnName("VehicleNumberOfDoors");
 
                             b1.Property<string>("VehicleVersion")

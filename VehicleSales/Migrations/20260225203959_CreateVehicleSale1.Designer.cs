@@ -13,8 +13,8 @@ using VehicleSales;
 namespace VehicleSales.Migrations
 {
     [DbContext(typeof(VehicleSalesDbContext))]
-    [Migration("20260225182729_CreateVehicleSale")]
-    partial class CreateVehicleSale
+    [Migration("20260225203959_CreateVehicleSale1")]
+    partial class CreateVehicleSale1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -274,16 +274,16 @@ namespace VehicleSales.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("VehicleCondition");
 
-                            b1.Property<int?>("VehicleManufacturingYear")
-                                .HasColumnType("int")
+                            b1.Property<ushort?>("VehicleManufacturingYear")
+                                .HasColumnType("smallint unsigned")
                                 .HasColumnName("VehicleManufacturingYear");
 
                             b1.Property<int>("VehicleModelId")
                                 .HasColumnType("int")
                                 .HasColumnName("VehicleModelId");
 
-                            b1.Property<int?>("VehicleNumberOfDoors")
-                                .HasColumnType("int")
+                            b1.Property<ushort?>("VehicleNumberOfDoors")
+                                .HasColumnType("smallint unsigned")
                                 .HasColumnName("VehicleNumberOfDoors");
 
                             b1.Property<string>("VehicleVersion")

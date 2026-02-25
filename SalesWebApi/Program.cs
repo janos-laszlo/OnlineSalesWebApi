@@ -1,3 +1,4 @@
+using System.Text;
 using Common;
 using EmailSending;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -5,7 +6,6 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using SalesWebApi.Endpoints;
 using Scalar.AspNetCore;
-using System.Text;
 using UserIdentity;
 using VehicleSales;
 
@@ -19,11 +19,12 @@ builder.Services
 builder.Services
     .AddAuthorization()
     .AddCors(ConfigureCors(builder))
+    .AddOpenApi()
+    .AddProblemDetails()
+    .AddValidation()
     .AddEmailSending(builder.Configuration)
     .AddUserIdentity(builder.Configuration)
-    .AddVehicleSales(builder.Configuration)
-    .AddOpenApi()
-    .AddProblemDetails();
+    .AddVehicleSales(builder.Configuration);
 
 var app = builder.Build();
 

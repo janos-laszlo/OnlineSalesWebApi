@@ -187,7 +187,7 @@ public sealed record CreateVehicleSaleDto(
             var interiorColorResult = ColorName.Create(InteriorColor);
             if (interiorColorResult.IsFailure)
                 return Result.Failure<VehicleSale>(interiorColorResult.Error);
-            exteriorColor = interiorColorResult.Value;
+            interiorColor = interiorColorResult.Value;
         }
 
         VehicleManufacturingYear? vehicleManufacturingYear = null;
@@ -201,7 +201,7 @@ public sealed record CreateVehicleSaleDto(
         }
 
         NumberBetween1And9? numberOfDoors = null;
-        if (numberOfDoors is not null)
+        if (VehicleNumberOfDoors is not null)
         {
             var numberOfDoorsResult = NumberBetween1And9.Create(VehicleNumberOfDoors);
             if (numberOfDoorsResult.IsFailure)

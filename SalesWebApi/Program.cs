@@ -1,5 +1,6 @@
 using System.Text;
 using Common;
+using DraftEntities;
 using EmailSending;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -24,7 +25,8 @@ builder.Services
     .AddValidation()
     .AddEmailSending(builder.Configuration)
     .AddUserIdentity(builder.Configuration)
-    .AddVehicleSales(builder.Configuration);
+    .AddVehicleSales(builder.Configuration)
+    .AddDraftEntities(builder.Configuration);
 
 var app = builder.Build();
 

@@ -8,26 +8,23 @@ namespace VehicleSales.Commands;
 
 public interface ICreateVehicleSale
 {
-    Task<Result<int>> Execute(
+    Task<Result> Execute(
         CreateVehicleSaleDto dto,
         int sellerId,
         CancellationToken cancellationToken);
 }
 
 internal sealed class CreateVehicleSale(
-    VehicleSalesDbContext dbContext,
-    IStorageService storage) : ICreateVehicleSale
+    VehicleSalesDbContext dbContext) : ICreateVehicleSale
 {
-    private static readonly TimeSpan PresignedUrlExpiry = TimeSpan.FromMinutes(15);
-
-    public async Task<Result<CreateVehicleSaleResponse>> Execute(
+    public async Task<Result> Execute(
         CreateVehicleSaleDto dto,
         int sellerId,
         CancellationToken cancellationToken)
     {
         var vehicleSaleResult = dto.ToVehicleSale(sellerId);
         if (vehicleSaleResult.IsFailure)
-            return Result.Failure<CreateVehicleSaleResponse>(vehicleSaleResult.Error);
+            return Result.Failure(vehicleSaleResult.Error);
 
         if (!await dbContext.UsersReadOnly.AnyAsync(
             user => user.Id == sellerId,
@@ -43,42 +40,9 @@ internal sealed class CreateVehicleSale(
             return Result.Failure("Vehicle model not found");
         }
 
-        vehicleSaleResult.Value.Status = VehicleSaleStatus.Draft;
-
         dbContext.VehicleSales.Add(vehicleSaleResult.Value);
-        await dbContext.SaveChangesAsync(cancellationToken); // save to get the Id
-
-        var slots = await GeneratePhotoSlotsAsync(
-            vehicleSaleResult.Value.Id, dto.NumberOfPhotos, cancellationToken);
-
-        dbContext.VehicleSalePhotos.AddRange(
-            slots.Select(s => new VehicleSalePhoto
-            {
-                VehicleSaleId = vehicleSaleResult.Value.Id,
-                ObjectKey = s.ObjectKey,
-                DisplayOrder = s.SlotIndex
-            }));
-
         await dbContext.SaveChangesAsync(cancellationToken);
-
-        return new CreateVehicleSaleResponse(vehicleSaleResult.Value.Id, slots);
-    }
-
-    private async Task<IReadOnlyList<PhotoUploadSlot>> GeneratePhotoSlotsAsync(
-        int saleId, int count, CancellationToken cancellationToken)
-    {
-        var expiry = PresignedUrlExpiry;
-        var expiresAt = DateTimeOffset.UtcNow.Add(expiry);
-        var slots = new List<PhotoUploadSlot>(count);
-
-        for (int i = 0; i < count; i++)
-        {
-            var key = $"vehicle-sales/{saleId}/{Guid.NewGuid():N}.jpg";
-            var url = await storage.GenerateUploadUrlAsync(key, expiry);
-            slots.Add(new PhotoUploadSlot(i, key, url, expiresAt));
-        }
-
-        return slots;
+        return Result.Success();
     }
 }
 
@@ -297,14 +261,3 @@ public sealed record CreateVehicleSaleDto(
         };
     }
 }
-
-public sealed record CreateVehicleSaleResponse(
-    int SaleId,
-    IReadOnlyList<PhotoUploadSlot> PhotoUploadSlots);
-
-public sealed record PhotoUploadSlot(
-    int SlotIndex,
-    string ObjectKey,
-    Uri PresignedUploadUrl,
-    DateTimeOffset ExpiresAt);
-

@@ -199,6 +199,10 @@ namespace VehicleSales.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("BodyType");
 
+                            b1.Property<string>("Directory")
+                                .HasColumnType("VARCHAR(30)")
+                                .HasColumnName("Directory");
+
                             b1.Property<int?>("DriveType")
                                 .HasColumnType("int")
                                 .HasColumnName("DriveType");
@@ -258,6 +262,10 @@ namespace VehicleSales.Migrations
                             b1.Property<ushort?>("NumberOfSeats")
                                 .HasColumnType("smallint unsigned")
                                 .HasColumnName("NumberOfSeats");
+
+                            b1.Property<string>("PhotoKeys")
+                                .HasColumnType("VARCHAR(100)")
+                                .HasColumnName("PhotoKeys");
 
                             b1.Property<uint?>("RangeInKilometers")
                                 .HasColumnType("int unsigned")

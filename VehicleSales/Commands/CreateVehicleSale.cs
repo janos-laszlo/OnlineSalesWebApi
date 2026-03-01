@@ -1,52 +1,93 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Amazon.S3;
+using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using ObjectUploadTracking;
 using VehicleSales.Entities.VehicleSale;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace VehicleSales.Commands;
 
 public interface ICreateVehicleSale
 {
-    Task<Result> Execute(
-        CreateVehicleSaleDto dto,
+    Task<Result<CreateVehicleSaleResponseDto?>> Execute(
+        CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken);
 }
 
 internal sealed class CreateVehicleSale(
-    VehicleSalesDbContext dbContext) : ICreateVehicleSale
+    VehicleSalesDbContext dbContext,
+    IObjectUploadOperations objectUploadOperations,
+    IAmazonS3 r2Client) : ICreateVehicleSale
 {
-    public async Task<Result> Execute(
-        CreateVehicleSaleDto dto,
+    public async Task<Result<CreateVehicleSaleResponseDto?>> Execute(
+        CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken)
     {
+        // It's not necessary to check the seller existence here as it's assumed to be valid.
+
         var vehicleSaleResult = dto.ToVehicleSale(sellerId);
         if (vehicleSaleResult.IsFailure)
-            return Result.Failure(vehicleSaleResult.Error);
-
-        if (!await dbContext.UsersReadOnly.AnyAsync(
-            user => user.Id == sellerId,
-            cancellationToken))
-        {
-            return Result.Failure("Seller not found");
-        }
+            return Result.Failure<CreateVehicleSaleResponseDto?>(vehicleSaleResult.Error);
 
         if (!await dbContext.VehicleModels.AnyAsync(
             vehicleModel => vehicleModel.Id == vehicleSaleResult.Value.VehicleDetails.VehicleModelId,
             cancellationToken))
         {
-            return Result.Failure("Vehicle model not found");
+            return Result.Failure<CreateVehicleSaleResponseDto?>("Vehicle model doesn't exist");
         }
 
         dbContext.VehicleSales.Add(vehicleSaleResult.Value);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return Result.Success();
+
+        if (dto.PhotoContentTypes?.Any() != true)
+            return null;
+
+        IReadOnlyList<(ObjectKeyName, string)> objKeyAndItsContentType = CreatePhotoObjectKeys(dto.PhotoContentTypes);
+        ObjectUpload objectUpload = new()
+        {
+            EntityId = vehicleSaleResult.Value.Id,
+            Directory = DirectoryName.Create(DateTime.Now.GetHashCode().ToString()).Value,
+            ObjectKeys = objKeyAndItsContentType.Select(tuple => tuple.Item1).ToList(),
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(15)
+        };
+        await objectUploadOperations.Track(
+            objectUpload,
+            cancellationToken);
+
+        return new CreateVehicleSaleResponseDto(
+            objectUpload.Id,
+            objectUpload.Directory.Value,
+            CreatePresignedPutRequests(objectUpload.Directory, objKeyAndItsContentType));
     }
+
+    private Dictionary<string, string> CreatePresignedPutRequests(
+        DirectoryName directory,
+        IReadOnlyList<(ObjectKeyName, string)> objectKeysAndTheirContentType)
+    =>
+        objectKeysAndTheirContentType.ToDictionary(
+            objectKey => objectKey.Item1.Value,
+            objectKeyAndItsContentType => r2Client.GetPreSignedURL(
+                new GetPreSignedUrlRequest
+                {
+                    BucketName = BucketNames.VehicleSales,
+                    Key = $"{directory.Value}/{objectKeyAndItsContentType.Item1.Value}",
+                    Verb = HttpVerb.PUT,
+                    Expires = DateTime.Now.AddMinutes(15),
+                    ContentType = objectKeyAndItsContentType.Item2
+                }));
+
+    private static List<(ObjectKeyName, string)> CreatePhotoObjectKeys(IReadOnlyList<string> photoContentTypes) =>
+        [.. photoContentTypes
+            .Select((pct, index) => (ObjectKeyName.Create($"{index}.{pct.Split('/')[1]}").Value, pct))];
+
 }
 
-public sealed record CreateVehicleSaleDto(
+public sealed record CreateVehicleSaleRequestDto(
     [property: Description("The display title of the sale listing.")]
     [property: MinLength(SaleTitle.MinLength), MaxLength(SaleTitle.MaxLength)]
     string Title,
@@ -138,6 +179,15 @@ public sealed record CreateVehicleSaleDto(
 
     [Description("Maximum load capacity in kilograms.")]
     public uint? MaximumLoadInKg { get; init; }
+
+    [Description(
+        """
+        Content types of presigned URLs. The response will contain presigned URLs 
+        for the provided content types, which can be used to upload photos of the vehicle.
+        Allowed values: image/jpeg, image/png, image/webp, image/bmp, image/tiff, image/avif
+        """)]
+    [MaxPhotoContentTypes(VehicleDetails.MaxNumberOfPhotos)]
+    public IReadOnlyList<string>? PhotoContentTypes { get; init; }
 
     internal Result<VehicleSale> ToVehicleSale(int sellerId)
     {
@@ -261,3 +311,41 @@ public sealed record CreateVehicleSaleDto(
         };
     }
 }
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+public sealed class MaxPhotoContentTypesAttribute(int maxPhotos) : ValidationAttribute
+{
+    private static readonly HashSet<string> AllowedImageContentTypes =
+    [
+        Image.Jpeg,
+        Image.Png,
+        Image.Webp,
+        Image.Bmp,
+        Image.Tiff,
+        Image.Avif,
+    ];
+
+    protected override ValidationResult? IsValid(
+        object? value, ValidationContext validationContext)
+    {
+        var photoContentTypes = (IReadOnlyList<string>?)value;
+        if (photoContentTypes is null)
+            return ValidationResult.Success;
+
+        if (photoContentTypes.Any(string.IsNullOrWhiteSpace))
+            return new ValidationResult("Null or empty photo content type.");
+
+        if (photoContentTypes.Count > maxPhotos)
+            return new ValidationResult($"Max {maxPhotos} photos allowed.");
+
+        if (photoContentTypes.Any(p => !AllowedImageContentTypes.Contains(p)))
+            return new ValidationResult("Invalid image content type.");
+
+        return ValidationResult.Success;
+    }
+}
+
+public sealed record CreateVehicleSaleResponseDto(
+    int ObjectUploadId,
+    string Directory,
+    IDictionary<string, string>? ObjectKeysAndPresignedUrls);

@@ -1,5 +1,3 @@
-using Amazon.S3;
-using Amazon.S3.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace VehicleSales.Queries;
@@ -10,23 +8,10 @@ public interface IGetVehicleMakesQuery
 }
 
 internal class GetVehicleMakesQuery(
-    VehicleSalesDbContext context,
-    IAmazonS3 amazonS3) : IGetVehicleMakesQuery
+    VehicleSalesDbContext context) : IGetVehicleMakesQuery
 {
-    public async Task<IReadOnlyList<string>> Get(CancellationToken cancellationToken)
-    {
-        var request = new GetPreSignedUrlRequest
-        {
-            BucketName = BucketNames.VehicleSales,
-            Key = "log.txt",
-            Verb = HttpVerb.PUT,
-            Expires = DateTime.Now.AddMinutes(5)
-        };
-
-        var response = await amazonS3.GetPreSignedURLAsync(request);
-
-        return await context.VehicleMakes
+    public async Task<IReadOnlyList<string>> Get(CancellationToken cancellationToken) =>
+        await context.VehicleMakes
             .Select(vehicleMake => vehicleMake.Name)
             .ToArrayAsync(cancellationToken);
-    }
 }

@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DraftEntities.Migrations
+namespace ObjectUploadTracking.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDraftEntity : Migration
+    public partial class CreateObjectUpload : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,20 +16,21 @@ namespace DraftEntities.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "draft_entities",
+                name: "object_uploads",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
+                    EntityId = table.Column<int>(type: "int", nullable: false),
+                    Directory = table.Column<string>(type: "VARCHAR(30)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    JsonValue = table.Column<string>(type: "text", nullable: false)
+                    ObjectKeys = table.Column<string>(type: "VARCHAR(109)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_draft_entities", x => x.Id);
+                    table.PrimaryKey("PK_object_uploads", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
@@ -38,7 +39,7 @@ namespace DraftEntities.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "draft_entities");
+                name: "object_uploads");
         }
     }
 }

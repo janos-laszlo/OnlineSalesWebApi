@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ObjectUploadTracking;
 
 namespace VehicleSales.Entities.VehicleSale;
 
@@ -190,6 +192,27 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
 
                 vehicleDetailsBuilder.Property(v => v.MaximumLoadInKg)
                     .HasColumnName(nameof(VehicleDetails.MaximumLoadInKg));
+
+                vehicleDetailsBuilder.Property(v => v.Directory)
+                    .HasColumnName(nameof(VehicleDetails.Directory))
+                    .HasColumnType($"VARCHAR({DirectoryName.MaxLength})")
+                    .HasConversion(
+                        value => value == null ? null : value.Value,
+                        directory => directory == null ? null : DirectoryName.Create(directory).Value);
+
+                vehicleDetailsBuilder.Property(v => v.PhotoKeys)
+                    .HasColumnName(nameof(VehicleDetails.PhotoKeys))
+                    .HasColumnType($"VARCHAR({VehicleDetails.MaxNumberOfPhotos * ObjectKeyName.MaxLength})")
+                    .HasConversion(
+                        value => value == null ? null : string.Join(',', value.Select(v => v.Value)),
+                        photoKeys => photoKeys == null ? null : photoKeys.Split(',').Select(key => ObjectKeyName.Create(key).Value).ToList(),
+                        new ValueComparer<IReadOnlyList<ObjectKeyName>?>(
+                            (c1, c2) => c1 == null && c2 == null
+                                || (c1 != null && c2 != null && c1.Select(v => v.Value).SequenceEqual(c2.Select(v => v.Value))),
+                            c => c == null ? 0 : c.Aggregate(0, (hash, v) => HashCode.Combine(hash, v.Value.GetHashCode())),
+                            c => c == null ? null : c.Select(v => ObjectKeyName.Create(v.Value).Value).ToList()
+                        )
+                    );
             });
     }
 }

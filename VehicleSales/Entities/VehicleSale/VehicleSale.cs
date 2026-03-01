@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using CSharpFunctionalExtensions;
+using ObjectUploadTracking;
 using VehicleSales.Entities.VehicleMake;
 
 namespace VehicleSales.Entities.VehicleSale;
@@ -21,16 +22,18 @@ internal sealed record Sale
     public required Location Location { get; set; }
     public SaleStatus Status { get; set; } = SaleStatus.InValidation;
     /// <summary>
-    /// By default it's DateTimeOffset.Now, but it can be set to a 
+    /// By default it's DateTimeOffset.UtcNow, but it can be set to a 
     /// custom value for testing purposes or if the creation time needs 
     /// to be specified explicitly.
     /// </summary>
-    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.Now;
-    public DateTimeOffset? UpdatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow; 
+    public DateTimeOffset? UpdatedAt { get; set; }
 }
 
 internal sealed record VehicleDetails
 {
+    internal const int MaxNumberOfPhotos = 10;
+
     public required int VehicleModelId { get; set; }
     public VehicleModel? VehicleModel { get; set; }
     public uint? MileageInKilometers { get; set; }
@@ -62,7 +65,8 @@ internal sealed record VehicleDetails
     /// The maximum load capacity that the vehicle can support.
     /// </summary>
     public uint? MaximumLoadInKg { get; set; }
-    // TODO: Add photo URLs as JSON array in one column.
+    public DirectoryName? Directory { get; set; }
+    public IReadOnlyList<ObjectKeyName>? PhotoKeys { get; set; }
 }
 
 internal sealed record SaleTitle
@@ -156,11 +160,9 @@ internal sealed record LocationName
 [JsonConverter(typeof(JsonStringEnumConverter))]
 internal enum SaleStatus
 {
-    InValidation,
-    Active,
-    Sold,
     Deactivated,
-    Expired
+    InValidation,
+    Active
 }
 
 internal sealed record VehicleVersion
@@ -302,7 +304,7 @@ internal sealed record VIN
     public const int MinLength = 5;
     public const int MaxLength = 17;
     private static readonly string Error =
-        $"Value must be between {MinLength} and {MaxLength}";
+        $"Value must be between {MinLength} and {MaxLength} characters.";
 
     public string Value { get; }
 

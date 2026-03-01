@@ -1,4 +1,4 @@
-@baseUrl = http://192.168.1.8:5153
+@baseUrl = http://192.168.0.24:5153
 
 ###
 GET {{baseUrl}}
@@ -47,15 +47,15 @@ GET {{baseUrl}}/vehicle-sales/makes
 GET {{baseUrl}}/vehicle-sales/models?makeName=bmw
 
 ###
-PUT https://presigned-url-here
-Content-Type: application/txt
+PUT https://vehicle-sales.32d6a197b805a198a142c29a53469f77.r2.cloudflarestorage.com/a58e8def-ae2a-44df-84ad-/0.jpeg?X-Amz-Expires=900&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=6830be008a560c9b5cc566f1431b2d34%2F20260227%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260227T204049Z&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=8c7dbcbcdc2f96ee500f10c155011043aa85350230427500898a800ed0ba37a7
+Content-Type: image/jpeg
 
-### full local file path here
+< C:\Users\janos.laszlo\Downloads\profile photo.jpeg
 
 ###
 POST {{baseUrl}}/vehicle-sales
 Content-Type: application/json
-Authorization: Bearer ...
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzIzMTgzNDQsImlhdCI6MTc3MjMxODA0NCwibmJmIjoxNzcyMzE4MDQ0LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.I77bHwtiCfV39pidcN5PTozbWKeOdFZo9MVd70UIe80
 
 {
   "title": "2019 BMW 3 Series - Excellent Condition",
@@ -90,5 +90,10 @@ Authorization: Bearer ...
   "averageFuelConsumptionInLitersPer100Km": 6,
   "averageBatteryConsumptionInKWhPer100Km": 90,
   "massInKg": 1520,
-  "maximumLoadInKg": 480
+  "maximumLoadInKg": 480,
+  "photoContentTypes": ["image/jpeg","image/png","image/jpeg"]
 }
+
+###
+GET {{baseUrl}}/vehicle-sales/confirm?objectUploadId=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzIzMTk0MjAsImlhdCI6MTc3MjMxOTEyMCwibmJmIjoxNzcyMzE5MTIwLCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.X_Qlc4u2FAXy5Q2X6DjB5OmPXKFeQX0yQFMWUgHPlS4

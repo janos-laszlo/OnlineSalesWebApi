@@ -48,11 +48,10 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.PhoneNumbers)
             .HasConversion(
                 v => string.Join(';', v ?? Array.Empty<string>()),
-                v => v.Split(';'))
-            .Metadata
-            .SetValueComparer(new ValueComparer<IReadOnlyList<string>?>(
-                (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
-                c => c != null ? string.Join(';', c).GetHashCode() : 0,
-                c => c ?? Array.Empty<string>()));
+                v => v.Split(';'),
+                new ValueComparer<IReadOnlyList<string>?>(
+                    (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
+                    c => c != null ? string.Join(';', c).GetHashCode() : 0,
+                    c => c ?? Array.Empty<string>()));
     }
 }

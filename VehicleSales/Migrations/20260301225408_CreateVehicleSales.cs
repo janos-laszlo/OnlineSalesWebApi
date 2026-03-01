@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VehicleSales.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateVehicleSale : Migration
+    public partial class CreateVehicleSales : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -60,10 +60,10 @@ namespace VehicleSales.Migrations
                     SellerId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "VARCHAR(100)", nullable: false),
                     Description = table.Column<string>(type: "VARCHAR(5000)", nullable: false),
-                    County = table.Column<string>(type: "VARCHAR(30)", nullable: false),
-                    Locality = table.Column<string>(type: "VARCHAR(30)", nullable: false),
                     AmountInCents = table.Column<uint>(type: "int unsigned", nullable: false),
                     Currency = table.Column<int>(type: "int", nullable: false),
+                    County = table.Column<string>(type: "VARCHAR(30)", nullable: false),
+                    Locality = table.Column<string>(type: "VARCHAR(30)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true),
@@ -98,7 +98,7 @@ namespace VehicleSales.Migrations
                     AverageBatteryConsumptionInKWhPer100Km = table.Column<ushort>(type: "smallint unsigned", nullable: true),
                     MassInKg = table.Column<uint>(type: "int unsigned", nullable: true),
                     MaximumLoadInKg = table.Column<uint>(type: "int unsigned", nullable: true),
-                    Directory = table.Column<string>(type: "VARCHAR(30)", nullable: true)
+                    Directory = table.Column<string>(type: "VARCHAR(32)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PhotoKeys = table.Column<string>(type: "VARCHAR(100)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")

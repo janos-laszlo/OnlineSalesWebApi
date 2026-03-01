@@ -13,8 +13,8 @@ using VehicleSales;
 namespace VehicleSales.Migrations
 {
     [DbContext(typeof(VehicleSalesDbContext))]
-    [Migration("20260227194148_CreateVehicleSale")]
-    partial class CreateVehicleSale
+    [Migration("20260301225408_CreateVehicleSales")]
+    partial class CreateVehicleSales
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -203,7 +203,7 @@ namespace VehicleSales.Migrations
                                 .HasColumnName("BodyType");
 
                             b1.Property<string>("Directory")
-                                .HasColumnType("VARCHAR(30)")
+                                .HasColumnType("VARCHAR(32)")
                                 .HasColumnName("Directory");
 
                             b1.Property<int?>("DriveType")

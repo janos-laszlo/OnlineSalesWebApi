@@ -18,7 +18,7 @@ public sealed class ObjectUpload()
 public sealed record DirectoryName
 {
     public const int MinLength = 1;
-    public const int MaxLength = 30;
+    public const int MaxLength = 32;
     private static readonly string Error =
         $"Value must be between {MinLength} and {MaxLength} characters.";
 

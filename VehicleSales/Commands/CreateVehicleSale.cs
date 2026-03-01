@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Amazon.S3;
-using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using ObjectUploadTracking;
@@ -12,7 +10,7 @@ namespace VehicleSales.Commands;
 
 public interface ICreateVehicleSale
 {
-    Task<Result<CreateVehicleSaleResponseDto?>> Execute(
+    Task<Result<ObjectUploadTrackingDto?>> Execute(
         CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken);
@@ -20,10 +18,9 @@ public interface ICreateVehicleSale
 
 internal sealed class CreateVehicleSale(
     VehicleSalesDbContext dbContext,
-    IObjectUploadOperations objectUploadOperations,
-    IAmazonS3 r2Client) : ICreateVehicleSale
+    IObjectUploadOperations objectUploadOperations) : ICreateVehicleSale
 {
-    public async Task<Result<CreateVehicleSaleResponseDto?>> Execute(
+    public async Task<Result<ObjectUploadTrackingDto?>> Execute(
         CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken)
@@ -32,13 +29,13 @@ internal sealed class CreateVehicleSale(
 
         var vehicleSaleResult = dto.ToVehicleSale(sellerId);
         if (vehicleSaleResult.IsFailure)
-            return Result.Failure<CreateVehicleSaleResponseDto?>(vehicleSaleResult.Error);
+            return Result.Failure<ObjectUploadTrackingDto?>(vehicleSaleResult.Error);
 
         if (!await dbContext.VehicleModels.AnyAsync(
             vehicleModel => vehicleModel.Id == vehicleSaleResult.Value.VehicleDetails.VehicleModelId,
             cancellationToken))
         {
-            return Result.Failure<CreateVehicleSaleResponseDto?>("Vehicle model doesn't exist");
+            return Result.Failure<ObjectUploadTrackingDto?>("Vehicle model doesn't exist");
         }
 
         dbContext.VehicleSales.Add(vehicleSaleResult.Value);
@@ -47,44 +44,13 @@ internal sealed class CreateVehicleSale(
         if (dto.PhotoContentTypes?.Any() != true)
             return null;
 
-        IReadOnlyList<(ObjectKeyName, string)> objKeyAndItsContentType = CreatePhotoObjectKeys(dto.PhotoContentTypes);
-        ObjectUpload objectUpload = new()
-        {
-            EntityId = vehicleSaleResult.Value.Id,
-            Directory = DirectoryName.Create(DateTime.Now.GetHashCode().ToString()).Value,
-            ObjectKeys = objKeyAndItsContentType.Select(tuple => tuple.Item1).ToList(),
-            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(15)
-        };
-        await objectUploadOperations.Track(
-            objectUpload,
+        return await objectUploadOperations.CreateObjectUpload(
+            BucketNames.VehicleSales,
+            dto.PhotoContentTypes,
+            vehicleSaleResult.Value.Id,
+            DateTime.UtcNow.AddMinutes(15),
             cancellationToken);
-
-        return new CreateVehicleSaleResponseDto(
-            objectUpload.Id,
-            objectUpload.Directory.Value,
-            CreatePresignedPutRequests(objectUpload.Directory, objKeyAndItsContentType));
     }
-
-    private Dictionary<string, string> CreatePresignedPutRequests(
-        DirectoryName directory,
-        IReadOnlyList<(ObjectKeyName, string)> objectKeysAndTheirContentType)
-    =>
-        objectKeysAndTheirContentType.ToDictionary(
-            objectKey => objectKey.Item1.Value,
-            objectKeyAndItsContentType => r2Client.GetPreSignedURL(
-                new GetPreSignedUrlRequest
-                {
-                    BucketName = BucketNames.VehicleSales,
-                    Key = $"{directory.Value}/{objectKeyAndItsContentType.Item1.Value}",
-                    Verb = HttpVerb.PUT,
-                    Expires = DateTime.Now.AddMinutes(15),
-                    ContentType = objectKeyAndItsContentType.Item2
-                }));
-
-    private static List<(ObjectKeyName, string)> CreatePhotoObjectKeys(IReadOnlyList<string> photoContentTypes) =>
-        [.. photoContentTypes
-            .Select((pct, index) => (ObjectKeyName.Create($"{index}.{pct.Split('/')[1]}").Value, pct))];
-
 }
 
 public sealed record CreateVehicleSaleRequestDto(
@@ -344,8 +310,3 @@ public sealed class MaxPhotoContentTypesAttribute(int maxPhotos) : ValidationAtt
         return ValidationResult.Success;
     }
 }
-
-public sealed record CreateVehicleSaleResponseDto(
-    int ObjectUploadId,
-    string Directory,
-    IDictionary<string, string>? ObjectKeysAndPresignedUrls);

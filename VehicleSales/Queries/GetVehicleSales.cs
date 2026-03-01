@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using ObjectUploadTracking;
 using VehicleSales.Entities.VehicleSale;
 
 namespace VehicleSales.Queries;
@@ -15,11 +16,13 @@ internal sealed class GetVehicleSales(
     VehicleSalesDbContext dbContext) : IGetVehicleSales
 {
     public async Task<IReadOnlyList<VehicleSaleDto>> Execute(PagedRequest request, CancellationToken cancellation) =>
+        // TODO: Use SqlRaw or Dapper because EF parses each value object and this results in a very inefficient query.
         await dbContext.VehicleSales
             .Skip((request.PageNumber) * request.PageSize)
             .Take(request.PageSize)
             .Select(vs =>
                 new VehicleSaleDto(
+#pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
                     vs.Id,
                     vs.Sale.Title.Value,
@@ -55,8 +58,11 @@ internal sealed class GetVehicleSales(
                     AverageFuelConsumptionInLitersPer100Km = vs.VehicleDetails.AverageFuelConsumptionInLitersPer100Km,
                     AverageBatteryConsumptionInKWhPer100Km = vs.VehicleDetails.AverageBatteryConsumptionInKWhPer100Km,
                     MassInKg = vs.VehicleDetails.MassInKg,
-                    MaximumLoadInKg = vs.VehicleDetails.MaximumLoadInKg
+                    MaximumLoadInKg = vs.VehicleDetails.MaximumLoadInKg,
+                    Directory = vs.VehicleDetails.Directory.Value,
+                    PhotoKeysInternal = vs.VehicleDetails.PhotoKeys
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8604 // Possible null reference argument.
                 })
             .ToListAsync(cancellation);
 }
@@ -155,4 +161,8 @@ public sealed record VehicleSaleDto(
 
     [Description("Maximum load capacity in kilograms.")]
     public uint? MaximumLoadInKg { get; init; }
+
+    public string? Directory { get; init; }
+    internal IReadOnlyList<ObjectKeyName>? PhotoKeysInternal { get; init; }
+    public IReadOnlyList<string>? PhotoKeys => PhotoKeysInternal?.Select(ok => ok.Value).ToList();
 }

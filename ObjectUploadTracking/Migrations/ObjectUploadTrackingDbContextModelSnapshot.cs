@@ -32,7 +32,7 @@ namespace ObjectUploadTracking.Migrations
 
                     b.Property<string>("Directory")
                         .IsRequired()
-                        .HasColumnType("VARCHAR(30)")
+                        .HasColumnType("VARCHAR(32)")
                         .HasColumnName("Directory");
 
                     b.Property<int>("EntityId")

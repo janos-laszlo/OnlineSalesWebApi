@@ -22,7 +22,7 @@ namespace ObjectUploadTracking.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     EntityId = table.Column<int>(type: "int", nullable: false),
-                    Directory = table.Column<string>(type: "VARCHAR(30)", nullable: false)
+                    Directory = table.Column<string>(type: "VARCHAR(32)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ObjectKeys = table.Column<string>(type: "VARCHAR(109)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),

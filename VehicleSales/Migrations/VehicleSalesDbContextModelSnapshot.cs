@@ -200,7 +200,7 @@ namespace VehicleSales.Migrations
                                 .HasColumnName("BodyType");
 
                             b1.Property<string>("Directory")
-                                .HasColumnType("VARCHAR(30)")
+                                .HasColumnType("VARCHAR(32)")
                                 .HasColumnName("Directory");
 
                             b1.Property<int?>("DriveType")

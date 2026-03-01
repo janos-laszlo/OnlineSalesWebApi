@@ -55,7 +55,7 @@ Content-Type: image/jpeg
 ###
 POST {{baseUrl}}/vehicle-sales
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzIzMTgzNDQsImlhdCI6MTc3MjMxODA0NCwibmJmIjoxNzcyMzE4MDQ0LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.I77bHwtiCfV39pidcN5PTozbWKeOdFZo9MVd70UIe80
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzI0MDc2NzYsImlhdCI6MTc3MjQwNzM3NiwibmJmIjoxNzcyNDA3Mzc2LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.M5XRe__yQdUr2443jnMVBut3wdwE7Ex8GIc5xYqMVAU
 
 {
   "title": "2019 BMW 3 Series - Excellent Condition",
@@ -90,10 +90,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vM
   "averageFuelConsumptionInLitersPer100Km": 6,
   "averageBatteryConsumptionInKWhPer100Km": 90,
   "massInKg": 1520,
-  "maximumLoadInKg": 480,
-  "photoContentTypes": ["image/jpeg","image/png","image/jpeg"]
+  "maximumLoadInKg": 480
 }
 
 ###
-GET {{baseUrl}}/vehicle-sales/confirm?objectUploadId=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzIzMTk0MjAsImlhdCI6MTc3MjMxOTEyMCwibmJmIjoxNzcyMzE5MTIwLCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.X_Qlc4u2FAXy5Q2X6DjB5OmPXKFeQX0yQFMWUgHPlS4
+GET {{baseUrl}}/vehicle-sales/confirm-object-upload?objectUploadId=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzI0MDc2NzYsImlhdCI6MTc3MjQwNzM3NiwibmJmIjoxNzcyNDA3Mzc2LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.M5XRe__yQdUr2443jnMVBut3wdwE7Ex8GIc5xYqMVAU
+
+###
+GET {{baseUrl}}/vehicle-sales?pageNumber=0&pageSize=10
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzI0MDc2NzYsImlhdCI6MTc3MjQwNzM3NiwibmJmIjoxNzcyNDA3Mzc2LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.M5XRe__yQdUr2443jnMVBut3wdwE7Ex8GIc5xYqMVAU

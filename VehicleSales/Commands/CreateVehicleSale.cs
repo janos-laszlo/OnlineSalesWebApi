@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
-using ObjectUploadTracking;
+using ObjectUploadTracking.Commands;
 using VehicleSales.Entities.VehicleSale;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -18,7 +18,7 @@ public interface ICreateVehicleSale
 
 internal sealed class CreateVehicleSale(
     VehicleSalesDbContext dbContext,
-    IObjectUploadOperations objectUploadOperations) : ICreateVehicleSale
+    ICreateObjectUpload createObjectUpload) : ICreateVehicleSale
 {
     public async Task<Result<ObjectUploadTrackingDto?>> Execute(
         CreateVehicleSaleRequestDto dto,
@@ -44,7 +44,7 @@ internal sealed class CreateVehicleSale(
         if (dto.PhotoContentTypes?.Any() != true)
             return null;
 
-        return await objectUploadOperations.CreateObjectUpload(
+        return await createObjectUpload.Execute(
             BucketNames.VehicleSales,
             dto.PhotoContentTypes,
             vehicleSaleResult.Value.Id,

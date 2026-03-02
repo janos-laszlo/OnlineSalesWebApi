@@ -1,41 +1,23 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
-using CSharpFunctionalExtensions;
 
-namespace ObjectUploadTracking;
+namespace ObjectUploadTracking.Commands;
 
-public interface IObjectUploadOperations
+public interface ICreateObjectUpload
 {
-    Task<ObjectUploadTrackingDto> CreateObjectUpload(
+    Task<ObjectUploadTrackingDto> Execute(
         string bucketName,
         IEnumerable<string> objectContentTypes,
         int entityId,
         DateTime expiresAt,
         CancellationToken cancellation);
-
-    Task<Result> Consume(int objectUploadId, Func<ObjectUpload, Task<Result>> func, CancellationToken cancellation);
 }
 
-internal sealed class ObjectUploadOperations(
+internal sealed class CreateObjectUpload(
     ObjectUploadTrackingDbContext dbContext,
-    IAmazonS3 r2Client) : IObjectUploadOperations
+    IAmazonS3 r2Client) : ICreateObjectUpload
 {
-    public async Task<Result> Consume(
-        int objectUploadId,
-        Func<ObjectUpload, Task<Result>> func,
-        CancellationToken cancellation)
-    {
-        var objectUpload = dbContext.ObjectUploads.Find(objectUploadId);
-        if (objectUpload is null)
-            return Result.Failure($"Object upload with id {objectUploadId} not found.");
-
-        var result = await func(objectUpload);
-        dbContext.ObjectUploads.Remove(objectUpload);
-        await dbContext.SaveChangesAsync(cancellation);
-        return result;
-    }
-
-    public async Task<ObjectUploadTrackingDto> CreateObjectUpload(
+    public async Task<ObjectUploadTrackingDto> Execute(
         string bucketName,
         IEnumerable<string> objectContentTypes,
         int entityId,
@@ -80,8 +62,6 @@ internal sealed class ObjectUploadOperations(
                     Expires = DateTime.Now.AddMinutes(15),
                     ContentType = objectKeyAndItsContentType.Item2
                 }));
-
-
 }
 
 public sealed record ObjectUploadTrackingDto(

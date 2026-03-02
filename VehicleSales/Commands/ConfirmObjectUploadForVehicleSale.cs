@@ -2,7 +2,7 @@
 using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
 using ObjectUploadTracking;
-using VehicleSales.Entities.VehicleSale;
+using ObjectUploadTracking.Commands;
 
 namespace VehicleSales.Commands;
 
@@ -13,11 +13,11 @@ public interface IConfirmObjectUploadForVehicleSale
 
 internal sealed class ConfirmObjectUploadForVehicleSale(
     VehicleSalesDbContext dbContext,
-    IObjectUploadOperations objectUploadOperations,
+    IConsumeObjectUpload consumeObjectUpload,
     IAmazonS3 s3Client) : IConfirmObjectUploadForVehicleSale
 {
     public async Task<Result> Execute(int objectUploadId, int userId, CancellationToken cancellation) =>
-        await objectUploadOperations.Consume(
+        await consumeObjectUpload.Execute(
             objectUploadId,
             async (objectUpload) =>
             {
@@ -32,8 +32,12 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
                 if (objectsNotFound.Count > 0)
                     return Result.Failure($"{string.Join(", ", objectsNotFound)} do not exist in {BucketNames.VehicleSales}/{objectUpload.Directory}.");
 
-                vehicleSale.VehicleDetails.Directory = objectUpload.Directory;
-                vehicleSale.VehicleDetails.PhotoKeys = objectUpload.ObjectKeys;
+                vehicleSale.UpdateVehicleDetails(
+                    vehicleDetails =>
+                    {
+                        vehicleDetails.Directory = objectUpload.Directory;
+                        vehicleDetails.PhotoKeys = objectUpload.ObjectKeys;
+                    });
                 await dbContext.SaveChangesAsync(cancellation);
 
                 return Result.Success();

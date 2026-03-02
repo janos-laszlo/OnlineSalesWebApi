@@ -1,10 +1,10 @@
 ﻿using Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ObjectUploadTracking.Commands;
 
 namespace ObjectUploadTracking;
 
-// TODO: Add background service to clean up expired object uploads
 public static class ObjectUploadTrackingRegistration
 {
     public static IServiceCollection AddObjectUploadTracking(
@@ -12,7 +12,8 @@ public static class ObjectUploadTrackingRegistration
         IConfiguration configuration)
     {
         services.RegisterDbContext<ObjectUploadTrackingDbContext>(configuration);
-        services.AddScoped<IObjectUploadOperations, ObjectUploadOperations>();
+        services.AddTransient<IConsumeObjectUpload, ConsumeObjectUpload>();
+        services.AddTransient<ICreateObjectUpload, CreateObjectUpload>();
 
         return services;
     }

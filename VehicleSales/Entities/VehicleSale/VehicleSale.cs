@@ -12,6 +12,14 @@ internal sealed class VehicleSale
     public User.User? Seller { get; init; }
     public required Sale Sale { get; set; }
     public required VehicleDetails VehicleDetails { get; set; }
+
+    internal void UpdateVehicleDetails(Action<VehicleDetails> action)
+    {
+        action(VehicleDetails);
+        this.Sale.UpdatedAt = DateTimeOffset.UtcNow;
+        if (this.Sale.Status == SaleStatus.Active)
+            this.Sale.Status = SaleStatus.InValidation;
+    }
 }
 
 internal sealed record Sale
@@ -26,7 +34,7 @@ internal sealed record Sale
     /// custom value for testing purposes or if the creation time needs 
     /// to be specified explicitly.
     /// </summary>
-    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow; 
+    public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
 }
 

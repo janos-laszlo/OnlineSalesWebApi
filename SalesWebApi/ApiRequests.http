@@ -1,4 +1,5 @@
-@baseUrl = http://192.168.0.24:5153
+@baseUrl = http://192.168.0.21:5153
+@bearerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjIxOjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjIxOjUxNTMiLCJleHAiOjE3NzI0NzYzMjAsImlhdCI6MTc3MjQ3NjAyMCwibmJmIjoxNzcyNDc2MDIwLCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.IMAZqbL18UAnpu_0h5cW-NSXGH3omlkm7upOa8pwRT8
 
 ###
 GET {{baseUrl}}
@@ -55,7 +56,7 @@ Content-Type: image/jpeg
 ###
 POST {{baseUrl}}/vehicle-sales
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzI0MDc2NzYsImlhdCI6MTc3MjQwNzM3NiwibmJmIjoxNzcyNDA3Mzc2LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.M5XRe__yQdUr2443jnMVBut3wdwE7Ex8GIc5xYqMVAU
+Authorization: Bearer {{bearerToken}}
 
 {
   "title": "2019 BMW 3 Series - Excellent Condition",
@@ -94,9 +95,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vM
 }
 
 ###
-GET {{baseUrl}}/vehicle-sales/confirm-object-upload?objectUploadId=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzI0MDc2NzYsImlhdCI6MTc3MjQwNzM3NiwibmJmIjoxNzcyNDA3Mzc2LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.M5XRe__yQdUr2443jnMVBut3wdwE7Ex8GIc5xYqMVAU
+PATCH {{baseUrl}}/vehicle-sales/confirm-object-upload/1
+Authorization: Bearer {{bearerToken}}
 
 ###
 GET {{baseUrl}}/vehicle-sales?pageNumber=0&pageSize=10
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjI0OjUxNTMiLCJleHAiOjE3NzI0MDc2NzYsImlhdCI6MTc3MjQwNzM3NiwibmJmIjoxNzcyNDA3Mzc2LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.M5XRe__yQdUr2443jnMVBut3wdwE7Ex8GIc5xYqMVAU
+Authorization: Bearer {{bearerToken}}
+
+###
+PATCH {{baseUrl}}/vehicle-sales/3
+Content-Type: application/json
+Authorization: Bearer {{bearerToken}}
+
+{
+    "photos": ["0.jpeg", "2.jpeg", "1.png"]
+}

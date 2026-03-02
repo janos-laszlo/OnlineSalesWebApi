@@ -21,6 +21,7 @@ public static class VehicleSalesRegistration
         services.AddTransient<IGetVehicleSales, GetVehicleSales>();
         services.AddTransient<ICreateVehicleSale, CreateVehicleSale>();
         services.AddTransient<IConfirmObjectUploadForVehicleSale, ConfirmObjectUploadForVehicleSale>();
+        services.AddTransient<IUpdateVehicleSale, UpdateVehicleSale>();
 
         RegisterCloudflareR2(services, configuration);
 

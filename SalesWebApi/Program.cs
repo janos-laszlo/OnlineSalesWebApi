@@ -3,7 +3,6 @@ using Common;
 using EmailSending;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.IdentityModel.Tokens;
 using ObjectUploadTracking;
 using SalesWebApi.Endpoints;
@@ -55,9 +54,9 @@ static Action<JwtBearerOptions> ConfigureJwtBearer(WebApplicationBuilder builder
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = signingKey,
             ValidateIssuer = true,
-            ValidIssuer = "http://192.168.0.24:5153",
+            ValidIssuer = "http://192.168.0.21:5153",
             ValidateAudience = true,
-            ValidAudience = "http://192.168.0.24:5153",
+            ValidAudience = "http://192.168.0.21:5153",
             ValidateLifetime = true
         };
     };

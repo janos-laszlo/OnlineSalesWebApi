@@ -36,7 +36,7 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
                     vehicleDetails =>
                     {
                         vehicleDetails.Directory = objectUpload.Directory;
-                        vehicleDetails.PhotoKeys = objectUpload.ObjectKeys;
+                        vehicleDetails.PhotoKeys = [.. objectUpload.ObjectKeys];
                     });
                 await dbContext.SaveChangesAsync(cancellation);
 

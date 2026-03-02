@@ -20,6 +20,15 @@ internal sealed class VehicleSale
         if (this.Sale.Status == SaleStatus.Active)
             this.Sale.Status = SaleStatus.InValidation;
     }
+
+    internal void UpdateVehicleSale(Action<Sale> saleAction, Action<VehicleDetails> vehicleDetailsAction)
+    {
+        saleAction(this.Sale);
+        vehicleDetailsAction(this.VehicleDetails);
+        this.Sale.UpdatedAt = DateTimeOffset.UtcNow;
+        if (this.Sale.Status == SaleStatus.Active)
+            this.Sale.Status = SaleStatus.InValidation;
+    }
 }
 
 internal sealed record Sale
@@ -74,7 +83,7 @@ internal sealed record VehicleDetails
     /// </summary>
     public uint? MaximumLoadInKg { get; set; }
     public DirectoryName? Directory { get; set; }
-    public IReadOnlyList<ObjectKeyName>? PhotoKeys { get; set; }
+    public List<ObjectKeyName>? PhotoKeys { get; set; }
 }
 
 internal sealed record SaleTitle
@@ -141,9 +150,11 @@ public enum Currency
     RON
 }
 
-internal sealed record Location(
-    LocationName County,
-    LocationName Locality);
+internal sealed record Location
+{
+    public required LocationName County { get; set; }
+    public required LocationName Locality { get; set; }
+};
 
 internal sealed record LocationName
 {

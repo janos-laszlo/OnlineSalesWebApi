@@ -1,6 +1,7 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Configuration;
 using ObjectUploadTracking;
 using ObjectUploadTracking.Commands;
 
@@ -14,7 +15,8 @@ public interface IConfirmObjectUploadForVehicleSale
 internal sealed class ConfirmObjectUploadForVehicleSale(
     VehicleSalesDbContext dbContext,
     IConsumeObjectUpload consumeObjectUpload,
-    IAmazonS3 s3Client) : IConfirmObjectUploadForVehicleSale
+    IAmazonS3 s3Client,
+    IConfiguration configuration) : IConfirmObjectUploadForVehicleSale
 {
     public async Task<Result> Execute(int objectUploadId, int userId, CancellationToken cancellation) =>
         await consumeObjectUpload.Execute(
@@ -30,7 +32,7 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
 
                 var objectsNotFound = await GetObjectsNotExistingInDirectory(objectUpload.Directory, objectUpload.ObjectKeys, cancellation);
                 if (objectsNotFound.Count > 0)
-                    return Result.Failure($"{string.Join(", ", objectsNotFound)} do not exist in {BucketNames.VehicleSales}/{objectUpload.Directory}.");
+                    return Result.Failure($"{string.Join(", ", objectsNotFound)} do not exist in {configuration[R2Config.BucketNameKey]}/{objectUpload.Directory}.");
 
                 vehicleSale.UpdateVehicleDetails(
                     vehicleDetails =>
@@ -51,7 +53,7 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
     {
         var request = new ListObjectsV2Request
         {
-            BucketName = BucketNames.VehicleSales,
+            BucketName = configuration[R2Config.BucketNameKey],
             Prefix = directory.Value
         };
 

@@ -1,8 +1,8 @@
 using UserIdentity.Commands;
 
-namespace SalesWebApi.IntegrationTests.Commands;
+namespace SalesWebApi.IntegrationTests.UserIdentityEndpoints;
 
-[Collection("User Identity")]
+[Collection(UserIdentityFixture.CollectionName)]
 public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
 {
     [Fact]
@@ -12,7 +12,7 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.GetAsync(
-            Endpoints.ConfirmEmailUri + "some-invalid-token-that-doesnt-exist");
+            UserIdentityUris.ConfirmEmailUri + "some-invalid-token-that-doesnt-exist");
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);
@@ -23,13 +23,13 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
     {
         // Arrange
         await fixture.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri, new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
+            UserIdentityUris.RegisterUri, new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
 
         // Act
         string confirmationToken = ExtractConfirmationToken(
             fixture.EmailService.Emails.First().Body);
         var result = await fixture.Client.GetAsync(
-            $"{Endpoints.ConfirmEmailUri}{confirmationToken}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}");
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);
@@ -41,17 +41,17 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
         // Arrange
         string email = UserUtils.NextEmail;
         await fixture.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri,
+            UserIdentityUris.RegisterUri,
             new UserCredentialsDto(email, "Password1"));
 
         string confirmationToken = ExtractConfirmationToken(
             fixture.EmailService.Emails.First().Body);
         await fixture.Client.GetAsync(
-            $"{Endpoints.ConfirmEmailUri}{confirmationToken}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}");
 
         // Act
         var result = await fixture.Client.GetAsync(
-            $"{Endpoints.ConfirmEmailUri}{confirmationToken}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}");
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);
@@ -63,7 +63,7 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
         // Arrange
         string email = UserUtils.NextEmail;
         await fixture.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri,
+            UserIdentityUris.RegisterUri,
             new UserCredentialsDto(email, "Password1"));
 
         string confirmationTokenWithDifferentPurposeKey = fixture
@@ -72,7 +72,7 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.GetAsync(
-            $"{Endpoints.ConfirmEmailUri}{confirmationTokenWithDifferentPurposeKey}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationTokenWithDifferentPurposeKey}");
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);

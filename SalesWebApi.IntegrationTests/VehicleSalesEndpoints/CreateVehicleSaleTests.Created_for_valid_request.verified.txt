@@ -1,0 +1,17 @@
+﻿{
+  Status: 201 Created,
+  Headers: {
+    Location: {Scrubbed}
+  },
+  Content: {
+    Headers: {
+      Content-Length: 82,
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      entityId: {Scrubbed},
+      objectUploadId: null,
+      objectKeysAndTheirPresignedUploadUrls: null
+    }
+  }
+}

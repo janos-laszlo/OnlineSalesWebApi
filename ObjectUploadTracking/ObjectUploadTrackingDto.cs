@@ -1,5 +1,8 @@
 ﻿namespace ObjectUploadTracking;
 
 public sealed record ObjectUploadTrackingDto(
-    int Id,
-    IDictionary<string, string> ObjectKeysAndTheirPresignedUploadUrls);
+    int EntityId)
+{
+    public int? ObjectUploadId { get; init; }
+    public IDictionary<string, string>? ObjectKeysAndTheirPresignedUploadUrls { get; init; }
+}

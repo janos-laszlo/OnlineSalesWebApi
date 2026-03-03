@@ -2,6 +2,7 @@
 using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ObjectUploadTracking;
 using ObjectUploadTracking.Commands;
 using VehicleSales.Attributes;
@@ -22,7 +23,8 @@ public interface IUpdateVehicleSale
 internal sealed class UpdateVehicleSale(
     VehicleSalesDbContext dbContext,
     ICreateObjectUpload createObjectUpload,
-    IAmazonS3 r2Client) : IUpdateVehicleSale
+    IAmazonS3 r2Client,
+    IConfiguration configuration) : IUpdateVehicleSale
 {
     // TODO: test cases
     // - just rearrange the order of photos without addition or removal
@@ -176,13 +178,16 @@ internal sealed class UpdateVehicleSale(
             objectUpload,
             cancellationToken);
         return new ObjectUploadTrackingDto(
-            objectUpload.Id,
-            CreatePresignedPutRequests(
+            vehicleSale.Id)
+        {
+            ObjectUploadId = objectUpload.Id,
+            ObjectKeysAndTheirPresignedUploadUrls = CreatePresignedPutRequests(
                 objectUpload.Directory,
                 photoKeys
                     .Where(pk => pk.IsNew)
                     .Select(pk => (pk.ObjectKey, pk.ContentType))
-                    .ToList()));
+                    .ToList())
+        };
     }
 
     private static IReadOnlyList<(ObjectKeyName ObjectKey, string ContentType, bool IsNew)> CreateObjectKeys(
@@ -203,7 +208,7 @@ internal sealed class UpdateVehicleSale(
             objectKeyAndItsContentType => r2Client.GetPreSignedURL(
                 new GetPreSignedUrlRequest
                 {
-                    BucketName = BucketNames.VehicleSales,
+                    BucketName = configuration[R2Config.BucketNameKey],
                     Key = $"{directory.Value}/{objectKeyAndItsContentType.Item1.Value}",
                     Verb = HttpVerb.PUT,
                     Expires = DateTime.Now.AddMinutes(15),

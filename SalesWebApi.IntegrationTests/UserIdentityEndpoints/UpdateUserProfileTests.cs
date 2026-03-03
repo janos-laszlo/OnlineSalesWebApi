@@ -1,8 +1,8 @@
 using UserIdentity.Commands;
 
-namespace SalesWebApi.IntegrationTests.Commands;
+namespace SalesWebApi.IntegrationTests.UserIdentityEndpoints;
 
-[Collection("User Identity")]
+[Collection(UserIdentityFixture.CollectionName)]
 public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
 {
     [Theory]
@@ -41,7 +41,7 @@ public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
             phoneNumbers);
 
         // Act
-        var request = new HttpRequestMessage(HttpMethod.Put, Endpoints.Profile);
+        var request = new HttpRequestMessage(HttpMethod.Put, UserIdentityUris.ProfileUri);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Bearer", tokenResponse.AccessToken);
         request.Content = JsonContent.Create(updateProfileRequest);
@@ -88,7 +88,7 @@ public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
             phoneNumbers);
 
         // Act
-        var request = new HttpRequestMessage(HttpMethod.Put, Endpoints.Profile);
+        var request = new HttpRequestMessage(HttpMethod.Put, UserIdentityUris.ProfileUri);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Bearer", tokenResponse.AccessToken);
         request.Content = JsonContent.Create(updateProfileRequest);
@@ -118,7 +118,7 @@ public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
         );
 
         // Act
-        var request = new HttpRequestMessage(HttpMethod.Put, Endpoints.Profile)
+        var request = new HttpRequestMessage(HttpMethod.Put, UserIdentityUris.ProfileUri)
         { Content = JsonContent.Create(updateProfileRequest) };
 
         var result = await fixture.Client.SendAsync(request);

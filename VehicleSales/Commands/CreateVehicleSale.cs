@@ -1,7 +1,7 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ObjectUploadTracking;
 using ObjectUploadTracking.Commands;
 using VehicleSales.Dtos;
@@ -10,7 +10,7 @@ namespace VehicleSales.Commands;
 
 public interface ICreateVehicleSale
 {
-    Task<Result<ObjectUploadTrackingDto?>> Execute(
+    Task<Result<ObjectUploadTrackingDto>> Execute(
         CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken);
@@ -19,9 +19,10 @@ public interface ICreateVehicleSale
 internal sealed class CreateVehicleSale(
     VehicleSalesDbContext dbContext,
     ICreateObjectUpload createObjectUpload,
-    IAmazonS3 r2Client) : ICreateVehicleSale
+    IAmazonS3 r2Client,
+    IConfiguration configuration) : ICreateVehicleSale
 {
-    public async Task<Result<ObjectUploadTrackingDto?>> Execute(
+    public async Task<Result<ObjectUploadTrackingDto>> Execute(
         CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken)
@@ -30,20 +31,13 @@ internal sealed class CreateVehicleSale(
 
         var vehicleSaleResult = dto.ToVehicleSale(sellerId);
         if (vehicleSaleResult.IsFailure)
-            return Result.Failure<ObjectUploadTrackingDto?>(vehicleSaleResult.Error);
-
-        if (!await dbContext.VehicleModels.AnyAsync(
-            vehicleModel => vehicleModel.Id == vehicleSaleResult.Value.VehicleDetails.VehicleModelId,
-            cancellationToken))
-        {
-            return Result.Failure<ObjectUploadTrackingDto?>("Vehicle model doesn't exist");
-        }
+            return Result.Failure<ObjectUploadTrackingDto>(vehicleSaleResult.Error);
 
         dbContext.VehicleSales.Add(vehicleSaleResult.Value);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (dto.PhotoContentTypes?.Any() != true)
-            return null;
+            return new ObjectUploadTrackingDto(vehicleSaleResult.Value.Id);
 
         return await CreateObjectUpload(
             dto.PhotoContentTypes,
@@ -68,9 +62,12 @@ internal sealed class CreateVehicleSale(
         };
         await createObjectUpload.Execute(objectUpload, cancellation);
 
-        return new ObjectUploadTrackingDto(
-            objectUpload.Id,
-            CreatePresignedPutRequests(objectUpload.Directory, objKeyAndItsContentType));
+        return new ObjectUploadTrackingDto(entityId)
+        {
+            ObjectUploadId = objectUpload.Id,
+            ObjectKeysAndTheirPresignedUploadUrls = CreatePresignedPutRequests(
+                objectUpload.Directory, objKeyAndItsContentType)
+        };
     }
 
     private static List<(ObjectKeyName, string)> CreateObjectKeys(
@@ -88,7 +85,7 @@ internal sealed class CreateVehicleSale(
             objectKeyAndItsContentType => r2Client.GetPreSignedURL(
                 new GetPreSignedUrlRequest
                 {
-                    BucketName = BucketNames.VehicleSales,
+                    BucketName = configuration[R2Config.BucketNameKey],
                     Key = $"{directory.Value}/{objectKeyAndItsContentType.Item1.Value}",
                     Verb = HttpVerb.PUT,
                     Expires = DateTime.Now.AddMinutes(15),

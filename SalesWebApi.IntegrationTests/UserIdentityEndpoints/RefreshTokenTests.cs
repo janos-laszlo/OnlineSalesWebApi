@@ -1,8 +1,8 @@
 using UserIdentity.Commands;
 
-namespace SalesWebApi.IntegrationTests.Commands;
+namespace SalesWebApi.IntegrationTests.UserIdentityEndpoints;
 
-[Collection("User Identity")]
+[Collection(UserIdentityFixture.CollectionName)]
 public sealed class RefreshTokenTests(UserIdentityFixture fixture)
 {
     [Fact]
@@ -14,7 +14,7 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
         var loginResponse = await fixture.RegisterAndLoginUser(
             new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.RefreshTokenUri, new RefreshTokenRequestDto(loginResponse.RefreshToken));
+            UserIdentityUris.RefreshTokenUri, new RefreshTokenRequestDto(loginResponse.RefreshToken));
         Assert.True(refreshTokenResult.IsSuccessStatusCode);
     }
 
@@ -22,7 +22,7 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
     public async Task Fails_for_invalid_refresh_token()
     {
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.RefreshTokenUri, new RefreshTokenRequestDto("some invalid refresh token"));
+            UserIdentityUris.RefreshTokenUri, new RefreshTokenRequestDto("some invalid refresh token"));
         Assert.False(refreshTokenResult.IsSuccessStatusCode);
     }
 }

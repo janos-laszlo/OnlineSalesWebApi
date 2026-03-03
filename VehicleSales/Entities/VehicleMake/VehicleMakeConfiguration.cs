@@ -7,7 +7,7 @@ internal sealed class VehicleMakeConfiguration : IEntityTypeConfiguration<Vehicl
 {
     public void Configure(EntityTypeBuilder<VehicleMake> builder)
     {
-        builder.ToTable("vehicle_makes");
+        builder.ToTable(Tables.VehicleMakes);
         builder.HasKey(cm => cm.Id);
         builder.Property(cm => cm.Name)
             .IsRequired()

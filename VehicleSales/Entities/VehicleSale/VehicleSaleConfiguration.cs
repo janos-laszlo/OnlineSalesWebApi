@@ -9,7 +9,7 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
 {
     public void Configure(EntityTypeBuilder<VehicleSale> builder)
     {
-        builder.ToTable("vehicle_sales");
+        builder.ToTable(Tables.VehicleSales);
         builder.HasKey(x => x.Id);
 
         builder.HasOne(v => v.Seller)

@@ -1,8 +1,8 @@
 using UserIdentity.Commands;
 
-namespace SalesWebApi.IntegrationTests.Commands;
+namespace SalesWebApi.IntegrationTests.UserIdentityEndpoints;
 
-[Collection("User Identity")]
+[Collection(UserIdentityFixture.CollectionName)]
 public sealed class GetUserProfileTests(UserIdentityFixture fixture)
 {
     [Fact]
@@ -13,7 +13,7 @@ public sealed class GetUserProfileTests(UserIdentityFixture fixture)
             new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
 
         // Act
-        var request = new HttpRequestMessage(HttpMethod.Get, Endpoints.Profile);
+        var request = new HttpRequestMessage(HttpMethod.Get, UserIdentityUris.ProfileUri);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Bearer", tokenResponse.AccessToken);
         var result = await fixture.Client.SendAsync(request);
@@ -28,7 +28,7 @@ public sealed class GetUserProfileTests(UserIdentityFixture fixture)
         // Arrange
 
         // Act
-        var result = await fixture.Client.GetAsync(Endpoints.Profile);
+        var result = await fixture.Client.GetAsync(UserIdentityUris.ProfileUri);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);

@@ -12,6 +12,7 @@ namespace SalesWebApi.IntegrationTests;
 
 public sealed class UserIdentityFixture : IDisposable
 {
+    internal const string CollectionName = "User Identity";
     private readonly WebApplicationFactory<Program> app;
     private readonly IServiceScope scope;
     private readonly UserIdentityDbContext userIdentityDbContext;
@@ -35,7 +36,7 @@ public sealed class UserIdentityFixture : IDisposable
         EmailService = (EmailServiceStub)app.Services.GetRequiredService<IResilientEmailService>();
         AnotherEmailConfirmationToken = CreateAnotherEmailConfirmationToken(app.Services);
         userIdentityDbContext = scope.ServiceProvider.GetRequiredService<UserIdentityDbContext>();
-        userIdentityDbContext.Database.EnsureCreated();
+        userIdentityDbContext.Database.Migrate();
     }
 
     private static EmailConfirmationToken CreateAnotherEmailConfirmationToken(IServiceProvider sp)
@@ -52,11 +53,11 @@ public sealed class UserIdentityFixture : IDisposable
     internal async Task<TokenResponseDto> RegisterAndLoginUser(UserCredentialsDto credentials)
     {
         var registrationResult = await this.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri, credentials);
+            UserIdentityUris.RegisterUri, credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var loginResult = await this.Client.PostAsJsonAsync(
-            Endpoints.LoginUri, credentials);
+            UserIdentityUris.LoginUri, credentials);
         Assert.True(loginResult.IsSuccessStatusCode);
 
         var body = await loginResult.Content.ReadFromJsonAsync<TokenResponseDto>();
@@ -73,6 +74,6 @@ public sealed class UserIdentityFixture : IDisposable
     }
 }
 
-[CollectionDefinition("User Identity")]
+[CollectionDefinition(UserIdentityFixture.CollectionName)]
 public class UserIdentityCollection : ICollectionFixture<UserIdentityFixture>
 { }

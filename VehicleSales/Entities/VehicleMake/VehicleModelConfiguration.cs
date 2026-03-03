@@ -7,7 +7,7 @@ internal sealed class VehicleModelConfiguration : IEntityTypeConfiguration<Vehic
 {
     public void Configure(EntityTypeBuilder<VehicleModel> builder)
     {
-        builder.ToTable("vehicle_models");
+        builder.ToTable(Tables.VehicleModels);
         builder.HasKey(cm => cm.Id);
 
         builder.Property(cm => cm.Name)

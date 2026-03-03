@@ -4,9 +4,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using UserIdentity.Commands;
 
-namespace SalesWebApi.IntegrationTests.Commands;
+namespace SalesWebApi.IntegrationTests.UserIdentityEndpoints;
 
-[Collection("User Identity")]
+[Collection(UserIdentityFixture.CollectionName)]
 public sealed class LoginUserTests(UserIdentityFixture fixture)
 {
     [Fact]
@@ -17,11 +17,11 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
 
         // Act
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri, credentials);
+            UserIdentityUris.RegisterUri, credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var result = await fixture.Client.PostAsJsonAsync(
-            Endpoints.LoginUri, credentials);
+            UserIdentityUris.LoginUri, credentials);
         Assert.True(result.IsSuccessStatusCode);
     }
 
@@ -33,7 +33,7 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
-            Endpoints.LoginUri, credentials);
+            UserIdentityUris.LoginUri, credentials);
         Assert.False(result.IsSuccessStatusCode);
     }
 
@@ -45,11 +45,11 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
 
         // Act
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            Endpoints.RegisterUri, credentials);
+            UserIdentityUris.RegisterUri, credentials);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var result = await fixture.Client.PostAsJsonAsync(
-            Endpoints.LoginUri, credentials with { Password = "WrongPassword2" });
+            UserIdentityUris.LoginUri, credentials with { Password = "WrongPassword2" });
         Assert.False(result.IsSuccessStatusCode);
     }
 
@@ -99,7 +99,7 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
 
     private async Task<System.Net.HttpStatusCode> GetHealthCheckWithToken(string accessToken)
     {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, Endpoints.HealthUri);
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, UserIdentityUris.HealthUri);
         requestMessage.Headers.Authorization =
             new AuthenticationHeaderValue("Bearer", accessToken);
 

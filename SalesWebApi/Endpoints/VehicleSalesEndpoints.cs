@@ -12,6 +12,8 @@ internal static class VehicleSalesEndpoints
     internal const string VehicleSalesName = "VehicleSales";
     internal const string VehicleSalesBase = "/vehicle-sales";
     internal const string ConfirmObjectUpload = "/confirm-object-upload/{objectUploadId:int}";
+    internal const string Makes = "/makes";
+    internal const string Models = "/models";
 
     internal static void MapVehicleSalesEndpoints(this WebApplication app)
     {
@@ -20,14 +22,14 @@ internal static class VehicleSalesEndpoints
 
         vehicleSalesGroup
             .MapGet(
-                "makes",
+                Makes,
                 async (IGetVehicleMakesQuery query,
                 CancellationToken cancellationToken) =>
                     Results.Ok(await query.Get(cancellationToken)));
 
         vehicleSalesGroup
             .MapGet(
-                "models",
+                Models,
                 async (string makeName,
                 IGetMakeModelsQuery query,
                 CancellationToken cancellationToken) =>
@@ -43,7 +45,7 @@ internal static class VehicleSalesEndpoints
                 =>
                     await create.Execute(dto, principal.UserId, cancellationToken)
                         .Finally(result => result.IsSuccess
-                            ? Results.Ok(result.Value)
+                            ? Results.Created($"{VehicleSalesBase}/{result.Value.EntityId}", result.Value)
                             : Results.Problem(
                                 title: "Vehicle sale creation failed",
                                 detail: result.Error,

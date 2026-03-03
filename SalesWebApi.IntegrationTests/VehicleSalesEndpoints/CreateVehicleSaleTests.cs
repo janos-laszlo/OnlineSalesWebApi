@@ -1,4 +1,6 @@
-﻿using System.Net.Mime;
+﻿using System.Net.Http.Headers;
+using System.Net.Mime;
+using ObjectUploadTracking;
 
 namespace SalesWebApi.IntegrationTests.VehicleSalesEndpoints;
 
@@ -11,9 +13,11 @@ public sealed class CreateVehicleSaleTests
     public CreateVehicleSaleTests(VehicleSalesFixture fixture)
     {
         settings.ScrubLinesContaining("Authorization");
-            settings.ScrubMember("entityId");
-            settings.ScrubMember("Location");
-            settings.ScrubMember("traceId");
+        settings.ScrubMember("entityId");
+        settings.ScrubMember("Location");
+        settings.ScrubMember("traceId");
+        settings.ScrubMember("objectUploadId");
+        settings.ScrubMember("objectKeysAndTheirPresignedUploadUrls");
         this.fixture = fixture;
     }
 
@@ -58,17 +62,10 @@ public sealed class CreateVehicleSaleTests
           "maximumLoadInKg": 480
         }
         """;
-        var httpRequest = new HttpRequestMessage(
-            HttpMethod.Post, Endpoints.VehicleSalesEndpoints.VehicleSalesBase)
-        {
-            Content = new StringContent(
-                requestWithoutPhotos, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json)
-        };
-        httpRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-            "Bearer", fixture.AccessToken);
+        HttpRequestMessage httpRequest = CreateRequestWithBody(requestWithoutPhotos);
 
         // Act
-        var response = await fixture.Client.SendAsync(httpRequest, CancellationToken.None);
+        var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
 
         // Assert
         await Verify(response, settings);
@@ -90,19 +87,82 @@ public sealed class CreateVehicleSaleTests
               "maximumLoadInKg": 480
             }
             """;
+        var httpRequest = CreateRequestWithBody(requestWithoutRequiredFields);
+
+        // Act
+        var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
+
+        // Assert
+        await Verify(response, settings);
+    }
+
+
+    [Fact]
+    public async Task Created_for_sale_with_photos()
+    {
+        // Arrange
+        var requestWithoutRequiredFields =
+            """
+            {
+              "title": "2019 BMW 3 Series - Excellent Condition",
+              "description": "Well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+              "amountInCents": 2499900,
+              "currency": "EUR",
+              "county": "Los Angeles",
+              "locality": "Santa Monica",
+              "vehicleModelId": 6248,
+              "mileageInKilometers": 45000,
+              "horsePower": 255,
+              "photoContentTypes": ["image/jpeg", "image/png", "image/jpeg"]
+            }
+            """;
+        var httpRequest = CreateRequestWithBody(requestWithoutRequiredFields);
+
+        // Act
+        var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
+        Assert.True(response.IsSuccessStatusCode);
+
+        var content = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(3, content?.ObjectKeysAndTheirPresignedUploadUrls?.Count);
+
+        var filesToUpload = new List<(string FilePath, string Extension, string ContentType)>
+        {
+            (Path.Combine(AppContext.BaseDirectory, "Data", "sample1.jpg"), ".jpeg", "image/jpeg"),
+            (Path.Combine(AppContext.BaseDirectory, "Data", "sample2.png"), ".png", "image/png"),
+            (Path.Combine(AppContext.BaseDirectory, "Data", "sample3.jpg"), ".jpeg", "image/jpeg")
+        };
+        foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
+        {
+            var fileToUpload = filesToUpload.First(f => 
+                Path.GetExtension(objectKeyAndPresignedUrl.Key) == f.Extension);
+            filesToUpload.Remove(fileToUpload);
+            var fileBytes = File.ReadAllBytes(fileToUpload.FilePath);
+            var byteContent = new ByteArrayContent(fileBytes);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue(fileToUpload.ContentType);
+
+            var putResponse = await fixture.ExternalClient.PutAsync(
+                objectKeyAndPresignedUrl.Value,
+                byteContent,
+                TestContext.Current.CancellationToken);
+            Assert.True(putResponse.IsSuccessStatusCode);
+        }
+
+        // Assert
+        await Verify(response, settings);
+    }
+
+    private HttpRequestMessage CreateRequestWithBody(string requestBody)
+    {
         var httpRequest = new HttpRequestMessage(
             HttpMethod.Post, Endpoints.VehicleSalesEndpoints.VehicleSalesBase)
         {
             Content = new StringContent(
-                requestWithoutRequiredFields, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json)
+                requestBody, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json)
         };
         httpRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Bearer", fixture.AccessToken);
-
-        // Act
-        var response = await fixture.Client.SendAsync(httpRequest, CancellationToken.None);
-
-        // Assert
-        await Verify(response, settings);
+        return httpRequest;
     }
 }

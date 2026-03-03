@@ -13,7 +13,7 @@ internal static class UserIdentityEndpoints
     internal const string Register = "/register";
     internal const string Login = "/login";
     internal const string RefreshToken = "/refresh-token";
-    internal const string ConfirmEmail = "/confirm-email";
+    internal const string ConfirmEmail = "/confirm-email/{token}";
     internal const string Health = "/health";
     internal const string Profile = "/profile";
 

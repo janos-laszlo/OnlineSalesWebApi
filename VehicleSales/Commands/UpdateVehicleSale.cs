@@ -127,7 +127,10 @@ internal sealed class UpdateVehicleSale(
             });
 
         if (dto.Photos?.Any() != true)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
             return null;
+        }
 
         var contentTypesAndExistingPhotoKeys = dto.Photos.ToLookup(
             MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains);

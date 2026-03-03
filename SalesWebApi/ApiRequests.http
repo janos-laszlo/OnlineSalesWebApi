@@ -1,5 +1,5 @@
-@baseUrl = http://192.168.0.21:5153
-@bearerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjIxOjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjIxOjUxNTMiLCJleHAiOjE3NzI0NzYzMjAsImlhdCI6MTc3MjQ3NjAyMCwibmJmIjoxNzcyNDc2MDIwLCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.IMAZqbL18UAnpu_0h5cW-NSXGH3omlkm7upOa8pwRT8
+@baseUrl = http://192.168.0.22:5153
+@bearerToken = ...
 
 ###
 GET {{baseUrl}}
@@ -65,7 +65,7 @@ Authorization: Bearer {{bearerToken}}
   "currency": "EUR",
   "county": "Los Angeles",
   "locality": "Santa Monica",
-  "vehicleModelId": 42,
+  "vehicleModelId": 6200,
   "mileageInKilometers": 45000,
   "horsePower": 255,
   "vehicleVersion": "Sport Line",
@@ -103,10 +103,10 @@ GET {{baseUrl}}/vehicle-sales?pageNumber=0&pageSize=10
 Authorization: Bearer {{bearerToken}}
 
 ###
-PATCH {{baseUrl}}/vehicle-sales/3
+PATCH {{baseUrl}}/vehicle-sales/1
 Content-Type: application/json
 Authorization: Bearer {{bearerToken}}
 
 {
-    "photos": ["0.jpeg", "2.jpeg", "1.png"]
+    "vin": "WBA5R1C50KAK54321"
 }

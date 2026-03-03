@@ -12,7 +12,8 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.GetAsync(
-            UserIdentityUris.ConfirmEmailUri + "some-invalid-token-that-doesnt-exist");
+            UserIdentityUris.ConfirmEmailUri + "some-invalid-token-that-doesnt-exist",
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);
@@ -23,13 +24,16 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
     {
         // Arrange
         await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.RegisterUri, new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
+            UserIdentityUris.RegisterUri,
+            new UserCredentialsDto(UserUtils.NextEmail, "Password1"),
+            TestContext.Current.CancellationToken);
 
         // Act
         string confirmationToken = ExtractConfirmationToken(
             fixture.EmailService.Emails.First().Body);
         var result = await fixture.Client.GetAsync(
-            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}",
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);
@@ -40,18 +44,19 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
     {
         // Arrange
         string email = UserUtils.NextEmail;
-        await fixture.Client.PostAsJsonAsync(
+        var response = await fixture.Client.PostAsJsonAsync(
             UserIdentityUris.RegisterUri,
-            new UserCredentialsDto(email, "Password1"));
+            new UserCredentialsDto(email, "Password1"), TestContext.Current.CancellationToken);
+        Assert.True(response.IsSuccessStatusCode);
 
         string confirmationToken = ExtractConfirmationToken(
             fixture.EmailService.Emails.First().Body);
         await fixture.Client.GetAsync(
-            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}", TestContext.Current.CancellationToken);
 
         // Act
         var result = await fixture.Client.GetAsync(
-            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationToken}", TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);

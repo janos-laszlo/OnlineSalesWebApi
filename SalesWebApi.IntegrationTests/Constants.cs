@@ -8,7 +8,7 @@ internal static class UserIdentityUris
     internal const string RegisterUri = $"{UserIdentityUri.IdentityBase}{UserIdentityUri.Register}";
     internal const string LoginUri = $"{UserIdentityUri.IdentityBase}{UserIdentityUri.Login}";
     internal const string RefreshTokenUri = $"{UserIdentityUri.IdentityBase}{UserIdentityUri.RefreshToken}";
-    internal const string ConfirmEmailUri = $"{UserIdentityUri.IdentityBase}{UserIdentityUri.ConfirmEmail}";
+    internal const string ConfirmEmailUri = $"{UserIdentityUri.IdentityBase}/confirm-email/";
     internal const string HealthUri = $"{UserIdentityUri.IdentityBase}{UserIdentityUri.Health}";
     internal const string ProfileUri = $"{UserIdentityUri.IdentityBase}{UserIdentityUri.Profile}";
 }

@@ -18,6 +18,10 @@ internal sealed class ObjectUploadConfiguration : IEntityTypeConfiguration<Objec
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EntityId).IsRequired();
 
+        builder.Property(x => x.Module)
+            .IsRequired()
+            .HasColumnType($"VARCHAR(100)");
+
         builder.Property(v => v.Directory)
             .HasColumnName(nameof(ObjectUpload.Directory))
             .HasColumnType($"VARCHAR({DirectoryName.MaxLength})")

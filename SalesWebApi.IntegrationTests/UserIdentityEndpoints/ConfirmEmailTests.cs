@@ -69,7 +69,8 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
         string email = UserUtils.NextEmail;
         await fixture.Client.PostAsJsonAsync(
             UserIdentityUris.RegisterUri,
-            new UserCredentialsDto(email, "Password1"));
+            new UserCredentialsDto(email, "Password1"),
+            TestContext.Current.CancellationToken);
 
         string confirmationTokenWithDifferentPurposeKey = fixture
             .AnotherEmailConfirmationToken
@@ -77,7 +78,8 @@ public sealed class ConfirmEmailTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.GetAsync(
-            $"{UserIdentityUris.ConfirmEmailUri}{confirmationTokenWithDifferentPurposeKey}");
+            $"{UserIdentityUris.ConfirmEmailUri}{confirmationTokenWithDifferentPurposeKey}",
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);

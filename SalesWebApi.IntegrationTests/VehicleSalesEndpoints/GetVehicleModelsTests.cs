@@ -10,8 +10,9 @@ public sealed class GetVehicleModelsTests(VehicleSalesFixture fixture)
 
         // Act
         var result = await fixture.Client.GetFromJsonAsync<IReadOnlyList<string>>(
-            $"{VehicleSalesUris.VehicleModelsUri}?makeName=Toyota");
-        
+            $"{VehicleSalesUris.VehicleModelsUri}?makeName=Toyota",
+            TestContext.Current.CancellationToken);
+
         // Assert
         Assert.NotNull(result);
         Assert.Equal(170, result!.Count);

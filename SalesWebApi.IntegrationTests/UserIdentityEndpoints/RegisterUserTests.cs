@@ -13,7 +13,8 @@ public sealed class RegisterUserTests(UserIdentityFixture fixture)
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
             UserIdentityUris.RegisterUri,
-            new UserCredentialsDto(UserUtils.NextEmail, "SecurePassword123!"));
+            new UserCredentialsDto(UserUtils.NextEmail, "SecurePassword123!"),
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);
@@ -27,7 +28,8 @@ public sealed class RegisterUserTests(UserIdentityFixture fixture)
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
             UserIdentityUris.RegisterUri,
-            new UserCredentialsDto("invalid-email", "SecurePassword123!"));
+            new UserCredentialsDto("invalid-email", "SecurePassword123!"),
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);
@@ -45,7 +47,8 @@ public sealed class RegisterUserTests(UserIdentityFixture fixture)
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
             UserIdentityUris.RegisterUri,
-            new UserCredentialsDto(UserUtils.NextEmail, invalidPassword));
+            new UserCredentialsDto(UserUtils.NextEmail, invalidPassword),
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);
@@ -60,13 +63,15 @@ public sealed class RegisterUserTests(UserIdentityFixture fixture)
         string email = UserUtils.NextEmail;
         var result = await fixture.Client.PostAsJsonAsync(
             UserIdentityUris.RegisterUri,
-            new UserCredentialsDto(email, "SecurePassword123!"));
+            new UserCredentialsDto(email, "SecurePassword123!"),
+            TestContext.Current.CancellationToken);
 
         Assert.True(result.IsSuccessStatusCode);
 
         result = await fixture.Client.PostAsJsonAsync(
             UserIdentityUris.RegisterUri,
-            new UserCredentialsDto(email, "Password123!"));
+            new UserCredentialsDto(email, "Password123!"),
+            TestContext.Current.CancellationToken);
 
         Assert.False(result.IsSuccessStatusCode);
     }

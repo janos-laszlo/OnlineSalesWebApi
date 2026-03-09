@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace VehicleSales;
 
-namespace VehicleSales;
+internal static class Constants
+{
+    internal const string ModuleName = "VehicleSales";
+}
 
 internal sealed record R2Config(
     string AccountId,

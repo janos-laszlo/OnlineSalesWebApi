@@ -5,6 +5,7 @@ namespace ObjectUploadTracking;
 public sealed class ObjectUpload()
 {
     public int Id { get; }
+    public required string Module { get; init; }
     public required int EntityId { get; init; }
     public required DirectoryName Directory { get; init; }
     /// <summary>

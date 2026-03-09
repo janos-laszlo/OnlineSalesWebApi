@@ -98,7 +98,7 @@ public sealed class CreateVehicleSaleTests
 
 
     [Fact]
-    public async Task Created_for_sale_with_photos()
+    public async Task Created_for_sale_with_photos_and_confirmed_upload()
     {
         // Arrange
         var requestWithoutRequiredFields =
@@ -135,7 +135,7 @@ public sealed class CreateVehicleSaleTests
         };
         foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
         {
-            var fileToUpload = filesToUpload.First(f => 
+            var fileToUpload = filesToUpload.First(f =>
                 Path.GetExtension(objectKeyAndPresignedUrl.Key) == f.Extension);
             filesToUpload.Remove(fileToUpload);
             var fileBytes = File.ReadAllBytes(fileToUpload.FilePath);
@@ -149,6 +149,17 @@ public sealed class CreateVehicleSaleTests
             Assert.True(putResponse.IsSuccessStatusCode);
         }
 
+        var confirmRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{VehicleSalesUris.ConfirmObjectUpload}{content.ObjectUploadId}");
+        confirmRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", fixture.AccessToken);
+
+        var confirmResponse = await fixture.Client.SendAsync(
+            confirmRequest,
+            TestContext.Current.CancellationToken);
+        Assert.True(confirmResponse.IsSuccessStatusCode);
+
         // Assert
         await Verify(response, settings);
     }
@@ -161,7 +172,7 @@ public sealed class CreateVehicleSaleTests
             Content = new StringContent(
                 requestBody, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json)
         };
-        httpRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue(
             "Bearer", fixture.AccessToken);
         return httpRequest;
     }

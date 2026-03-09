@@ -7,7 +7,9 @@ public sealed class GetVehicleMakesTests(VehicleSalesFixture fixture)
     public async Task Returns_144_items()
     {
         // Act
-        var result = await fixture.Client.GetFromJsonAsync<IReadOnlyList<string>>(VehicleSalesUris.VehicleMakesUri);
+        var result = await fixture.Client.GetFromJsonAsync<IReadOnlyList<string>>(
+            VehicleSalesUris.VehicleMakesUri,
+            TestContext.Current.CancellationToken);
         Assert.NotNull(result);
         Assert.Equal(144, result!.Count);
     }

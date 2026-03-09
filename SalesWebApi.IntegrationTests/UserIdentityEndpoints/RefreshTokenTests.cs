@@ -14,7 +14,9 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
         var loginResponse = await fixture.RegisterAndLoginUser(
             new UserCredentialsDto(UserUtils.NextEmail, "Password1"));
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.RefreshTokenUri, new RefreshTokenRequestDto(loginResponse.RefreshToken));
+            UserIdentityUris.RefreshTokenUri,
+            new RefreshTokenRequestDto(loginResponse.RefreshToken),
+            TestContext.Current.CancellationToken);
         Assert.True(refreshTokenResult.IsSuccessStatusCode);
     }
 
@@ -22,7 +24,9 @@ public sealed class RefreshTokenTests(UserIdentityFixture fixture)
     public async Task Fails_for_invalid_refresh_token()
     {
         var refreshTokenResult = await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.RefreshTokenUri, new RefreshTokenRequestDto("some invalid refresh token"));
+            UserIdentityUris.RefreshTokenUri,
+            new RefreshTokenRequestDto("some invalid refresh token"),
+            TestContext.Current.CancellationToken);
         Assert.False(refreshTokenResult.IsSuccessStatusCode);
     }
 }

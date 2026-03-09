@@ -44,6 +44,14 @@ internal sealed class UpdateVehicleSale(
             return Result.Failure<ObjectUploadTrackingDto?>(
                 "Vehicle sale doesn't exist or doesn't belong to the seller");
 
+        var diff = new ObjectDiff(
+            vehicleSale.VehicleDetails.PhotoKeys,
+            dto.Photos);
+
+        if (diff.Inexistent.Count > 0)
+            return Result.Failure<ObjectUploadTrackingDto?>(
+                $"{string.Join(", ", diff.Inexistent)} photos do not exist.");
+
         vehicleSale.UpdateVehicleSale(
             sale =>
             {
@@ -124,59 +132,47 @@ internal sealed class UpdateVehicleSale(
                     vehicleDetails.MassInKg = dto.MassInKg;
                 if (dto.MaximumLoadInKg is not null)
                     vehicleDetails.MaximumLoadInKg = dto.MaximumLoadInKg;
+                if (dto.Photos is not null)
+                {
+                    if (diff.Removed.Count > 0)
+                    {
+                        vehicleSale.UpdateVehicleDetails(vehicleDetails =>
+                        {
+                            vehicleDetails.PhotoKeys = vehicleDetails.PhotoKeys?
+                                .Except(diff.Removed.Select(pk => ObjectKeyName.Create(pk).Value))
+                                .ToList();
+                        });
+                        await RemoveImagesFromR2(diff.Removed);
+                    }
+
+                    if (diff.NewVersion?.SequenceEqual(vehicleSale.VehicleDetails.PhotoKeys ?? []) == true)
+                    { }
+
+                }
             });
 
+        // TODO: Extract the photo key diffing into a method that returns
+        // -the new array of photo keys - this will be assigned to the VehicleSale
+        // -the array of new photo keys for which presigned URLs need to be created.
+        // In here modify the Photos of VehicleSale, only in case of reordering or removal,
+        // create the ObjectUpload and modify VehicleSale.Photos in ConfirmObjectUploadForVehicleSale.
+        // Handle removal, addition and reordering of photos.
         if (dto.Photos?.Any() != true)
         {
             await dbContext.SaveChangesAsync(cancellationToken);
             return null;
         }
 
-        var contentTypesAndExistingPhotoKeys = dto.Photos.ToLookup(
-            MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains);
-
-        var existentOrInexistentPhotoKeys = contentTypesAndExistingPhotoKeys[false]
-            .ToLookup(existingObj =>
-                vehicleSale.VehicleDetails.PhotoKeys?.Any(pk => pk.Value == existingObj) != true);
-        var inexistentObjects = existentOrInexistentPhotoKeys[true].ToArray();
-        if (inexistentObjects.Length > 0)
-            return Result.Failure<ObjectUploadTrackingDto?>(
-                $"The following items have an unsupported content type or don't correspond to existing photo keys: {string.Join(", ", inexistentObjects)}");
-
-        var existentPhotoKeys = existentOrInexistentPhotoKeys[false].ToArray();
-        var photoKeysToRemove = vehicleSale.VehicleDetails.PhotoKeys?
-            .Where(pk => !existentPhotoKeys.Contains(pk.Value))
-            .ToArray();
-        if (photoKeysToRemove?.Length > 0)
-            vehicleSale.VehicleDetails.PhotoKeys!.RemoveAll(pk => photoKeysToRemove.Contains(pk));
-
-        var contentTypes = contentTypesAndExistingPhotoKeys[true];
-        if (contentTypes?.Any() != true)
-        {
-            vehicleSale.UpdateVehicleDetails(
-                vehicleDetails =>
-                {
-                    vehicleDetails.PhotoKeys = [.. dto.Photos.Select(p => ObjectKeyName.Create(p).Value)];
-                });
-            await dbContext.SaveChangesAsync(cancellationToken);
-            return null;
-        }
-        
-        await dbContext.SaveChangesAsync(cancellationToken);
-        var nextIndex = vehicleSale.VehicleDetails.PhotoKeys?
-            .Select(pk => int.Parse(pk.Value.Split('.')[0]))
-            .Max() + 1 ?? 0;
-
-        IReadOnlyList<(ObjectKeyName ObjectKey, string ContentType, bool IsNew)> photoKeys =
-            CreateObjectKeys(dto.Photos, nextIndex);
         ObjectUpload objectUpload = new()
         {
+            Module = Constants.ModuleName,
             EntityId = vehicleSale.Id,
             Directory = vehicleSale.VehicleDetails.Directory ??
                     DirectoryName.Create(Guid.CreateVersion7().ToString("N")).Value,
-            ObjectKeys = [.. photoKeys.Select(pk => pk.ObjectKey)],
+            ObjectKeys = [.. diff.NewVersion],
             ExpiresAt = DateTime.UtcNow.AddMinutes(15),
         };
+
         await createObjectUpload.Execute(
             objectUpload,
             cancellationToken);
@@ -193,15 +189,6 @@ internal sealed class UpdateVehicleSale(
         };
     }
 
-    private static IReadOnlyList<(ObjectKeyName ObjectKey, string ContentType, bool IsNew)> CreateObjectKeys(
-        IReadOnlyList<string> photoKeysAndContentTypes, int index)
-    =>
-        [.. photoKeysAndContentTypes
-            .Select(photoKeyOrContentType => MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains(photoKeyOrContentType)
-                ? ($"{index++}.{photoKeyOrContentType.Split('/')[1]}", photoKeyOrContentType, true)
-                : (photoKeyOrContentType, string.Empty, false))
-            .Select(tuple => (ObjectKeyName.Create(tuple.Item1).Value, tuple.Item2, tuple.Item3))];
-
     private Dictionary<string, string> CreatePresignedPutRequests(
         DirectoryName directory,
         IReadOnlyList<(ObjectKeyName, string)> objectKeysAndTheirContentType)
@@ -217,4 +204,54 @@ internal sealed class UpdateVehicleSale(
                     Expires = DateTime.Now.AddMinutes(15),
                     ContentType = objectKeyAndItsContentType.Item2
                 }));
+
+    private sealed class ObjectDiff(
+        IEnumerable<ObjectKeyName>? currentPhotoKeys,
+        IEnumerable<string>? newPhotoKeys)
+    {
+        private readonly int nextIndex =
+            currentPhotoKeys?
+                .Select(pk => int.Parse(pk.Value.Split('.')[0]))
+                .Max() + 1 ?? 0;
+
+        public IReadOnlyList<ObjectKeyName>? NewVersion
+        {
+            get
+            {
+                var currentIndex = nextIndex;
+                return newPhotoKeys?
+                    .Select(npk => MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains(npk)
+                        ? ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value
+                        : ObjectKeyName.Create(npk).Value)
+                    .ToList();
+            }
+        }
+
+        public IReadOnlyList<string> Removed =>
+            currentPhotoKeys?
+                .Select(pk => pk.Value)
+                .Except(newPhotoKeys ?? [])
+                .ToList()
+            ?? [];
+
+        public IReadOnlyList<ObjectKeyName> Added
+        {
+            get
+            {
+                var currentIndex = nextIndex;
+                return newPhotoKeys?
+                    .Intersect(MaxPhotoContentTypesAttribute.AllowedImageContentTypes)
+                    .Select(npk => ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value)
+                    .ToList()
+                ?? [];
+            }
+        }
+
+        public IReadOnlyList<string> Inexistent =>
+            newPhotoKeys?
+                .Except(MaxPhotoContentTypesAttribute.AllowedImageContentTypes
+                    .Concat(currentPhotoKeys?.Select(pk => pk.Value) ?? []))
+                .ToList()
+            ?? [];
+    }
 }

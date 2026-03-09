@@ -16,7 +16,9 @@ public sealed class GetUserProfileTests(UserIdentityFixture fixture)
         var request = new HttpRequestMessage(HttpMethod.Get, UserIdentityUris.ProfileUri);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Bearer", tokenResponse.AccessToken);
-        var result = await fixture.Client.SendAsync(request);
+        var result = await fixture.Client.SendAsync(
+            request,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);
@@ -28,7 +30,9 @@ public sealed class GetUserProfileTests(UserIdentityFixture fixture)
         // Arrange
 
         // Act
-        var result = await fixture.Client.GetAsync(UserIdentityUris.ProfileUri);
+        var result = await fixture.Client.GetAsync(
+            UserIdentityUris.ProfileUri,
+            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);

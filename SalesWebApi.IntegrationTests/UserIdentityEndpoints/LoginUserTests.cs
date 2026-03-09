@@ -17,11 +17,15 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
 
         // Act
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.RegisterUri, credentials);
+            UserIdentityUris.RegisterUri,
+            credentials,
+            TestContext.Current.CancellationToken);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var result = await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.LoginUri, credentials);
+            UserIdentityUris.LoginUri,
+            credentials,
+            TestContext.Current.CancellationToken);
         Assert.True(result.IsSuccessStatusCode);
     }
 
@@ -33,7 +37,9 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
 
         // Act
         var result = await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.LoginUri, credentials);
+            UserIdentityUris.LoginUri,
+            credentials,
+            TestContext.Current.CancellationToken);
         Assert.False(result.IsSuccessStatusCode);
     }
 
@@ -45,11 +51,15 @@ public sealed class LoginUserTests(UserIdentityFixture fixture)
 
         // Act
         var registrationResult = await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.RegisterUri, credentials);
+            UserIdentityUris.RegisterUri,
+            credentials,
+            TestContext.Current.CancellationToken);
         Assert.True(registrationResult.IsSuccessStatusCode);
 
         var result = await fixture.Client.PostAsJsonAsync(
-            UserIdentityUris.LoginUri, credentials with { Password = "WrongPassword2" });
+            UserIdentityUris.LoginUri,
+            credentials with { Password = "WrongPassword2" },
+            TestContext.Current.CancellationToken);
         Assert.False(result.IsSuccessStatusCode);
     }
 

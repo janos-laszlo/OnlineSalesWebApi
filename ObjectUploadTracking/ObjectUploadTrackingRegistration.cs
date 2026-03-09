@@ -14,6 +14,7 @@ public static class ObjectUploadTrackingRegistration
         services.RegisterDbContext<ObjectUploadTrackingDbContext>(configuration);
         services.AddTransient<IConsumeObjectUpload, ConsumeObjectUpload>();
         services.AddTransient<ICreateObjectUpload, CreateObjectUpload>();
+        services.AddTransient<IConsumeExpiredObjectUploads, ConsumeExpiredObjectUploads>();
 
         return services;
     }

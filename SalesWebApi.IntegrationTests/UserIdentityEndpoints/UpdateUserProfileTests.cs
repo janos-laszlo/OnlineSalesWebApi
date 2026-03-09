@@ -46,7 +46,7 @@ public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
             "Bearer", tokenResponse.AccessToken);
         request.Content = JsonContent.Create(updateProfileRequest);
 
-        var result = await fixture.Client.SendAsync(request);
+        var result = await fixture.Client.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(result.IsSuccessStatusCode);
@@ -93,7 +93,7 @@ public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
             "Bearer", tokenResponse.AccessToken);
         request.Content = JsonContent.Create(updateProfileRequest);
 
-        var result = await fixture.Client.SendAsync(request);
+        var result = await fixture.Client.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);
@@ -121,7 +121,7 @@ public sealed class UpdateUserProfileTests(UserIdentityFixture fixture)
         var request = new HttpRequestMessage(HttpMethod.Put, UserIdentityUris.ProfileUri)
         { Content = JsonContent.Create(updateProfileRequest) };
 
-        var result = await fixture.Client.SendAsync(request);
+        var result = await fixture.Client.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsSuccessStatusCode);

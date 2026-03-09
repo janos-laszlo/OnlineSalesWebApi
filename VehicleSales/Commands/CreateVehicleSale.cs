@@ -55,6 +55,7 @@ internal sealed class CreateVehicleSale(
         IReadOnlyList<(ObjectKeyName, string)> objKeyAndItsContentType = CreateObjectKeys(objectContentTypes);
         ObjectUpload objectUpload = new()
         {
+            Module = Constants.ModuleName,
             EntityId = entityId,
             Directory = DirectoryName.Create(Guid.CreateVersion7().ToString("N")).Value,
             ObjectKeys = [.. objKeyAndItsContentType.Select(tuple => tuple.Item1)],

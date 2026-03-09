@@ -9,6 +9,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasKey(u => u.Id);
-        builder.ToView(Constants.Tables.Users);
+        builder.ToView(Common.Constants.Tables.Users);
     }
 }

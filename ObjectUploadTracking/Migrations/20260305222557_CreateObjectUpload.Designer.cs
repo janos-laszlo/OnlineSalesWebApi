@@ -12,7 +12,7 @@ using ObjectUploadTracking;
 namespace ObjectUploadTracking.Migrations
 {
     [DbContext(typeof(ObjectUploadTrackingDbContext))]
-    [Migration("20260301225257_CreateObjectUpload")]
+    [Migration("20260305222557_CreateObjectUpload")]
     partial class CreateObjectUpload
     {
         /// <inheritdoc />
@@ -43,6 +43,10 @@ namespace ObjectUploadTracking.Migrations
 
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR(100)");
 
                     b.Property<string>("ObjectKeys")
                         .IsRequired()

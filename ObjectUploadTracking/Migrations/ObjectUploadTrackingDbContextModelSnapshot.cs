@@ -41,6 +41,10 @@ namespace ObjectUploadTracking.Migrations
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR(100)");
+
                     b.Property<string>("ObjectKeys")
                         .IsRequired()
                         .HasColumnType("VARCHAR(109)")

@@ -31,6 +31,7 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
                     return Result.Failure($"Object upload with id {objectUploadId} does not belong to user with id {userId}.");
 
                 var objectsNotFound = await GetObjectsNotExistingInDirectory(objectUpload.Directory, objectUpload.ObjectKeys, cancellation);
+                // TODO: What if some exist and some don't?
                 if (objectsNotFound.Count > 0)
                     return Result.Failure($"{string.Join(", ", objectsNotFound)} do not exist in {configuration[R2Config.BucketNameKey]}/{objectUpload.Directory}.");
 

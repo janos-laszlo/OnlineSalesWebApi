@@ -102,13 +102,10 @@ public sealed record UpdateVehicleSaleRequestDto
 
     [Description(
         """
-        Existing photos of the vehicle and new ones specified as content type.
-        If a photo is not included in the list, it will be deleted.
-        If a content type is included, but there is no existing photo with that content type,
-        a presigned URL for that content type will be generated,
-        and the client can use it to upload a new photo.
-        Content types of presigned URLs. The response will contain presigned URLs
-        for the provided content types, which can be used to upload photos of the vehicle.
+        To remove existing photos just don't include them in the list of photos.
+        To reorder existing photos, just change their order in the list of photos.
+        To add a new photo, add a content type at the index of the new photo,
+        a presigned URL will be generated and the client can use it to upload the new photo.
         Allowed content types: image/jpeg, image/png, image/webp, image/bmp, image/tiff, image/avif.
         Example: ["image/jpeg", "image/png", "0.png", "image/jpeg"]
         """)]

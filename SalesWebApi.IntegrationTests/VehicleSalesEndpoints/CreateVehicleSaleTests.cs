@@ -124,20 +124,16 @@ public sealed class CreateVehicleSaleTests
 
         var content = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
             cancellationToken: TestContext.Current.CancellationToken);
-
         Assert.Equal(3, content?.ObjectKeysAndTheirPresignedUploadUrls?.Count);
 
-        var filesToUpload = new List<(string FilePath, string Extension, string ContentType)>
-        {
-            (Path.Combine(AppContext.BaseDirectory, "Data", "sample1.jpg"), ".jpeg", "image/jpeg"),
-            (Path.Combine(AppContext.BaseDirectory, "Data", "sample2.png"), ".png", "image/png"),
-            (Path.Combine(AppContext.BaseDirectory, "Data", "sample3.jpg"), ".jpeg", "image/jpeg")
-        };
+        var filesToUpload = new Queue<(string FilePath, string Extension, string ContentType)>();
+        filesToUpload.Enqueue((Path.Combine(AppContext.BaseDirectory, "Data", "sample1.jpg"), ".jpeg", "image/jpeg"));
+        filesToUpload.Enqueue((Path.Combine(AppContext.BaseDirectory, "Data", "sample2.png"), ".png", "image/png"));
+        filesToUpload.Enqueue((Path.Combine(AppContext.BaseDirectory, "Data", "sample3.jpg"), ".jpeg", "image/jpeg"));
+
         foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
         {
-            var fileToUpload = filesToUpload.First(f =>
-                Path.GetExtension(objectKeyAndPresignedUrl.Key) == f.Extension);
-            filesToUpload.Remove(fileToUpload);
+            var fileToUpload = filesToUpload.Dequeue();
             var fileBytes = File.ReadAllBytes(fileToUpload.FilePath);
             var byteContent = new ByteArrayContent(fileBytes);
             byteContent.Headers.ContentType = new MediaTypeHeaderValue(fileToUpload.ContentType);

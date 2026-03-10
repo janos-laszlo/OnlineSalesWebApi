@@ -84,7 +84,7 @@ internal sealed record VehicleDetails
     public uint? MaximumLoadInKg { get; set; }
     public DirectoryName? Directory { get; set; }
     // TODO: Replace 'photo' with 'image' everywhere in the codebase for better clarity and consistency.
-    public List<ObjectKeyName>? PhotoKeys { get; set; }
+    public IReadOnlyList<ObjectKeyName>? PhotoKeys { get; set; }
 }
 
 internal sealed record SaleTitle

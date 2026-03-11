@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Net.Mime;
 using ObjectUploadTracking;
 
@@ -33,7 +34,7 @@ public sealed class CreateVehicleSaleTests
           "currency": "EUR",
           "county": "Los Angeles",
           "locality": "Santa Monica",
-          "vehicleModelId": 6248,
+          "vehicleModelId": 68,
           "mileageInKilometers": 45000,
           "horsePower": 255,
           "vehicleVersion": "Sport Line",
@@ -110,7 +111,7 @@ public sealed class CreateVehicleSaleTests
               "currency": "EUR",
               "county": "Los Angeles",
               "locality": "Santa Monica",
-              "vehicleModelId": 6248,
+              "vehicleModelId": 62,
               "mileageInKilometers": 45000,
               "horsePower": 255,
               "photoContentTypes": ["image/jpeg", "image/png", "image/jpeg"]
@@ -127,9 +128,10 @@ public sealed class CreateVehicleSaleTests
         Assert.Equal(3, content?.ObjectKeysAndTheirPresignedUploadUrls?.Count);
 
         var filesToUpload = new Queue<(string FilePath, string Extension, string ContentType)>();
-        filesToUpload.Enqueue((Path.Combine(AppContext.BaseDirectory, "Data", "sample1.jpg"), ".jpeg", "image/jpeg"));
-        filesToUpload.Enqueue((Path.Combine(AppContext.BaseDirectory, "Data", "sample2.png"), ".png", "image/png"));
-        filesToUpload.Enqueue((Path.Combine(AppContext.BaseDirectory, "Data", "sample3.jpg"), ".jpeg", "image/jpeg"));
+        var imagesDirectory = Path.Combine(AppContext.BaseDirectory, "VehicleSalesEndpoints", "Data");
+        filesToUpload.Enqueue((Path.Combine(imagesDirectory, "sample1.jpg"), ".jpeg", "image/jpeg"));
+        filesToUpload.Enqueue((Path.Combine(imagesDirectory, "sample2.png"), ".png", "image/png"));
+        filesToUpload.Enqueue((Path.Combine(imagesDirectory, "sample3.jpg"), ".jpeg", "image/jpeg"));
 
         foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
         {

@@ -1,8 +1,10 @@
-using Common;
+using System.Net.Http.Json;
 using EmailSending;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using UserIdentity.Commands;
 using UserIdentity.Emails;
 

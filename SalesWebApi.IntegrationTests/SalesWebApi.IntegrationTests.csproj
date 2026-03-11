@@ -1,26 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SalesWebApi.IntegrationTests</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="8.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
-    <PackageReference Include="Verify.Http" Version="7.5.1" />
-    <PackageReference Include="Verify.XunitV3" Version="31.13.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,9 +18,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.3" />
+    <PackageReference Include="Verify.Http" Version="7.5.1" />
+    <PackageReference Include="Verify.XunitV3" Version="31.13.2" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SalesWebApi\SalesWebApi.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\EmailSending\EmailSending.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <None Update="VehicleSalesEndpoints\Data\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
   </ItemGroup>
 
 </Project>

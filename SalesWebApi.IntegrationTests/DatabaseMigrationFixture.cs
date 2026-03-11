@@ -2,9 +2,13 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using ObjectUploadTracking;
 using UserIdentity;
 using VehicleSales;
+
+[assembly: AssemblyFixture(typeof(SalesWebApi.IntegrationTests.DatabaseMigrationFixture))]
 
 namespace SalesWebApi.IntegrationTests;
 
@@ -38,7 +42,6 @@ public sealed class DatabaseMigrationFixture : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        await ClearTestData();
         await app.DisposeAsync();
     }
 
@@ -71,7 +74,7 @@ public sealed class DatabaseMigrationFixture : IAsyncLifetime
 
             var listResponse = await r2Client.ListObjectsV2Async(listRequest);
 
-            if (listResponse.S3Objects.Count > 0)
+            if (listResponse.S3Objects?.Count > 0 == true)
             {
                 var deleteRequest = new DeleteObjectsRequest
                 {

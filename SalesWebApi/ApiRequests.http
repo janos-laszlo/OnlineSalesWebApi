@@ -1,4 +1,4 @@
-@baseUrl = http://192.168.0.21:5153
+@baseUrl = http://192.168.1.6:5153
 @bearerToken = ...
 
 ###
@@ -65,7 +65,7 @@ Authorization: Bearer {{bearerToken}}
   "currency": "EUR",
   "county": "Los Angeles",
   "locality": "Santa Monica",
-  "vehicleModelId": 6200,
+  "vehicleModelId": 62,
   "mileageInKilometers": 45000,
   "horsePower": 255,
   "vehicleVersion": "Sport Line",

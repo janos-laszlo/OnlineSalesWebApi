@@ -1,4 +1,6 @@
-﻿namespace SalesWebApi.IntegrationTests.VehicleSalesEndpoints;
+﻿using System.Net.Http.Json;
+
+namespace SalesWebApi.IntegrationTests.VehicleSalesEndpoints;
 
 [Collection(VehicleSalesFixture.CollectionName)]
 public sealed class GetVehicleModelsTests(VehicleSalesFixture fixture)

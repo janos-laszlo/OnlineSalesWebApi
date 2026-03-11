@@ -1,4 +1,5 @@
-﻿using UserIdentity.Commands;
+﻿using System.Net.Http.Json;
+using UserIdentity.Commands;
 
 namespace SalesWebApi.IntegrationTests.UserIdentityEndpoints;
 

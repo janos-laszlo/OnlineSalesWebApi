@@ -18,4 +18,5 @@ internal static class VehicleSalesUris
     internal const string VehicleMakesUri = $"{VehicleSalesUri.VehicleSalesBase}{VehicleSalesUri.Makes}";
     internal const string VehicleModelsUri = $"{VehicleSalesUri.VehicleSalesBase}{VehicleSalesUri.Models}";
     internal const string ConfirmObjectUpload = $"{VehicleSalesUri.VehicleSalesBase}/confirm-object-upload/";
+    internal const string GetVehicleSaleById = $"{VehicleSalesUri.VehicleSalesBase}/";
 }

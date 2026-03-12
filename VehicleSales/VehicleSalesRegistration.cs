@@ -16,9 +16,13 @@ public static class VehicleSalesRegistration
     {
         services.RegisterDbContext<VehicleSalesDbContext>(configuration);
 
+        // Queries
         services.AddTransient<IGetVehicleMakesQuery, GetVehicleMakesQuery>();
         services.AddTransient<IGetMakeModelsQuery, GetMakeModelsQuery>();
         services.AddTransient<IGetVehicleSales, GetVehicleSales>();
+        services.AddTransient<IGetVehicleSale, GetVehicleSale>();
+        
+        // Commands
         services.AddTransient<ICreateVehicleSale, CreateVehicleSale>();
         services.AddTransient<IConfirmObjectUploadForVehicleSale, ConfirmObjectUploadForVehicleSale>();
         services.AddTransient<IUpdateVehicleSale, UpdateVehicleSale>();

@@ -14,6 +14,7 @@ internal static class VehicleSalesEndpoints
     internal const string ConfirmObjectUpload = "/confirm-object-upload/{objectUploadId:int}";
     internal const string Makes = "/makes";
     internal const string Models = "/models";
+    internal const string ById = "/{id:int}";
 
     internal static void MapVehicleSalesEndpoints(this WebApplication app)
     {
@@ -68,6 +69,19 @@ internal static class VehicleSalesEndpoints
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
             .RequireAuthorization();
+
+        vehicleSalesGroup
+            .MapGet(
+                ById,
+                async (int id,
+                IGetVehicleSale query,
+                CancellationToken cancellationToken) =>
+                {
+                     var result = await query.Execute(id, cancellationToken);
+                     return result is not null
+                         ? Results.Ok(result)
+                         : Results.NotFound();
+                });
 
         vehicleSalesGroup
             .MapGet(

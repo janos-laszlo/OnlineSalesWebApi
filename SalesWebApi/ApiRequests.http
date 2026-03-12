@@ -103,10 +103,24 @@ GET {{baseUrl}}/vehicle-sales?pageNumber=0&pageSize=10
 Authorization: Bearer {{bearerToken}}
 
 ###
+GET {{baseUrl}}/vehicle-sales/1
+
+###
 PATCH {{baseUrl}}/vehicle-sales/1
 Content-Type: application/json
 Authorization: Bearer {{bearerToken}}
 
 {
-    "vin": "WBA5R1C50KAK54321"
+    "vehicleModelId": 123,
+    "title": "2020 BMW 5 Series - Premium Condition",
+    "description": "Recently updated vehicle with premium features including full service history, no accidents reported, and all original documentation included",
+    "mileageInKilometers": 35000,
+    "horsePower": 300,
+    "vehicleVersion": "M-Sport",
+    "exteriorColor": "Midnight Black",
+    "interiorColor": "Cognac",
+    "vehicleManufacturingYear": 2020,
+    "vehicleCondition": "Used",
+    "numberOfPreviousOwners": 0,
+    "hasAccidentHistory": false
 }

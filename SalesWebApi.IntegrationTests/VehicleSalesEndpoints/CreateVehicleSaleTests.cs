@@ -63,7 +63,7 @@ public sealed class CreateVehicleSaleTests
           "maximumLoadInKg": 480
         }
         """;
-        HttpRequestMessage httpRequest = CreateRequestWithBody(requestWithoutPhotos);
+        HttpRequestMessage httpRequest = fixture.CreateVehicleSaleRequest(requestWithoutPhotos);
 
         // Act
         var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
@@ -88,7 +88,7 @@ public sealed class CreateVehicleSaleTests
               "maximumLoadInKg": 480
             }
             """;
-        var httpRequest = CreateRequestWithBody(requestWithoutRequiredFields);
+        var httpRequest = fixture.CreateVehicleSaleRequest(requestWithoutRequiredFields);
 
         // Act
         var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
@@ -117,7 +117,7 @@ public sealed class CreateVehicleSaleTests
               "photoContentTypes": ["image/jpeg", "image/png", "image/jpeg"]
             }
             """;
-        var httpRequest = CreateRequestWithBody(requestWithoutRequiredFields);
+        var httpRequest = fixture.CreateVehicleSaleRequest(requestWithoutRequiredFields);
 
         // Act
         var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
@@ -128,10 +128,10 @@ public sealed class CreateVehicleSaleTests
         Assert.Equal(3, content?.ObjectKeysAndTheirPresignedUploadUrls?.Count);
 
         var filesToUpload = new Queue<(string FilePath, string Extension, string ContentType)>();
-        var imagesDirectory = Path.Combine(AppContext.BaseDirectory, "VehicleSalesEndpoints", "Data");
-        filesToUpload.Enqueue((Path.Combine(imagesDirectory, "sample1.jpg"), ".jpeg", "image/jpeg"));
-        filesToUpload.Enqueue((Path.Combine(imagesDirectory, "sample2.png"), ".png", "image/png"));
-        filesToUpload.Enqueue((Path.Combine(imagesDirectory, "sample3.jpg"), ".jpeg", "image/jpeg"));
+        var photosDirectory = Path.Combine(AppContext.BaseDirectory, "VehicleSalesEndpoints", "Data");
+        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample1.jpg"), ".jpeg", "image/jpeg"));
+        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample2.png"), ".png", "image/png"));
+        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample3.jpg"), ".jpeg", "image/jpeg"));
 
         foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
         {
@@ -160,18 +160,5 @@ public sealed class CreateVehicleSaleTests
 
         // Assert
         await Verify(response, settings);
-    }
-
-    private HttpRequestMessage CreateRequestWithBody(string requestBody)
-    {
-        var httpRequest = new HttpRequestMessage(
-            HttpMethod.Post, Endpoints.VehicleSalesEndpoints.VehicleSalesBase)
-        {
-            Content = new StringContent(
-                requestBody, System.Text.Encoding.UTF8, MediaTypeNames.Application.Json)
-        };
-        httpRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", fixture.AccessToken);
-        return httpRequest;
     }
 }

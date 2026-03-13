@@ -100,6 +100,12 @@ internal static class VehicleSalesEndpoints
                     ClaimsPrincipal principal,
                     CancellationToken cancellationToken) 
                 =>
+                    // TODO: Return proper status codes for different failure cases
+                    // (e.g. 404 if sale not found, 403 if user not authorized to update this sale, etc.)
+                    // Since there will be translation as well, return error codes from the 
+                    // application layer and map them to appropriate HTTP status codes here.
+                    // Document the possible error codes in the application layer and their meanings,
+                    // so it's clear what each code represents.
                     await update.Execute(vehicleSaleId, principal.UserId, dto, cancellationToken)
                         .Finally(result => result.IsSuccess
                             ? Results.Ok(result.Value)

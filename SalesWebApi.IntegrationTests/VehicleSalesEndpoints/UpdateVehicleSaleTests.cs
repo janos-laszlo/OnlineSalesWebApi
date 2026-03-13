@@ -26,40 +26,7 @@ public sealed class UpdateVehicleSaleTests
     public async Task UpdateVehicleSale_WithValidData_ReturnsOkAndUpdatesSale()
     {
         // Arrange
-        var vehicleSaleId = await _fixture.CreateVehicleSaleAsync("""
-        {        
-          "title": "2019 BMW 3 Series - Excellent Condition",
-          "description": "Well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
-          "amountInCents": 2499900,
-          "currency": "EUR",
-          "county": "Los Angeles",
-          "locality": "Santa Monica",
-          "vehicleModelId": 68,
-          "mileageInKilometers": 45000,
-          "horsePower": 255,
-          "vehicleVersion": "Sport Line",
-          "bodyType": "Sedan",
-          "engineVolumeInCm3": 1998,
-          "exteriorColor": "Alpine White",
-          "interiorColor": "Black",
-          "fuelType": "Petrol",
-          "vehicleManufacturingYear": 2019,
-          "vehicleNumberOfDoors": 4,
-          "vehicleCondition": "Used",
-          "gearboxType": "Automatic",
-          "steeringWheelSide": "Left",
-          "driveType": "RearWheelDrive",
-          "numberOfSeats": 5,
-          "emissionStandard": "EURO6",
-          "hasServiceHistory": true,
-          "hasAccidentHistory": false,
-          "vin": "WBA5R1C50KAK12345",
-          "numberOfPreviousOwners": 1,
-          "batteryCapacityInKWh": 11000,
-          "rangeInKilometers": 1000,
-          "averageFuelConsumptionInLitersPer100Km": 6
-        }
-        """);
+        var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();
         var existingSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
         Assert.NotNull(existingSale); // Ensure the sale was created successfully
 
@@ -124,72 +91,168 @@ public sealed class UpdateVehicleSaleTests
         await Verify(updatedSale, _verifySettings);
     }
 
-    // [Fact]
-    // public async Task UpdateVehicleSale_WithInvalidData_ReturnsBadRequest()
-    // {
-    //     // Arrange
-    //     var existingSale = _fixture.GetVehicleSale();
-    //     var invalidRequest = new
-    //     {
-    //         Id = existingSale.Id,
-    //         VehicleId = existingSale.VehicleId,
-    //         SaleDate = DateTime.UtcNow.AddDays(-1), // Invalid: past date
-    //         Price = -100.00m // Invalid: negative price
-    //     };
+    [Fact]
+    public async Task UpdateVehicleSale_WithInvalidData_ReturnsBadRequest()
+    {
+        // Arrange
+        var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();
+        var existingSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
+        Assert.NotNull(existingSale); // Ensure the sale was created successfully
+        
+        var invalidRequest = """
+        {        
+          "title": "short title",
+          "description": "short desc",
+          "amountInCents": -2499900,
+          "currency": "USD",
+          "county": "",
+          "locality": "",
+          "vehicleModelId": 68000,
+          "mileageInKilometers": -45000,
+          "horsePower": -255,
+          "vehicleVersion": "",
+          "bodyType": "BLA",
+          "engineVolumeInCm3": -1998,
+          "exteriorColor": "",
+          "interiorColor": "",
+          "fuelType": "bLA",
+          "vehicleManufacturingYear": 219,
+          "vehicleNumberOfDoors": 14,
+          "vehicleCondition": "UNUsed",
+          "gearboxType": "HYBRID",
+          "steeringWheelSide": "BACK",
+          "driveType": "rwd",
+          "numberOfSeats": -50,
+          "emissionStandard": "EURO60",
+          "hasServiceHistory": true,
+          "hasAccidentHistory": false,
+          "vin": "WBA5R1C50KAK12345234",
+          "numberOfPreviousOwners": -1,
+          "batteryCapacityInKWh": -11000,
+          "rangeInKilometers": -1000,
+          "averageFuelConsumptionInLitersPer100Km": 6
+        }
+        """;
+        
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{existingSale.Id}")
+        {
+            Content = new StringContent(invalidRequest, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", _fixture.AccessToken);
 
-    //     // Act
-    //     var response = await _fixture.Client.PutAsJsonAsync(
-    //         $"/api/vehicle-sales/{existingSale.Id}",
-    //         invalidRequest,
-    //         TestContext.Current.CancellationToken);
+        // Act
+        var response = await _fixture.Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
 
-    //     // Assert
-    //     response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    // }
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 
-    // [Fact]
-    // public async Task UpdateVehicleSale_WithNonExistentId_ReturnsNotFound()
-    // {
-    //     // Arrange
-    //     var nonExistentId = Guid.NewGuid();
-    //     var updateRequest = new
-    //     {
-    //         Id = nonExistentId,
-    //         VehicleId = Guid.NewGuid(),
-    //         SaleDate = DateTime.UtcNow,
-    //         Price = 20000.00m
-    //     };
+    [Fact]
+    public async Task UpdateVehicleSale_WithNonExistentVehicleSale_ReturnsBadRequest()
+    {
+        // Arrange
+        var updatedVehicleSale =
+        """
+        {
+            "title": "2019 BMW 3 Series - Very Good Condition",
+            "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+            "amountInCents": 2699900,
+            "currency": "RON",
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 69
+        }
+        """;
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{1000000}") // Non-existent ID
+        {
+            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", _fixture.AccessToken);
 
-    //     // Act
-    //     var response = await _fixture.Client.PutAsJsonAsync(
-    //         $"/api/vehicle-sales/{nonExistentId}",
-    //         updateRequest,
-    //         TestContext.Current.CancellationToken);
+        // Act
+        var response = await _fixture.Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
 
-    //     // Assert
-    //     Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    // }
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 
-    // [Fact]
-    // public async Task UpdateVehicleSale_WithMismatchedId_ReturnsBadRequest()
-    // {
-    //     // Arrange
-    //     var existingSale = _fixture.GetVehicleSale();
-    //     var updateRequest = new
-    //     {
-    //         Id = Guid.NewGuid(), // Mismatched ID
-    //         VehicleId = existingSale.VehicleId,
-    //         SaleDate = DateTime.UtcNow,
-    //         Price = 22000.00m
-    //     };
+    [Fact]
+    public async Task UpdateVehicleSale_AnotherUsersSale_ReturnsBadRequest()
+    {   
+        // Arrange
+        var updatedVehicleSale =
+        """
+        {
+            "title": "2019 BMW 3 Series - Very Good Condition",
+            "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+            "amountInCents": 2699900,
+            "currency": "RON",
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 69
+        }
+        """;
+        // Assume _fixture.AnotherUsersVehicleSaleId is a valid sale owned by another user
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{_fixture.AnotherUsersVehicleSaleId.Value}")
+        {
+            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", _fixture.AccessToken);
 
-    //     // Act
-    //     var response = await _fixture.Client.PutAsJsonAsync(
-    //         $"/api/vehicle-sales/{existingSale.Id}",
-    //         updateRequest,
-    //         TestContext.Current.CancellationToken);
+        // Act
+        var response = await _fixture.Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
 
-    //     // Assert
-    //     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    // }
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateVehicleSale_WithoutAuthHeader_ReturnsUnauthorized()
+    {
+        // Arrange
+        var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();
+        var updatedVehicleSale =
+        """
+        {
+            "title": "2019 BMW 3 Series - Very Good Condition",
+            "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+            "amountInCents": 2699900,
+            "currency": "RON",
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 69
+        }
+        """;
+        // Assume _fixture.VehicleSaleId is a valid sale owned by the test user
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{vehicleSaleId}")
+        {
+            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        // No Authorization header
+
+        // Act
+        var response = await _fixture.Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
 }

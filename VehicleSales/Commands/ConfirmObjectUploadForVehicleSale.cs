@@ -31,19 +31,18 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
                     return Result.Failure($"Object upload with id {objectUploadId} does not belong to user with id {userId}.");
 
                 var objectsNotFound = await GetObjectsNotExistingInDirectory(objectUpload.Directory, objectUpload.ObjectKeys, cancellation);
-                // TODO: What if some exist and some don't?
-                if (objectsNotFound.Count > 0)
-                    return Result.Failure($"{string.Join(", ", objectsNotFound)} do not exist in {configuration[R2Config.BucketNameKey]}/{objectUpload.Directory}.");
 
                 vehicleSale.UpdateVehicleDetails(
                     vehicleDetails =>
                     {
                         vehicleDetails.Directory = objectUpload.Directory;
-                        vehicleDetails.PhotoKeys = [.. objectUpload.ObjectKeys];
+                        vehicleDetails.PhotoKeys = [.. objectUpload.ObjectKeys.Except(objectsNotFound)];
                     });
                 await dbContext.SaveChangesAsync(cancellation);
 
-                return Result.Success();
+                return objectsNotFound.Count > 0
+                    ? Result.Failure($"{string.Join(", ", objectsNotFound)} weren't uploaded.")
+                    : Result.Success();
             },
             cancellation);
 

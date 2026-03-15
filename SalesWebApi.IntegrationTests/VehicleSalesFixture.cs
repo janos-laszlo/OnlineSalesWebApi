@@ -1,8 +1,9 @@
+using Microsoft.AspNetCore.Mvc.Testing;
+using ObjectUploadTracking;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Testing;
 using UserIdentity.Commands;
 using VehicleSales.Queries;
 
@@ -75,6 +76,13 @@ public sealed class VehicleSalesFixture : IDisposable
         });
     }
 
+    public void Dispose()
+    {
+        Client.Dispose();
+        ExternalClient.Dispose();
+        app.Dispose();
+    }
+
     private TokenResponseDto RegisterAndLoginUser(UserCredentialsDto credentials)
     {
         var registrationResult = this.Client
@@ -96,13 +104,6 @@ public sealed class VehicleSalesFixture : IDisposable
         return body;
     }
 
-    public void Dispose()
-    {
-        Client.Dispose();
-        ExternalClient.Dispose();
-        app.Dispose();
-    }
-    
 
     internal Task<VehicleSaleDto?> GetVehicleSaleAsync(int id) =>
         Client.GetFromJsonAsync<VehicleSaleDto>($"{VehicleSalesUris.GetVehicleSaleById}{id}");
@@ -156,7 +157,44 @@ public sealed class VehicleSalesFixture : IDisposable
         var location = response.Headers.Location?.OriginalString;
         Assert.NotNull(location);
         var idString = location.Split('/').Last();
+
+        if (requestBody.Contains("photoContentTypes"))
+        {
+            var responseBody = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(TestContext.Current.CancellationToken);
+            var objectUploadId = await UploadPhotos(responseBody);
+            await ConfirmObjectUpload(objectUploadId);
+        }
+
         return int.Parse(idString);
+    }
+
+    private async Task<int> UploadPhotos(ObjectUploadTrackingDto? responseBody)
+    {
+        Assert.NotNull(responseBody);
+        Assert.True(responseBody.ObjectUploadId.HasValue);
+        var presignedUrls = responseBody.ObjectKeysAndTheirPresignedUploadUrls;
+        Assert.NotNull(presignedUrls);
+        foreach (var presignedUrl in presignedUrls.Values)
+        {
+            var uploadResponse = await ExternalClient.PutAsync(presignedUrl, new ByteArrayContent([]), TestContext.Current.CancellationToken);
+            uploadResponse.EnsureSuccessStatusCode();
+        }
+
+        return responseBody.ObjectUploadId.Value;
+    }
+
+    private async Task ConfirmObjectUpload(int objectUploadId)
+    {
+        var confirmRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{VehicleSalesUris.ConfirmObjectUpload}{objectUploadId}");
+        confirmRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", this.AccessToken);
+
+        var confirmResponse = await Client.SendAsync(
+            confirmRequest,
+            TestContext.Current.CancellationToken);
+        Assert.True(confirmResponse.IsSuccessStatusCode);
     }
 
     internal HttpRequestMessage CreateVehicleSaleRequest(string requestBody)

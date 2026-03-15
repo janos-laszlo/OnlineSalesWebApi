@@ -1,10 +1,10 @@
+using ObjectUploadTracking;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
-using ObjectUploadTracking;
-using VehicleSales.Dtos;
+using System.Text.Json;
 
 namespace SalesWebApi.IntegrationTests.VehicleSalesEndpoints;
 
@@ -98,7 +98,7 @@ public sealed class UpdateVehicleSaleTests
         var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();
         var existingSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
         Assert.NotNull(existingSale); // Ensure the sale was created successfully
-        
+
         var invalidRequest = """
         {        
           "title": "short title",
@@ -133,7 +133,7 @@ public sealed class UpdateVehicleSaleTests
           "averageFuelConsumptionInLitersPer100Km": 6
         }
         """;
-        
+
         var updateRequest = new HttpRequestMessage(
             HttpMethod.Patch,
             $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{existingSale.Id}")
@@ -188,7 +188,7 @@ public sealed class UpdateVehicleSaleTests
 
     [Fact]
     public async Task UpdateVehicleSale_AnotherUsersSale_ReturnsBadRequest()
-    {   
+    {
         // Arrange
         var updatedVehicleSale =
         """
@@ -254,5 +254,171 @@ public sealed class UpdateVehicleSaleTests
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task NoActionOnPhotos()
+    {
+        // Arrange
+        var newVehicleSale =
+        """
+        {
+            "title": "2019 BMW 3 Series - Very Good Condition",
+            "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+            "amountInCents": 2699900,
+            "currency": "RON",
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 69,
+            "photoContentTypes": ["image/jpeg", "image/png"]
+        }
+        """;
+        var vehicleSaleId = await _fixture.CreateVehicleSaleAsync(newVehicleSale);
+        var updatedVehicleSale =
+        """
+        {
+            "county": "Orange",
+            "locality": "Los Angeles",
+            "vehicleModelId": 70
+        }
+        """;
+        var beforeUpdateSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
+        // Assume _fixture.VehicleSaleId is a valid sale owned by the test user
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{vehicleSaleId}")
+        {
+            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", _fixture.AccessToken);
+
+        // Act
+        var response = await _fixture.Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
+            TestContext.Current.CancellationToken);
+        Assert.Null(responseBody?.ObjectUploadId); // No new object upload should be created
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var afterUpdateSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
+
+        // Assert
+        Assert.NotNull(beforeUpdateSale);
+        Assert.NotNull(afterUpdateSale);
+        Assert.True(beforeUpdateSale.PhotoKeys?.SequenceEqual(afterUpdateSale.PhotoKeys ?? []),
+            "PhotoKeys collections do not contain the same elements in the same order.");
+    }
+
+    [Fact]
+    public async Task ReorderPhotos()
+    {
+        // Arrange
+        var newVehicleSale =
+        """
+        {
+            "title": "2019 BMW 3 Series - Very Good Condition",
+            "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+            "amountInCents": 2699900,
+            "currency": "RON",
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 69,
+            "photoContentTypes": ["image/jpeg", "image/png"]
+        }
+        """;
+        var vehicleSaleId = await _fixture.CreateVehicleSaleAsync(newVehicleSale);
+        var beforeUpdateSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
+        var updatedVehicleSale =
+        $$"""
+        {
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 80,
+            "photos": {{JsonSerializer.Serialize(beforeUpdateSale?.PhotoKeys?.Reverse())}}
+        }
+        """;
+        // Assume _fixture.VehicleSaleId is a valid sale owned by the test user
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{vehicleSaleId}")
+        {
+            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", _fixture.AccessToken);
+
+        // Act
+        var response = await _fixture.Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
+            TestContext.Current.CancellationToken);
+        Assert.Null(responseBody?.ObjectUploadId); // No new object upload should be created
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var afterUpdateSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
+
+        // Assert
+        Assert.NotNull(beforeUpdateSale);
+        Assert.NotNull(afterUpdateSale);
+        Assert.True(beforeUpdateSale.PhotoKeys?.Reverse().SequenceEqual(afterUpdateSale.PhotoKeys ?? []),
+            "PhotoKeys collections do not contain the same elements in the rearranged order.");
+    }
+
+    [Fact]
+    public async Task RemoveSomePhotos()
+    {
+        // Arrange
+        var newVehicleSale =
+        """
+        {
+            "title": "2019 BMW 3 Series - Very Good Condition",
+            "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
+            "amountInCents": 2699900,
+            "currency": "RON",
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 69,
+            "photoContentTypes": ["image/jpeg", "image/png", "image/jpeg"]
+        }
+        """;
+        var vehicleSaleId = await _fixture.CreateVehicleSaleAsync(newVehicleSale);
+        var beforeUpdateSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
+        var updatedVehicleSale =
+        $$"""
+        {
+            "county": "San Francisco",
+            "locality": "Santa Monica1",
+            "vehicleModelId": 80,
+            "photos": {{JsonSerializer.Serialize(beforeUpdateSale?.PhotoKeys?.Where((_, index) => index % 2 == 0))}}
+        }
+        """;
+        // Assume _fixture.VehicleSaleId is a valid sale owned by the test user
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{vehicleSaleId}")
+        {
+            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", _fixture.AccessToken);
+
+        // Act
+        var response = await _fixture.Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
+            TestContext.Current.CancellationToken);
+        Assert.Null(responseBody?.ObjectUploadId); // No new object upload should be created
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var afterUpdateSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
+
+        // Assert
+        Assert.NotNull(beforeUpdateSale);
+        Assert.NotNull(afterUpdateSale);
+        Assert.Equal(1, afterUpdateSale.PhotoKeys?.Count);
     }
 }

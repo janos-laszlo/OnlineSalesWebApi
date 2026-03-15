@@ -26,10 +26,6 @@ internal sealed class UpdateVehicleSale(
     IAmazonS3 r2Client,
     IConfiguration configuration) : IUpdateVehicleSale
 {
-    // TODO: test cases
-    // - just rearrange the order of photos without addition or removal
-    // - add new photos and remove some of the existing ones at the same time
-    // - remove all photos
     public async Task<Result<ObjectUploadTrackingDto?>> Execute(
         int vehicleSaleId,
         int sellerId,

@@ -8,9 +8,7 @@ using TickerQ.Utilities.Base;
 
 namespace VehicleSales.Jobs;
 
-// TODO: Move this job to VehicleSales. Add a Module column to ObjectUpload.
-// When removing expired object uploads remove the uploaded but unconfirmed objects as well.
-internal sealed class ExpiredObjectUploadRemoval(
+internal sealed class RemoveExpiredObjectUploads(
     IConsumeExpiredObjectUploads consumeExpiredObjectUploads,
     IConfiguration configuration,
     IAmazonS3 r2Client)

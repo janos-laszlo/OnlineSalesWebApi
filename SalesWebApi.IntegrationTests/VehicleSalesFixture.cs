@@ -174,13 +174,26 @@ public sealed class VehicleSalesFixture : IDisposable
         Assert.True(responseBody.ObjectUploadId.HasValue);
         var presignedUrls = responseBody.ObjectKeysAndTheirPresignedUploadUrls;
         Assert.NotNull(presignedUrls);
-        foreach (var presignedUrl in presignedUrls.Values)
+        foreach (var (filename, presignedUrl) in presignedUrls)
         {
-            var uploadResponse = await ExternalClient.PutAsync(presignedUrl, new ByteArrayContent([]), TestContext.Current.CancellationToken);
+            ByteArrayContent content = new([]);
+            content.Headers.ContentType = new MediaTypeHeaderValue(GetContentTypeFromFileExtension(filename));
+            var uploadResponse = await ExternalClient.PutAsync(presignedUrl, content, TestContext.Current.CancellationToken);
             uploadResponse.EnsureSuccessStatusCode();
         }
 
         return responseBody.ObjectUploadId.Value;
+    }
+
+    private static string GetContentTypeFromFileExtension(string filename)
+    {
+        var extension = Path.GetExtension(filename).ToLowerInvariant();
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            _ => throw new NotSupportedException($"File extension {extension} is not supported.")
+        };
     }
 
     private async Task ConfirmObjectUpload(int objectUploadId)

@@ -11,10 +11,11 @@ public interface IGetVehicleSale
 internal sealed class GetVehicleSale(
     VehicleSalesDbContext dbContext) : IGetVehicleSale
 {
-    public async Task<VehicleSaleDto?> Execute(int id, CancellationToken cancellation) =>
+    public async Task<VehicleSaleDto?> Execute(int id, CancellationToken cancellation)
+    {
         // TODO: Use SqlRaw or Dapper because EF parses each value object and
         // this results in a very inefficient query.
-        await dbContext.VehicleSales
+        var result = await dbContext.VehicleSales
             .Where(vs => vs.Id == id)
             .Select(vs =>
                 new VehicleSaleDto(
@@ -59,4 +60,7 @@ internal sealed class GetVehicleSale(
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
                 })
             .FirstOrDefaultAsync(cancellation);
+        result.PhotoKeys = result.PhotoKeysInternal?.Select(ok => ok.Value).ToList();
+        return result;
+    }
 }

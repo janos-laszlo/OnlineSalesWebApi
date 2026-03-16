@@ -127,11 +127,11 @@ public sealed class CreateVehicleSaleTests
             cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(3, content?.ObjectKeysAndTheirPresignedUploadUrls?.Count);
 
-        var filesToUpload = new Queue<(string FilePath, string Extension, string ContentType)>();
+        var filesToUpload = new Queue<(string FilePath, string ContentType)>();
         var photosDirectory = Path.Combine(AppContext.BaseDirectory, "VehicleSalesEndpoints", "Data");
-        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample1.jpg"), ".jpeg", "image/jpeg"));
-        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample2.png"), ".png", "image/png"));
-        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample3.jpg"), ".jpeg", "image/jpeg"));
+        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample1.jpg"), "image/jpeg"));
+        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample2.png"), "image/png"));
+        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample3.jpg"), "image/jpeg"));
 
         foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
         {

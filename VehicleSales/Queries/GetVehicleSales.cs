@@ -22,7 +22,6 @@ internal sealed class GetVehicleSales(
             .Take(request.PageSize)
             .Select(vs =>
                 new VehicleSaleDto(
-#pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
                     vs.Id,
                     vs.Sale.Title.Value,
@@ -62,7 +61,6 @@ internal sealed class GetVehicleSales(
                     Directory = vs.VehicleDetails.Directory.Value,
                     PhotoKeysInternal = vs.VehicleDetails.PhotoKeys
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8604 // Possible null reference argument.
                 })
             .ToListAsync(cancellation);
 }
@@ -164,5 +162,5 @@ public sealed record VehicleSaleDto(
 
     public string? Directory { get; init; }
     internal IReadOnlyList<ObjectKeyName>? PhotoKeysInternal { get; init; }
-    public IReadOnlyList<string>? PhotoKeys => PhotoKeysInternal?.Select(ok => ok.Value).ToList();
+    public IReadOnlyList<string>? PhotoKeys { get; set; }
 }

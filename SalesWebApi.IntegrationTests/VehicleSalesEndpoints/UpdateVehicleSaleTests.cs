@@ -23,7 +23,7 @@ public sealed class UpdateVehicleSaleTests
     }
 
     [Fact]
-    public async Task UpdateVehicleSale_WithValidData_ReturnsOkAndUpdatesSale()
+    public async Task WithValidData_ReturnsOkAndUpdatesSale()
     {
         // Arrange
         var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();
@@ -92,7 +92,7 @@ public sealed class UpdateVehicleSaleTests
     }
 
     [Fact]
-    public async Task UpdateVehicleSale_WithInvalidData_ReturnsBadRequest()
+    public async Task WithInvalidData_ReturnsBadRequest()
     {
         // Arrange
         var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();
@@ -153,7 +153,7 @@ public sealed class UpdateVehicleSaleTests
     }
 
     [Fact]
-    public async Task UpdateVehicleSale_WithNonExistentVehicleSale_ReturnsBadRequest()
+    public async Task WithNonExistentVehicleSale_ReturnsBadRequest()
     {
         // Arrange
         var updatedVehicleSale =
@@ -187,7 +187,7 @@ public sealed class UpdateVehicleSaleTests
     }
 
     [Fact]
-    public async Task UpdateVehicleSale_AnotherUsersSale_ReturnsBadRequest()
+    public async Task AnotherUsersSale_ReturnsBadRequest()
     {
         // Arrange
         var updatedVehicleSale =
@@ -222,7 +222,7 @@ public sealed class UpdateVehicleSaleTests
     }
 
     [Fact]
-    public async Task UpdateVehicleSale_WithoutAuthHeader_ReturnsUnauthorized()
+    public async Task WithoutAuthHeader_ReturnsUnauthorized()
     {
         // Arrange
         var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();

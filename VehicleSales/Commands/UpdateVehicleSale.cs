@@ -224,32 +224,37 @@ internal sealed class UpdateVehicleSale(
                     .Select(pk => int.Parse(pk.Value.Split('.')[0]))
                     .Max() + 1 ?? 0;
 
-            NewVersion = GetNewVersion(newPhotoKeys, nextIndex);
+            NewVersion = GetNewVersion(currentPhotoKeys, newPhotoKeys, nextIndex);
             Removed = GetRemoved(currentPhotoKeys, newPhotoKeys);
             Added = GetAdded(newPhotoKeys, nextIndex);
             AddedObjectKeysAndContentTypes = GetAddedObjectKeyAndContentType(newPhotoKeys, nextIndex);
             Inexistent = GetInexistent(newPhotoKeys, currentPhotoKeys);
         }
 
-        static List<ObjectKeyName>? GetNewVersion(IEnumerable<string>? newPhotoKeys, int nextIndex)
+        static List<ObjectKeyName>? GetNewVersion(IEnumerable<ObjectKeyName>? currentPhotoKeys, IEnumerable<string>? newPhotoKeys, int nextIndex)
         {
             var currentIndex = nextIndex;
-            return newPhotoKeys?
-                .Select(npk => MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains(npk)
-                    ? ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value
-                    : ObjectKeyName.Create(npk).Value)
-                .ToList();
+            return newPhotoKeys is null
+                ? currentPhotoKeys?.ToList()
+                : newPhotoKeys
+                    .Intersect(MaxPhotoContentTypesAttribute.AllowedImageContentTypes)
+                    .Select(npk => MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains(npk)
+                        ? ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value
+                        : ObjectKeyName.Create(npk).Value)
+                    .ToList();
         }
 
         private static List<string> GetRemoved(
             IEnumerable<ObjectKeyName>? currentPhotoKeys,
             IEnumerable<string>? newPhotoKeys)
         =>
-            currentPhotoKeys?
-                .Select(pk => pk.Value)
-                .Except(newPhotoKeys ?? [])
-                .ToList()
-            ?? [];
+            newPhotoKeys is null
+                ? []
+                : currentPhotoKeys?
+                    .Select(pk => pk.Value)
+                    .Except(newPhotoKeys)
+                    .ToList()
+                    ?? [];
 
         private static List<ObjectKeyName> GetAdded(
             IEnumerable<string>? newPhotoKeys,

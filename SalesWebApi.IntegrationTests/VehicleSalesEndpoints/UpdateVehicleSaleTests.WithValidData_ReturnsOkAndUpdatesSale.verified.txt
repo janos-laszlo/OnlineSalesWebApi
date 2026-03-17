@@ -1,6 +1,7 @@
 ﻿{
   Id: {Scrubbed},
   Title: 2019 BMW 3 Series - Very Good Condition,
+  SellerId: {Scrubbed},
   Description: Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.,
   AmountInCents: 2699900,
   Currency: RON,

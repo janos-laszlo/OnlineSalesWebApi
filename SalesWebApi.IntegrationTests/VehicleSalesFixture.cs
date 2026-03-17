@@ -105,8 +105,8 @@ public sealed class VehicleSalesFixture : IDisposable
     }
 
 
-    internal Task<VehicleSaleDto?> GetVehicleSaleAsync(int id) =>
-        Client.GetFromJsonAsync<VehicleSaleDto>($"{VehicleSalesUris.GetVehicleSaleById}{id}");
+    internal Task<VehicleSaleFullDto?> GetVehicleSaleAsync(int id) =>
+        Client.GetFromJsonAsync<VehicleSaleFullDto>($"{VehicleSalesUris.GetVehicleSaleById}{id}");
 
     internal async Task<int> CreateDefaultVehicleSaleAsync()
     {

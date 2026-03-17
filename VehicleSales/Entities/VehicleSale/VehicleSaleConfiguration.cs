@@ -7,6 +7,8 @@ namespace VehicleSales.Entities.VehicleSale;
 
 internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
 {
+    internal const char Separator = ',';
+
     public void Configure(EntityTypeBuilder<VehicleSale> builder)
     {
         builder.ToTable(Tables.VehicleSales);
@@ -204,8 +206,8 @@ internal class VehicleSaleConfiguration : IEntityTypeConfiguration<VehicleSale>
                     .HasColumnName(nameof(VehicleDetails.PhotoKeys))
                     .HasColumnType($"VARCHAR({VehicleDetails.MaxNumberOfPhotos * ObjectKeyName.MaxLength})")
                     .HasConversion(
-                        value => value == null ? null : string.Join(',', value.Select(v => v.Value)),
-                        photoKeys => photoKeys == null ? null : photoKeys.Split(',').Select(key => ObjectKeyName.Create(key).Value).ToList(),
+                        value => value == null ? null : string.Join(Separator, value.Select(v => v.Value)),
+                        photoKeys => photoKeys == null ? null : photoKeys.Split(Separator).Select(key => ObjectKeyName.Create(key).Value).ToList(),
                         new ValueComparer<IReadOnlyList<ObjectKeyName>?>(
                             (c1, c2) => c1 == null && c2 == null
                                 || (c1 != null && c2 != null && c1.Select(v => v.Value).SequenceEqual(c2.Select(v => v.Value))),

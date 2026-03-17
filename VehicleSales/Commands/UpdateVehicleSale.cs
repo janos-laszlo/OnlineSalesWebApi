@@ -128,22 +128,20 @@ internal sealed class UpdateVehicleSale(
                     vehicleDetails.MassInKg = dto.MassInKg;
                 if (dto.MaximumLoadInKg is not null)
                     vehicleDetails.MaximumLoadInKg = dto.MaximumLoadInKg;
-                if (dto.Photos is not null)
-                {
-                    // Cases(subsets of reordering, addition and removal):
-                    // - do nothing with photos -> no action needed
-                    // - just reorder photos -> assign new version here
-                    // - just remove some photos -> assign new version here and remove the photos from R2
-                    // - just add some photos -> no reassignment here, assign new version in ConfirmObjectUploadForVehicleSale when confirming the upload of the new photos
-                    // - reorder photos and add new ones without removal -> create ObjectUpload for the new photos and assign the new version including the new photos in ConfirmObjectUploadForVehicleSale
-                    // - reorder photos and remove some without addition -> same as 'just remove some photos' case, the new version will be assigned here and the removed photos will be deleted from R2
-                    // - add and remove photos without reordering -> reassign NewVersion except Added here, create ObjectUpload for Added and remove from R2 the Removed photos.
-                    // - reorder photos, add new ones and remove some at the same time -> assign NewVersion except Added here, create ObjectUpload for the new photos and assign the new version including the new photos in ConfirmObjectUploadForVehicleSale, remove from R2 the Removed photos.
 
-                    vehicleDetails.PhotoKeys = diff.NewVersion?
-                        .Except(diff.Added)
-                        .ToList();
-                }
+                // Cases(subsets of reordering, addition and removal):
+                // - do nothing with photos -> no action needed
+                // - just reorder photos -> assign new version here
+                // - just remove some photos -> assign new version here and remove the photos from R2
+                // - just add some photos -> no reassignment here, assign new version in ConfirmObjectUploadForVehicleSale when confirming the upload of the new photos
+                // - reorder photos and add new ones without removal -> create ObjectUpload for the new photos and assign the new version including the new photos in ConfirmObjectUploadForVehicleSale
+                // - reorder photos and remove some without addition -> same as 'just remove some photos' case, the new version will be assigned here and the removed photos will be deleted from R2
+                // - add and remove photos without reordering -> reassign NewVersion except Added here, create ObjectUpload for Added and remove from R2 the Removed photos.
+                // - reorder photos, add new ones and remove some at the same time -> assign NewVersion except Added here, create ObjectUpload for the new photos and assign the new version including the new photos in ConfirmObjectUploadForVehicleSale, remove from R2 the Removed photos.
+
+                vehicleDetails.PhotoKeys = diff.NewVersion?
+                    .Except(diff.Added)
+                    .ToList();
             });
 
         if (diff.Removed.Count > 0)
@@ -236,12 +234,10 @@ internal sealed class UpdateVehicleSale(
             var currentIndex = nextIndex;
             return newPhotoKeys is null
                 ? currentPhotoKeys?.ToList()
-                : newPhotoKeys
-                    .Intersect(MaxPhotoContentTypesAttribute.AllowedImageContentTypes)
+                : [.. newPhotoKeys
                     .Select(npk => MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains(npk)
                         ? ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value
-                        : ObjectKeyName.Create(npk).Value)
-                    .ToList();
+                        : ObjectKeyName.Create(npk).Value)];
         }
 
         private static List<string> GetRemoved(

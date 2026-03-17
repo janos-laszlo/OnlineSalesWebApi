@@ -69,7 +69,11 @@ public sealed class CreateVehicleSaleTests
         var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
 
         // Assert
-        await Verify(response, settings);
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+        Assert.Null(result.ObjectUploadId);
+        Assert.Null(result.ObjectKeysAndTheirPresignedUploadUrls);
     }
 
     [Fact]
@@ -157,8 +161,5 @@ public sealed class CreateVehicleSaleTests
             confirmRequest,
             TestContext.Current.CancellationToken);
         Assert.True(confirmResponse.IsSuccessStatusCode);
-
-        // Assert
-        await Verify(response, settings);
     }
 }

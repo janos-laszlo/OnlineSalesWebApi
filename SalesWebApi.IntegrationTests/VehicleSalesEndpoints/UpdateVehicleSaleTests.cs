@@ -20,6 +20,7 @@ public sealed class UpdateVehicleSaleTests
         _fixture = fixture;
         _verifySettings = new VerifySettings();
         _verifySettings.ScrubMember("Id");
+        _verifySettings.ScrubMember("SellerId");
     }
 
     [Fact]
@@ -419,6 +420,6 @@ public sealed class UpdateVehicleSaleTests
         // Assert
         Assert.NotNull(beforeUpdateSale);
         Assert.NotNull(afterUpdateSale);
-        Assert.Equal(1, afterUpdateSale.PhotoKeys?.Count);
+        Assert.Equal(2, afterUpdateSale.PhotoKeys?.Count);
     }
 }

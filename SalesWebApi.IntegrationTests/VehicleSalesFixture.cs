@@ -1,18 +1,30 @@
+using Amazon.S3;
+using Amazon.S3.Model;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using ObjectUploadTracking;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
+using System.Text.RegularExpressions;
 using UserIdentity.Commands;
+using VehicleSales;
 using VehicleSales.Queries;
 
 namespace SalesWebApi.IntegrationTests;
 
-public sealed class VehicleSalesFixture : IDisposable
+public sealed partial class VehicleSalesFixture : IDisposable
 {
+    [GeneratedRegex("image/")]
+    private static partial Regex ImageContentType();
     internal const string CollectionName = "Vehicle Sales";
     private readonly WebApplicationFactory<Program> app;
+    private readonly IServiceScope scope;
+    private readonly IConfiguration configuration;
+    private readonly IAmazonS3 s3Client;
     internal HttpClient Client { get; }
     internal HttpClient ExternalClient { get; }
     internal string AccessToken { get; }
@@ -21,10 +33,18 @@ public sealed class VehicleSalesFixture : IDisposable
     public VehicleSalesFixture()
     {
         app = new WebApplicationFactory<Program>();
+        scope = app.Services.CreateScope();
+        configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        s3Client = scope.ServiceProvider.GetRequiredService<IAmazonS3>();
         Client = app.CreateClient();
         ExternalClient = new HttpClient();
         AccessToken = RegisterAndLoginUser(new UserCredentialsDto(UserUtils.NextEmail, "Password1")).AccessToken;
-        AnotherUsersVehicleSaleId = new Lazy<int>(() =>
+        AnotherUsersVehicleSaleId = new Lazy<int>(CreateVehicleSaleForAnotherUser());
+    }
+
+    private Func<int> CreateVehicleSaleForAnotherUser()
+    {
+        return () =>
         {
             var otherUserToken = RegisterAndLoginUser(new UserCredentialsDto(UserUtils.NextEmail, "Password1")).AccessToken;
             var httpRequest = new HttpRequestMessage(
@@ -73,13 +93,14 @@ public sealed class VehicleSalesFixture : IDisposable
             Assert.NotNull(location);
             var idString = location.Split('/').Last();
             return int.Parse(idString);
-        });
+        };
     }
 
     public void Dispose()
     {
         Client.Dispose();
         ExternalClient.Dispose();
+        scope.Dispose();
         app.Dispose();
     }
 
@@ -168,6 +189,48 @@ public sealed class VehicleSalesFixture : IDisposable
         return int.Parse(idString);
     }
 
+    internal async Task UpdateVehicleSale(string? updatedPhotoKeys, int vehicleSaleId)
+    {
+        var updatedVehicleSale =
+            $$"""
+            {
+                "county": "San Francisco",
+                "locality": "Santa Monica1",
+                "vehicleModelId": 80,
+                "photos": {{updatedPhotoKeys ?? "null"}}
+            }
+            """;
+        var updateRequest = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{vehicleSaleId}")
+        {
+            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer", AccessToken);
+        var response = await Client.SendAsync(
+            updateRequest,
+            TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var responseBody = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
+            TestContext.Current.CancellationToken);
+        Assert.Equal(vehicleSaleId, responseBody?.EntityId);
+
+        var numberOfNewPhotos = ImageContentType().Count(updatedPhotoKeys ?? string.Empty);
+        if (numberOfNewPhotos > 0)
+        {
+            Assert.NotNull(responseBody);
+            Assert.NotNull(responseBody.ObjectUploadId);
+            Assert.Equal(numberOfNewPhotos, responseBody.ObjectKeysAndTheirPresignedUploadUrls?.Count);
+            var objectUploadId = await UploadPhotos(responseBody);
+            await ConfirmObjectUpload(objectUploadId);
+        }
+        else
+        {
+            Assert.Null(responseBody?.ObjectUploadId);
+        }
+    }
+
     private async Task<int> UploadPhotos(ObjectUploadTrackingDto? responseBody)
     {
         Assert.NotNull(responseBody);
@@ -220,6 +283,21 @@ public sealed class VehicleSalesFixture : IDisposable
         httpRequest.Headers.Authorization = new AuthenticationHeaderValue(
             "Bearer", AccessToken);
         return httpRequest;
+    }
+
+    internal async Task<string[]> GetObjectsInDirectory(
+        string directory,
+        CancellationToken cancellation)
+    {
+        var request = new ListObjectsV2Request
+        {
+            BucketName = configuration[R2Config.BucketNameKey],
+            Prefix = directory
+        };
+
+        var response = await s3Client.ListObjectsV2Async(request, cancellation);
+
+        return response.S3Objects.Select(o => o.Key[(directory.Length + 1)..]).ToArray();
     }
 }
 

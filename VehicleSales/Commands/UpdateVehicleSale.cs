@@ -166,7 +166,7 @@ internal sealed class UpdateVehicleSale(
                 EntityId = vehicleSale.Id,
                 Directory = vehicleSale.VehicleDetails.Directory ??
                         DirectoryName.Create(Guid.CreateVersion7().ToString("N")).Value,
-                ObjectKeys = diff.Added,
+                ObjectKeys = diff.NewVersion!,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
             };
 

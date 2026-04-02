@@ -13,7 +13,7 @@ internal sealed class DeleteVehicleSale(VehicleSalesDbContext dbContext) : IDele
 
     public async Task<Result> Execute(int id, int userId, CancellationToken cancellationToken)
     {
-        var vehicleSale = await _dbContext.VehicleSales.FindAsync(id, cancellationToken);
+        var vehicleSale = await _dbContext.VehicleSales.FindAsync([id], cancellationToken);
         if (vehicleSale == null)
             return Result.Failure("Vehicle sale not found");
 

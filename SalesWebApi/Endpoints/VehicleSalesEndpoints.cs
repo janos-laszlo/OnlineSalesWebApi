@@ -114,5 +114,22 @@ internal static class VehicleSalesEndpoints
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
             .RequireAuthorization();
+
+        vehicleSalesGroup
+            .MapDelete(
+                "{vehicleSaleId:int}",
+                async (int vehicleSaleId,
+                    IDeleteVehicleSale delete,
+                    ClaimsPrincipal principal,
+                    CancellationToken cancellationToken)
+                =>
+                    await delete.Execute(vehicleSaleId, principal.UserId, cancellationToken)
+                        .Finally(result => result.IsSuccess
+                            ? Results.NoContent()
+                            : Results.Problem(
+                                title: "Vehicle sale deletion failed",
+                                detail: result.Error,
+                                statusCode: StatusCodes.Status400BadRequest)))
+            .RequireAuthorization();
     }
 }

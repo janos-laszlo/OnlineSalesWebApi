@@ -26,7 +26,8 @@ internal static class VehicleSalesEndpoints
                 Makes,
                 async (IGetVehicleMakesQuery query,
                 CancellationToken cancellationToken) =>
-                    Results.Ok(await query.Get(cancellationToken)));
+                    Results.Ok(await query.Get(cancellationToken)))
+            .WithSummary("Get all vehicle makes");
 
         vehicleSalesGroup
             .MapGet(
@@ -34,7 +35,8 @@ internal static class VehicleSalesEndpoints
                 async (string makeName,
                 IGetMakeModelsQuery query,
                 CancellationToken cancellationToken) =>
-                    Results.Ok(await query.Get(makeName, cancellationToken)));
+                    Results.Ok(await query.Get(makeName, cancellationToken)))
+            .WithSummary("Get models for a specific vehicle make");
 
         vehicleSalesGroup
             .MapPost(
@@ -51,7 +53,8 @@ internal static class VehicleSalesEndpoints
                                 title: "Vehicle sale creation failed",
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .WithSummary("Create a new vehicle sale");
 
         vehicleSalesGroup
             .MapPatch(
@@ -68,7 +71,8 @@ internal static class VehicleSalesEndpoints
                                 title: "Object upload confirmation failed",
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .WithSummary("Confirm an object/photo upload for a vehicle sale");
 
         vehicleSalesGroup
             .MapGet(
@@ -81,7 +85,8 @@ internal static class VehicleSalesEndpoints
                      return result is not null
                          ? Results.Ok(result)
                          : Results.NotFound();
-                });
+                })
+            .WithSummary("Get a vehicle sale by ID");
 
         vehicleSalesGroup
             .MapGet(
@@ -89,7 +94,8 @@ internal static class VehicleSalesEndpoints
                 async ([AsParameters] PagedRequest request,
                 IGetVehicleSales query,
                 CancellationToken cancellationToken) =>
-                    Results.Ok(await query.Execute(request, cancellationToken)));
+                    Results.Ok(await query.Execute(request, cancellationToken)))
+            .WithSummary("Get a paged list of vehicle sales");
 
         vehicleSalesGroup
             .MapPatch(
@@ -113,7 +119,8 @@ internal static class VehicleSalesEndpoints
                                 title: "Vehicle sale update failed",
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .WithSummary("Update a vehicle sale");
 
         vehicleSalesGroup
             .MapDelete(
@@ -130,6 +137,7 @@ internal static class VehicleSalesEndpoints
                                 title: "Vehicle sale deletion failed",
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .WithSummary("Delete a vehicle sale");
     }
 }

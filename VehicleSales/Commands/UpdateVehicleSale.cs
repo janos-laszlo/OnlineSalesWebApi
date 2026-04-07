@@ -13,11 +13,18 @@ namespace VehicleSales.Commands;
 
 public interface IUpdateVehicleSale
 {
-    Task<Result<ObjectUploadTrackingDto?>> Execute(
+    Task<Result<ObjectUploadTrackingDto, UpdateVehicleSaleErrorCode>> Execute(
         int vehicleSaleId,
         int sellerId,
         UpdateVehicleSaleRequestDto dto,
         CancellationToken cancellationToken);
+}
+
+public enum UpdateVehicleSaleErrorCode
+{
+    VehicleSaleNotFound,
+    UnauthorizedToUpdate,
+    InvalidPhotos
 }
 
 internal sealed class UpdateVehicleSale(
@@ -26,7 +33,7 @@ internal sealed class UpdateVehicleSale(
     IAmazonS3 r2Client,
     IConfiguration configuration) : IUpdateVehicleSale
 {
-    public async Task<Result<ObjectUploadTrackingDto?>> Execute(
+    public async Task<Result<ObjectUploadTrackingDto, UpdateVehicleSaleErrorCode>> Execute(
         int vehicleSaleId,
         int sellerId,
         UpdateVehicleSaleRequestDto dto,
@@ -34,19 +41,23 @@ internal sealed class UpdateVehicleSale(
     {
         var vehicleSale = await dbContext.VehicleSales
             .FirstOrDefaultAsync(
-                vehicleSale => vehicleSale.Id == vehicleSaleId && vehicleSale.SellerId == sellerId,
+                vehicleSale => vehicleSale.Id == vehicleSaleId,
                 cancellationToken);
         if (vehicleSale is null)
-            return Result.Failure<ObjectUploadTrackingDto?>(
-                "Vehicle sale doesn't exist or doesn't belong to the seller");
+            return Result.Failure<ObjectUploadTrackingDto, UpdateVehicleSaleErrorCode>(
+                UpdateVehicleSaleErrorCode.VehicleSaleNotFound);
+
+        if (vehicleSale.SellerId != sellerId)
+            return Result.Failure<ObjectUploadTrackingDto, UpdateVehicleSaleErrorCode>(
+                UpdateVehicleSaleErrorCode.UnauthorizedToUpdate);
 
         var diff = new ObjectDiff(
             vehicleSale.VehicleDetails.PhotoKeys,
             dto.Photos);
 
         if (diff.Inexistent.Count > 0)
-            return Result.Failure<ObjectUploadTrackingDto?>(
-                $"{string.Join(", ", diff.Inexistent)} photos do not exist.");
+            return Result.Failure<ObjectUploadTrackingDto, UpdateVehicleSaleErrorCode>(
+                UpdateVehicleSaleErrorCode.InvalidPhotos);
 
         vehicleSale.UpdateVehicleSale(
             sale =>

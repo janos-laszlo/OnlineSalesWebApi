@@ -54,9 +54,9 @@ static Action<JwtBearerOptions> ConfigureJwtBearer(WebApplicationBuilder builder
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = signingKey,
             ValidateIssuer = true,
-            ValidIssuer = "http://192.168.1.7:5153",
+            ValidIssuer = "http://192.168.1.6:5153",
             ValidateAudience = true,
-            ValidAudience = "http://192.168.1.7:5153",
+            ValidAudience = "http://192.168.1.6:5153",
             ValidateLifetime = true
         };
     };

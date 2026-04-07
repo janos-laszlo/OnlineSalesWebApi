@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CSharpFunctionalExtensions;
+using ObjectUploadTracking.Commands;
 using UserIdentity.Extensions;
 using VehicleSales.Commands;
 using VehicleSales.Dtos;
@@ -26,7 +27,8 @@ internal static class VehicleSalesEndpoints
                 Makes,
                 async (IGetVehicleMakesQuery query,
                 CancellationToken cancellationToken) =>
-                    Results.Ok(await query.Get(cancellationToken)));
+                    Results.Ok(await query.Get(cancellationToken)))
+            .WithSummary("Get all vehicle makes");
 
         vehicleSalesGroup
             .MapGet(
@@ -34,7 +36,8 @@ internal static class VehicleSalesEndpoints
                 async (string makeName,
                 IGetMakeModelsQuery query,
                 CancellationToken cancellationToken) =>
-                    Results.Ok(await query.Get(makeName, cancellationToken)));
+                    Results.Ok(await query.Get(makeName, cancellationToken)))
+            .WithSummary("Get models for a specific vehicle make");
 
         vehicleSalesGroup
             .MapPost(
@@ -51,7 +54,8 @@ internal static class VehicleSalesEndpoints
                                 title: "Vehicle sale creation failed",
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .WithSummary("Create a new vehicle sale");
 
         vehicleSalesGroup
             .MapPatch(
@@ -66,9 +70,16 @@ internal static class VehicleSalesEndpoints
                             ? Results.NoContent()
                             : Results.Problem(
                                 title: "Object upload confirmation failed",
-                                detail: result.Error,
-                                statusCode: StatusCodes.Status400BadRequest)))
-            .RequireAuthorization();
+                                detail: result.Error.ToString(),
+                                statusCode: result.Error switch
+                                {
+                                    ObjectUploadErrorCode.ObjectUploadNotFound => StatusCodes.Status404NotFound,
+                                    ObjectUploadErrorCode.EntityNotFound => StatusCodes.Status404NotFound,
+                                    ObjectUploadErrorCode.ObjectUploadDoesNotBelongToUser => StatusCodes.Status403Forbidden,
+                                    _ => StatusCodes.Status400BadRequest
+                                })))
+            .RequireAuthorization()
+            .WithSummary("Confirm an object/photo upload for a vehicle sale");
 
         vehicleSalesGroup
             .MapGet(
@@ -81,7 +92,8 @@ internal static class VehicleSalesEndpoints
                      return result is not null
                          ? Results.Ok(result)
                          : Results.NotFound();
-                });
+                })
+            .WithSummary("Get a vehicle sale by ID");
 
         vehicleSalesGroup
             .MapGet(
@@ -89,7 +101,8 @@ internal static class VehicleSalesEndpoints
                 async ([AsParameters] PagedRequest request,
                 IGetVehicleSales query,
                 CancellationToken cancellationToken) =>
-                    Results.Ok(await query.Execute(request, cancellationToken)));
+                    Results.Ok(await query.Execute(request, cancellationToken)))
+            .WithSummary("Get a paged list of vehicle sales");
 
         vehicleSalesGroup
             .MapPatch(
@@ -113,6 +126,30 @@ internal static class VehicleSalesEndpoints
                                 title: "Vehicle sale update failed",
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .WithSummary("Update a vehicle sale");
+
+        vehicleSalesGroup
+            .MapDelete(
+                "{vehicleSaleId:int}",
+                async (int vehicleSaleId,
+                    IDeleteVehicleSale delete,
+                    ClaimsPrincipal principal,
+                    CancellationToken cancellationToken)
+                =>
+                    await delete.Execute(vehicleSaleId, principal.UserId, cancellationToken)
+                        .Finally(result => result.IsSuccess
+                            ? Results.NoContent()
+                            : Results.Problem(
+                                title: "Vehicle sale deletion failed",
+                                detail: result.Error.ToString(),
+                                statusCode: result.Error switch
+                                {
+                                    DeleteVehicleSaleErrorCode.VehicleSaleNotFound => StatusCodes.Status404NotFound,
+                                    DeleteVehicleSaleErrorCode.UnauthorizedToDelete => StatusCodes.Status403Forbidden,
+                                    _ => StatusCodes.Status400BadRequest
+                                })))
+            .RequireAuthorization()
+            .WithSummary("Delete a vehicle sale");
     }
 }

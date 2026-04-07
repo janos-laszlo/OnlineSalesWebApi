@@ -103,10 +103,10 @@ GET {{baseUrl}}/vehicle-sales?pageNumber=0&pageSize=10
 Authorization: Bearer {{bearerToken}}
 
 ###
-GET {{baseUrl}}/vehicle-sales/1
+GET {{baseUrl}}/vehicle-sales/3
 
 ###
-PATCH {{baseUrl}}/vehicle-sales/1
+PATCH {{baseUrl}}/vehicle-sales/3
 Content-Type: application/json
 Authorization: Bearer {{bearerToken}}
 
@@ -124,3 +124,7 @@ Authorization: Bearer {{bearerToken}}
     "numberOfPreviousOwners": 0,
     "hasAccidentHistory": false
 }
+
+###
+DELETE {{baseUrl}}/vehicle-sales/3
+Authorization: Bearer {{bearerToken}}

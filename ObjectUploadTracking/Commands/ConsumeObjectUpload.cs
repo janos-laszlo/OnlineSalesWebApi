@@ -4,23 +4,30 @@ namespace ObjectUploadTracking.Commands;
 
 public interface IConsumeObjectUpload
 {
-    Task<Result> Execute(
+    Task<UnitResult<ObjectUploadErrorCode>> Execute(
         int objectUploadId,
-        Func<ObjectUpload, Task<Result>> func,
+        Func<ObjectUpload, Task<UnitResult<ObjectUploadErrorCode>>> func,
         CancellationToken cancellation);
+}
+
+public enum ObjectUploadErrorCode
+{
+    ObjectUploadNotFound,
+    EntityNotFound,
+    ObjectUploadDoesNotBelongToUser,
 }
 
 internal sealed class ConsumeObjectUpload(
     ObjectUploadTrackingDbContext dbContext) : IConsumeObjectUpload
 {
-    public async Task<Result> Execute(
+    public async Task<UnitResult<ObjectUploadErrorCode>> Execute(
         int objectUploadId,
-        Func<ObjectUpload, Task<Result>> func,
+        Func<ObjectUpload, Task<UnitResult<ObjectUploadErrorCode>>> func,
         CancellationToken cancellation)
     {
         var objectUpload = dbContext.ObjectUploads.Find(objectUploadId);
         if (objectUpload is null)
-            return Result.Failure($"Object upload with id {objectUploadId} not found.");
+            return ObjectUploadErrorCode.ObjectUploadNotFound;
 
         var result = await func(objectUpload);
         dbContext.ObjectUploads.Remove(objectUpload);

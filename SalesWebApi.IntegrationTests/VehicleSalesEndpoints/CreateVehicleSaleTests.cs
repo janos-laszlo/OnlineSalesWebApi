@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Net.Mime;
 using ObjectUploadTracking;
 
 namespace SalesWebApi.IntegrationTests.VehicleSalesEndpoints;
@@ -139,10 +138,10 @@ public sealed class CreateVehicleSaleTests
 
         foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
         {
-            var fileToUpload = filesToUpload.Dequeue();
-            var fileBytes = File.ReadAllBytes(fileToUpload.FilePath);
+            var (FilePath, ContentType) = filesToUpload.Dequeue();
+            var fileBytes = File.ReadAllBytes(FilePath);
             var byteContent = new ByteArrayContent(fileBytes);
-            byteContent.Headers.ContentType = new MediaTypeHeaderValue(fileToUpload.ContentType);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue(ContentType);
 
             var putResponse = await fixture.ExternalClient.PutAsync(
                 objectKeyAndPresignedUrl.Value,

@@ -31,17 +31,17 @@ public sealed class DeleteVehicleSaleTests(VehicleSalesFixture fixture)
         var deleteStatusCode = await DeleteVehicleSale(nonexistentVehicleSaleId);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, deleteStatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, deleteStatusCode);
     }
 
     [Fact]
-    public async Task BadRequest_for_nonexistent_vehicle_sale()
+    public async Task Forbidden_for_another_users_vehicle_sale()
     {
         // Act
         var deleteStatusCode = await DeleteVehicleSale(fixture.AnotherUsersVehicleSaleId.Value);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, deleteStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, deleteStatusCode);
     }
 
     private async Task<HttpStatusCode> DeleteVehicleSale(int vehicleSaleId)

@@ -1,5 +1,6 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
+using Common;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Configuration;
 using ObjectUploadTracking;
@@ -9,7 +10,7 @@ namespace VehicleSales.Commands;
 
 public interface IConfirmObjectUploadForVehicleSale
 {
-    Task<Result> Execute(int objectUploadId, int userId, CancellationToken cancellation);
+    Task<UnitResult<ObjectUploadErrorCode>> Execute(int objectUploadId, int userId, CancellationToken cancellation);
 }
 
 internal sealed class ConfirmObjectUploadForVehicleSale(
@@ -18,7 +19,7 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
     IAmazonS3 s3Client,
     IConfiguration configuration) : IConfirmObjectUploadForVehicleSale
 {
-    public async Task<Result> Execute(int objectUploadId, int userId, CancellationToken cancellation) =>
+    public async Task<UnitResult<ObjectUploadErrorCode>> Execute(int objectUploadId, int userId, CancellationToken cancellation) =>
         await consumeObjectUpload.Execute(
             objectUploadId,
             async (objectUpload) =>
@@ -26,9 +27,9 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
                 var vehicleSale = await dbContext.VehicleSales.FindAsync([objectUpload.EntityId], cancellation);
 
                 if (vehicleSale is null)
-                    return Result.Failure($"Vehicle sale with id {objectUpload.EntityId} not found.");
+                    return ObjectUploadErrorCode.EntityNotFound;
                 if (vehicleSale.SellerId != userId)
-                    return Result.Failure($"Object upload with id {objectUploadId} does not belong to user with id {userId}.");
+                    return ObjectUploadErrorCode.ObjectUploadDoesNotBelongToUser;
 
                 var objectsNotFound = await GetObjectsNotExistingInDirectory(objectUpload.Directory, objectUpload.ObjectKeys, cancellation);
 
@@ -41,8 +42,8 @@ internal sealed class ConfirmObjectUploadForVehicleSale(
                 await dbContext.SaveChangesAsync(cancellation);
 
                 return objectsNotFound.Count > 0
-                    ? Result.Failure($"{string.Join(", ", objectsNotFound)} weren't uploaded.")
-                    : Result.Success();
+                    ? ObjectUploadErrorCode.ObjectUploadNotFound
+                    : UnitResult.Success<ObjectUploadErrorCode>();
             },
             cancellation);
 

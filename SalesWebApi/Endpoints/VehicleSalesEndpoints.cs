@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CSharpFunctionalExtensions;
+using ObjectUploadTracking.Commands;
 using UserIdentity.Extensions;
 using VehicleSales.Commands;
 using VehicleSales.Dtos;
@@ -69,8 +70,14 @@ internal static class VehicleSalesEndpoints
                             ? Results.NoContent()
                             : Results.Problem(
                                 title: "Object upload confirmation failed",
-                                detail: result.Error,
-                                statusCode: StatusCodes.Status400BadRequest)))
+                                detail: result.Error.ToString(),
+                                statusCode: result.Error switch
+                                {
+                                    ObjectUploadErrorCode.ObjectUploadNotFound => StatusCodes.Status404NotFound,
+                                    ObjectUploadErrorCode.EntityNotFound => StatusCodes.Status404NotFound,
+                                    ObjectUploadErrorCode.ObjectUploadDoesNotBelongToUser => StatusCodes.Status403Forbidden,
+                                    _ => StatusCodes.Status400BadRequest
+                                })))
             .RequireAuthorization()
             .WithSummary("Confirm an object/photo upload for a vehicle sale");
 
@@ -135,8 +142,13 @@ internal static class VehicleSalesEndpoints
                             ? Results.NoContent()
                             : Results.Problem(
                                 title: "Vehicle sale deletion failed",
-                                detail: result.Error,
-                                statusCode: StatusCodes.Status400BadRequest)))
+                                detail: result.Error.ToString(),
+                                statusCode: result.Error switch
+                                {
+                                    DeleteVehicleSaleErrorCode.VehicleSaleNotFound => StatusCodes.Status404NotFound,
+                                    DeleteVehicleSaleErrorCode.UnauthorizedToDelete => StatusCodes.Status403Forbidden,
+                                    _ => StatusCodes.Status400BadRequest
+                                })))
             .RequireAuthorization()
             .WithSummary("Delete a vehicle sale");
     }

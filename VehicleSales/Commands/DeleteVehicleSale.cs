@@ -4,24 +4,30 @@ namespace VehicleSales.Commands;
 
 public interface IDeleteVehicleSale
 {
-    Task<Result> Execute(int id, int userId, CancellationToken cancellationToken);
+    Task<UnitResult<DeleteVehicleSaleErrorCode>> Execute(int id, int userId, CancellationToken cancellationToken);
+}
+
+public enum DeleteVehicleSaleErrorCode
+{
+    VehicleSaleNotFound,
+    UnauthorizedToDelete
 }
 
 internal sealed class DeleteVehicleSale(VehicleSalesDbContext dbContext) : IDeleteVehicleSale
 {
     private readonly VehicleSalesDbContext _dbContext = dbContext;
 
-    public async Task<Result> Execute(int id, int userId, CancellationToken cancellationToken)
+    public async Task<UnitResult<DeleteVehicleSaleErrorCode>> Execute(int id, int userId, CancellationToken cancellationToken)
     {
         var vehicleSale = await _dbContext.VehicleSales.FindAsync([id], cancellationToken);
         if (vehicleSale == null)
-            return Result.Failure("Vehicle sale not found");
+            return DeleteVehicleSaleErrorCode.VehicleSaleNotFound;
 
         if (vehicleSale.SellerId != userId)
-            return Result.Failure("Unauthorized to delete this vehicle sale");
+            return DeleteVehicleSaleErrorCode.UnauthorizedToDelete;
 
         _dbContext.VehicleSales.Remove(vehicleSale);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return Result.Success();
+        return UnitResult.Success<DeleteVehicleSaleErrorCode>();
     }
 }

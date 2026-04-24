@@ -1,6 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using ObjectUploadTracking;
+﻿using System.Net.Http.Json;
 
 namespace SalesWebApi.IntegrationTests.VehicleSalesEndpoints;
 
@@ -13,11 +11,8 @@ public sealed class CreateVehicleSaleTests
     public CreateVehicleSaleTests(VehicleSalesFixture fixture)
     {
         settings.ScrubLinesContaining("Authorization");
-        settings.ScrubMember("entityId");
         settings.ScrubMember("Location");
         settings.ScrubMember("traceId");
-        settings.ScrubMember("objectUploadId");
-        settings.ScrubMember("objectKeysAndTheirPresignedUploadUrls");
         this.fixture = fixture;
     }
 
@@ -69,10 +64,6 @@ public sealed class CreateVehicleSaleTests
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-        Assert.Null(result.ObjectUploadId);
-        Assert.Null(result.ObjectKeysAndTheirPresignedUploadUrls);
     }
 
     [Fact]
@@ -102,10 +93,10 @@ public sealed class CreateVehicleSaleTests
 
 
     [Fact]
-    public async Task Created_for_sale_with_photos_and_confirmed_upload()
+    public async Task Created_for_sale_with_photos()
     {
         // Arrange
-        var requestWithoutRequiredFields =
+        var requestBody =
             """
             {
               "title": "2019 BMW 3 Series - Excellent Condition",
@@ -116,49 +107,15 @@ public sealed class CreateVehicleSaleTests
               "locality": "Santa Monica",
               "vehicleModelId": 62,
               "mileageInKilometers": 45000,
-              "horsePower": 255,
-              "photoContentTypes": ["image/jpeg", "image/png", "image/jpeg"]
+              "horsePower": 255
             }
             """;
-        var httpRequest = fixture.CreateVehicleSaleRequest(requestWithoutRequiredFields);
+        var httpRequest = fixture.CreateVehicleSaleRequest(requestBody, VehicleSalesFixture.SamplePhotoFiles);
 
         // Act
         var response = await fixture.Client.SendAsync(httpRequest, TestContext.Current.CancellationToken);
-        Assert.True(response.IsSuccessStatusCode);
 
-        var content = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
-            cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Equal(3, content?.ObjectKeysAndTheirPresignedUploadUrls?.Count);
-
-        var filesToUpload = new Queue<(string FilePath, string ContentType)>();
-        var photosDirectory = Path.Combine(AppContext.BaseDirectory, "VehicleSalesEndpoints", "Data");
-        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample1.jpg"), "image/jpeg"));
-        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample2.png"), "image/png"));
-        filesToUpload.Enqueue((Path.Combine(photosDirectory, "sample3.jpg"), "image/jpeg"));
-
-        foreach (var objectKeyAndPresignedUrl in content!.ObjectKeysAndTheirPresignedUploadUrls!)
-        {
-            var (FilePath, ContentType) = filesToUpload.Dequeue();
-            var fileBytes = File.ReadAllBytes(FilePath);
-            var byteContent = new ByteArrayContent(fileBytes);
-            byteContent.Headers.ContentType = new MediaTypeHeaderValue(ContentType);
-
-            var putResponse = await fixture.ExternalClient.PutAsync(
-                objectKeyAndPresignedUrl.Value,
-                byteContent,
-                TestContext.Current.CancellationToken);
-            Assert.True(putResponse.IsSuccessStatusCode);
-        }
-
-        var confirmRequest = new HttpRequestMessage(
-            HttpMethod.Patch,
-            $"{VehicleSalesUris.ConfirmObjectUpload}{content.ObjectUploadId}");
-        confirmRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", fixture.AccessToken);
-
-        var confirmResponse = await fixture.Client.SendAsync(
-            confirmRequest,
-            TestContext.Current.CancellationToken);
-        Assert.True(confirmResponse.IsSuccessStatusCode);
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
     }
 }

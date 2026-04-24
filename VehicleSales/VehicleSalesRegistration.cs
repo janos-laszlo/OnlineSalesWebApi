@@ -24,7 +24,6 @@ public static class VehicleSalesRegistration
         
         // Commands
         services.AddTransient<ICreateVehicleSale, CreateVehicleSale>();
-        services.AddTransient<IConfirmObjectUploadForVehicleSale, ConfirmObjectUploadForVehicleSale>();
         services.AddTransient<IUpdateVehicleSale, UpdateVehicleSale>();
         services.AddTransient<IDeleteVehicleSale, DeleteVehicleSale>();
 

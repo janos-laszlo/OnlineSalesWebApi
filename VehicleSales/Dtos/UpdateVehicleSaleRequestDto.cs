@@ -102,13 +102,9 @@ public sealed record UpdateVehicleSaleRequestDto
 
     [Description(
         """
-        To remove existing photos just don't include them in the list of photos.
-        To reorder existing photos, just change their order in the list of photos.
-        To add a new photo, add a content type at the index of the new photo,
-        a presigned URL will be generated and the client can use it to upload the new photo.
-        Allowed content types: image/jpeg, image/png, image/webp, image/bmp, image/tiff, image/avif.
-        Example: ["image/jpeg", "image/png", "0.png", "image/jpeg"]
+        Ordered list of existing photo keys to keep.
+        To remove a photo, omit its key. To reorder, change the order.
+        New photos should be submitted separately as form files.
         """)]
-    [MaxLength(VehicleDetails.MaxNumberOfPhotos)]
-    public IReadOnlyList<string>? Photos { get; init; }
+    public IReadOnlyList<string>? ExistingPhotos { get; init; }
 }

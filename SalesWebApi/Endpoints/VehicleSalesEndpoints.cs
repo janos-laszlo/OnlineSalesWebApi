@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CSharpFunctionalExtensions;
-using ObjectUploadTracking.Commands;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using UserIdentity.Extensions;
 using VehicleSales.Commands;
 using VehicleSales.Dtos;
@@ -12,7 +13,6 @@ internal static class VehicleSalesEndpoints
 {
     internal const string VehicleSalesName = "VehicleSales";
     internal const string VehicleSalesBase = "/vehicle-sales";
-    internal const string ConfirmObjectUpload = "/confirm-object-upload/{objectUploadId:int}";
     internal const string Makes = "/makes";
     internal const string Models = "/models";
     internal const string ById = "/{id:int}";
@@ -42,44 +42,22 @@ internal static class VehicleSalesEndpoints
         vehicleSalesGroup
             .MapPost(
                 string.Empty,
-                async (CreateVehicleSaleRequestDto dto,
+                async ([FromForm] CreateVehicleSaleRequestDto dto,
+                    IFormFileCollection photos,
                     ICreateVehicleSale create,
                     ClaimsPrincipal principal,
                     CancellationToken cancellationToken)
                 =>
-                    await create.Execute(dto, principal.UserId, cancellationToken)
+                    await create.Execute(dto with { Photos = photos }, principal.UserId, cancellationToken)
                         .Finally(result => result.IsSuccess
-                            ? Results.Created($"{VehicleSalesBase}/{result.Value.EntityId}", result.Value)
+                            ? Results.Created($"{VehicleSalesBase}/{result.Value}", null)
                             : Results.Problem(
                                 title: "Vehicle sale creation failed",
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
             .RequireAuthorization()
+            .DisableAntiforgery()
             .WithSummary("Create a new vehicle sale");
-
-        vehicleSalesGroup
-            .MapPatch(
-                ConfirmObjectUpload,
-                async (int objectUploadId,
-                    IConfirmObjectUploadForVehicleSale confirm,
-                    ClaimsPrincipal principal,
-                    CancellationToken cancellationToken)
-                =>
-                    await confirm.Execute(objectUploadId, principal.UserId, cancellationToken)
-                        .Finally(result => result.IsSuccess
-                            ? Results.NoContent()
-                            : Results.Problem(
-                                title: "Object upload confirmation failed",
-                                detail: result.Error.ToString(),
-                                statusCode: result.Error switch
-                                {
-                                    ObjectUploadErrorCode.ObjectUploadNotFound => StatusCodes.Status404NotFound,
-                                    ObjectUploadErrorCode.EntityNotFound => StatusCodes.Status404NotFound,
-                                    ObjectUploadErrorCode.ObjectUploadDoesNotBelongToUser => StatusCodes.Status403Forbidden,
-                                    _ => StatusCodes.Status400BadRequest
-                                })))
-            .RequireAuthorization()
-            .WithSummary("Confirm an object/photo upload for a vehicle sale");
 
         vehicleSalesGroup
             .MapGet(
@@ -108,25 +86,21 @@ internal static class VehicleSalesEndpoints
             .MapPatch(
                 "{vehicleSaleId:int}",
                 async (int vehicleSaleId,
-                    UpdateVehicleSaleRequestDto dto,
+                    [FromForm] UpdateVehicleSaleRequestDto dto,
+                    IFormFileCollection photos,
                     IUpdateVehicleSale update,
                     ClaimsPrincipal principal,
-                    CancellationToken cancellationToken) 
+                    CancellationToken cancellationToken)
                 =>
-                    // TODO: Return proper status codes for different failure cases
-                    // (e.g. 404 if sale not found, 403 if user not authorized to update this sale, etc.)
-                    // Since there will be translation as well, return error codes from the 
-                    // application layer and map them to appropriate HTTP status codes here.
-                    // Document the possible error codes in the application layer and their meanings,
-                    // so it's clear what each code represents.
-                    await update.Execute(vehicleSaleId, principal.UserId, dto, cancellationToken)
+                    await update.Execute(vehicleSaleId, principal.UserId, dto, photos, cancellationToken)
                         .Finally(result => result.IsSuccess
-                            ? Results.Ok(result.Value)
+                            ? Results.NoContent()
                             : Results.Problem(
                                 title: "Vehicle sale update failed",
-                                detail: result.Error,
+                                detail: result.Error.ToString(),
                                 statusCode: StatusCodes.Status400BadRequest)))
             .RequireAuthorization()
+            .DisableAntiforgery()
             .WithSummary("Update a vehicle sale");
 
         vehicleSalesGroup

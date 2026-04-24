@@ -1,4 +1,3 @@
-using ObjectUploadTracking;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -31,7 +30,7 @@ public sealed class UpdateVehicleSaleTests
         var existingSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
         Assert.NotNull(existingSale); // Ensure the sale was created successfully
 
-        var updatedVehicleSale =
+        var updateRequest = _fixture.BuildUpdateRequest(existingSale.Id,
         """
         {
             "title": "2019 BMW 3 Series - Very Good Condition",
@@ -65,15 +64,7 @@ public sealed class UpdateVehicleSaleTests
             "rangeInKilometers": 1100,
             "averageFuelConsumptionInLitersPer100Km": 7
         }
-        """;
-        var updateRequest = new HttpRequestMessage(
-            HttpMethod.Patch,
-            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{existingSale.Id}")
-        {
-            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
-        };
-        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", _fixture.AccessToken);
+        """);
 
         // Act
         var response = await _fixture.Client.SendAsync(
@@ -81,11 +72,7 @@ public sealed class UpdateVehicleSaleTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updateResponse = await response.Content.ReadFromJsonAsync<ObjectUploadTrackingDto>(
-            TestContext.Current.CancellationToken);
-        Assert.NotNull(updateResponse);
-        Assert.Equal(existingSale.Id, updateResponse?.EntityId);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         var updatedSale = await _fixture.GetVehicleSaleAsync(existingSale.Id);
 
@@ -100,8 +87,9 @@ public sealed class UpdateVehicleSaleTests
         var existingSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
         Assert.NotNull(existingSale); // Ensure the sale was created successfully
 
-        var invalidRequest = """
-        {        
+        var invalidRequest = _fixture.BuildUpdateRequest(existingSale.Id,
+        """
+        {
           "title": "short title",
           "description": "short desc",
           "amountInCents": -2499900,
@@ -133,20 +121,11 @@ public sealed class UpdateVehicleSaleTests
           "rangeInKilometers": -1000,
           "averageFuelConsumptionInLitersPer100Km": 6
         }
-        """;
-
-        var updateRequest = new HttpRequestMessage(
-            HttpMethod.Patch,
-            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{existingSale.Id}")
-        {
-            Content = new StringContent(invalidRequest, Encoding.UTF8, MediaTypeNames.Application.Json)
-        };
-        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", _fixture.AccessToken);
+        """);
 
         // Act
         var response = await _fixture.Client.SendAsync(
-            updateRequest,
+            invalidRequest,
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -157,7 +136,7 @@ public sealed class UpdateVehicleSaleTests
     public async Task WithNonExistentVehicleSale_ReturnsBadRequest()
     {
         // Arrange
-        var updatedVehicleSale =
+        var updateRequest = _fixture.BuildUpdateRequest(1000000,
         """
         {
             "title": "2019 BMW 3 Series - Very Good Condition",
@@ -168,15 +147,7 @@ public sealed class UpdateVehicleSaleTests
             "locality": "Santa Monica1",
             "vehicleModelId": 69
         }
-        """;
-        var updateRequest = new HttpRequestMessage(
-            HttpMethod.Patch,
-            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{1000000}") // Non-existent ID
-        {
-            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
-        };
-        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", _fixture.AccessToken);
+        """);
 
         // Act
         var response = await _fixture.Client.SendAsync(
@@ -191,7 +162,8 @@ public sealed class UpdateVehicleSaleTests
     public async Task AnotherUsersSale_ReturnsBadRequest()
     {
         // Arrange
-        var updatedVehicleSale =
+        // Assume _fixture.AnotherUsersVehicleSaleId is a valid sale owned by another user
+        var updateRequest = _fixture.BuildUpdateRequest(_fixture.AnotherUsersVehicleSaleId.Value,
         """
         {
             "title": "2019 BMW 3 Series - Very Good Condition",
@@ -202,16 +174,7 @@ public sealed class UpdateVehicleSaleTests
             "locality": "Santa Monica1",
             "vehicleModelId": 69
         }
-        """;
-        // Assume _fixture.AnotherUsersVehicleSaleId is a valid sale owned by another user
-        var updateRequest = new HttpRequestMessage(
-            HttpMethod.Patch,
-            $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{_fixture.AnotherUsersVehicleSaleId.Value}")
-        {
-            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
-        };
-        updateRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", _fixture.AccessToken);
+        """);
 
         // Act
         var response = await _fixture.Client.SendAsync(
@@ -227,24 +190,16 @@ public sealed class UpdateVehicleSaleTests
     {
         // Arrange
         var vehicleSaleId = await _fixture.CreateDefaultVehicleSaleAsync();
-        var updatedVehicleSale =
-        """
-        {
-            "title": "2019 BMW 3 Series - Very Good Condition",
-            "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
-            "amountInCents": 2699900,
-            "currency": "RON",
-            "county": "San Francisco",
-            "locality": "Santa Monica1",
-            "vehicleModelId": 69
-        }
-        """;
-        // Assume _fixture.VehicleSaleId is a valid sale owned by the test user
         var updateRequest = new HttpRequestMessage(
             HttpMethod.Patch,
             $"{Endpoints.VehicleSalesEndpoints.VehicleSalesBase}/{vehicleSaleId}")
         {
-            Content = new StringContent(updatedVehicleSale, Encoding.UTF8, MediaTypeNames.Application.Json)
+            Content = new MultipartFormDataContent
+            {
+                { new StringContent("San Francisco"), "county" },
+                { new StringContent("Santa Monica1"), "locality" },
+                { new StringContent("69"), "vehicleModelId" },
+            }
         };
         // No Authorization header
 
@@ -259,26 +214,27 @@ public sealed class UpdateVehicleSaleTests
 
     [Theory]
     // No update on photos
-    [InlineData("[\"image/jpeg\", \"image/png\"]", null, "[\"0.jpeg\",\"1.png\"]")]
+    [InlineData(2, null, 0, "[\"0.jpeg\",\"1.png\"]")]
     // Reorder photos
-    [InlineData("[\"image/jpeg\", \"image/png\"]", "[\"1.png\", \"0.jpeg\"]", "[\"1.png\",\"0.jpeg\"]")]
+    [InlineData(2, "[\"1.png\",\"0.jpeg\"]", 0, "[\"1.png\",\"0.jpeg\"]")]
     // Remove 1 photo
-    [InlineData("[\"image/jpeg\", \"image/png\", \"image/jpeg\"]", "[\"0.jpeg\", \"2.jpeg\"]", "[\"0.jpeg\",\"2.jpeg\"]")]
+    [InlineData(3, "[\"0.jpeg\",\"2.jpeg\"]", 0, "[\"0.jpeg\",\"2.jpeg\"]")]
     // Add 1 photo
-    [InlineData("[\"image/jpeg\", \"image/jpeg\"]", "[\"0.jpeg\", \"image/png\", \"1.jpeg\"]", "[\"0.jpeg\",\"2.png\",\"1.jpeg\"]")]
+    [InlineData(2, "[\"0.jpeg\",\"1.png\"]", 1, "[\"0.jpeg\",\"1.png\",\"2.jpeg\"]")]
     // Add 1 photo and reorder
-    [InlineData("[\"image/jpeg\", \"image/jpeg\"]", "[\"1.jpeg\", \"image/png\", \"0.jpeg\"]", "[\"1.jpeg\",\"2.png\",\"0.jpeg\"]")]
+    [InlineData(2, "[\"1.png\",\"0.jpeg\"]", 1, "[\"1.png\",\"0.jpeg\",\"2.jpeg\"]")]
     // Remove 1 photo and reorder
-    [InlineData("[\"image/jpeg\", \"image/jpeg\", \"image/png\"]", "[\"2.png\", \"0.jpeg\"]", "[\"2.png\",\"0.jpeg\"]")]
+    [InlineData(3, "[\"2.jpeg\",\"0.jpeg\"]", 0, "[\"2.jpeg\",\"0.jpeg\"]")]
     // Remove 1 photo and add 1 photo (without reorder)
-    [InlineData("[\"image/jpeg\", \"image/jpeg\", \"image/png\"]", "[\"0.jpeg\", \"image/jpeg\", \"2.png\"]", "[\"0.jpeg\",\"3.jpeg\",\"2.png\"]")]
+    [InlineData(3, "[\"0.jpeg\",\"2.jpeg\"]", 1, "[\"0.jpeg\",\"2.jpeg\",\"3.jpeg\"]")]
     // Remove 1 photo, add 1 photo and reorder
-    [InlineData("[\"image/jpeg\", \"image/jpeg\", \"image/png\"]", "[\"2.png\", \"0.jpeg\", \"image/jpeg\"]", "[\"2.png\",\"0.jpeg\",\"3.jpeg\"]")]
-    public async Task PhotoOperations(string creationPhotoContentTypes, string? updatedPhotoKeys, string expectedPhotoKeys)
+    [InlineData(3, "[\"2.jpeg\",\"0.jpeg\"]", 1, "[\"2.jpeg\",\"0.jpeg\",\"3.jpeg\"]")]
+    public async Task PhotoOperations(int creationFileCount, string? existingPhotosJson, int newPhotoCount, string expectedPhotoKeys)
     {
         // Arrange
+        var creationFiles = VehicleSalesFixture.SamplePhotoFiles[..creationFileCount];
         var newVehicleSale =
-        $$"""
+        """
         {
             "title": "2019 BMW 3 Series - Very Good Condition",
             "description": "Very well maintained 2019 BMW 3 Series with full service history. One previous owner, no accidents. Comes with winter tires and original floor mats.",
@@ -286,12 +242,20 @@ public sealed class UpdateVehicleSaleTests
             "currency": "RON",
             "county": "San Francisco",
             "locality": "Santa Monica1",
-            "vehicleModelId": 69,
-            "photoContentTypes": {{creationPhotoContentTypes}}
+            "vehicleModelId": 69
         }
         """;
-        var vehicleSaleId = await _fixture.CreateVehicleSaleAsync(newVehicleSale);
-        await _fixture.UpdateVehicleSale(updatedPhotoKeys, vehicleSaleId);
+        var vehicleSaleId = await _fixture.CreateVehicleSaleAsync(newVehicleSale, creationFiles);
+
+        var existingPhotoKeys = existingPhotosJson is not null
+            ? JsonSerializer.Deserialize<string[]>(existingPhotosJson)
+            : null;
+        // Always use sample3.jpg (jpeg) for new photo uploads during update
+        var newPhotoFiles = newPhotoCount > 0
+            ? VehicleSalesFixture.SamplePhotoFiles[2..(2 + newPhotoCount)]
+            : null;
+
+        await _fixture.UpdateVehicleSale(existingPhotoKeys, newPhotoFiles, vehicleSaleId);
 
         var afterUpdateSale = await _fixture.GetVehicleSaleAsync(vehicleSaleId);
 

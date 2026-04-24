@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
 using CSharpFunctionalExtensions;
-using ObjectUploadTracking;
 using VehicleSales.Entities.VehicleMake;
 
 namespace VehicleSales.Entities.VehicleSale;

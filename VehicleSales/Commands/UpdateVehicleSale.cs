@@ -1,52 +1,58 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using ObjectUploadTracking;
-using ObjectUploadTracking.Commands;
 using VehicleSales.Attributes;
 using VehicleSales.Dtos;
 using VehicleSales.Entities.VehicleSale;
 
 namespace VehicleSales.Commands;
 
+public enum UpdateVehicleSaleErrorCode
+{
+    VehicleSaleNotFound,
+    InexistentPhotoKeys,
+}
+
 public interface IUpdateVehicleSale
 {
-    Task<Result<ObjectUploadTrackingDto?>> Execute(
+    Task<UnitResult<UpdateVehicleSaleErrorCode>> Execute(
         int vehicleSaleId,
         int sellerId,
         UpdateVehicleSaleRequestDto dto,
+        IFormFileCollection? newPhotos,
         CancellationToken cancellationToken);
 }
 
 internal sealed class UpdateVehicleSale(
     VehicleSalesDbContext dbContext,
-    ICreateObjectUpload createObjectUpload,
     IAmazonS3 r2Client,
     IConfiguration configuration) : IUpdateVehicleSale
 {
-    public async Task<Result<ObjectUploadTrackingDto?>> Execute(
+    public async Task<UnitResult<UpdateVehicleSaleErrorCode>> Execute(
         int vehicleSaleId,
         int sellerId,
         UpdateVehicleSaleRequestDto dto,
+        IFormFileCollection? newPhotos,
         CancellationToken cancellationToken)
     {
         var vehicleSale = await dbContext.VehicleSales
             .FirstOrDefaultAsync(
-                vehicleSale => vehicleSale.Id == vehicleSaleId && vehicleSale.SellerId == sellerId,
+                vs => vs.Id == vehicleSaleId && vs.SellerId == sellerId,
                 cancellationToken);
         if (vehicleSale is null)
-            return Result.Failure<ObjectUploadTrackingDto?>(
-                "Vehicle sale doesn't exist or doesn't belong to the seller");
+            return UpdateVehicleSaleErrorCode.VehicleSaleNotFound;
 
-        var diff = new ObjectDiff(
-            vehicleSale.VehicleDetails.PhotoKeys,
-            dto.Photos);
-
-        if (diff.Inexistent.Count > 0)
-            return Result.Failure<ObjectUploadTrackingDto?>(
-                $"{string.Join(", ", diff.Inexistent)} photos do not exist.");
+        // Validate that all keys in ExistingPhotos actually exist in the current sale.
+        var currentKeys = vehicleSale.VehicleDetails.PhotoKeys;
+        var currentKeySet = currentKeys?.Select(k => k.Value).ToHashSet() ?? [];
+        var inexistent = dto.ExistingPhotos?
+            .Where(k => !currentKeySet.Contains(k))
+            .ToList() ?? [];
+        if (inexistent.Count > 0)
+            return UpdateVehicleSaleErrorCode.InexistentPhotoKeys;
 
         vehicleSale.UpdateVehicleSale(
             sale =>
@@ -76,7 +82,7 @@ internal sealed class UpdateVehicleSale(
                 if (dto.MileageInKilometers is not null)
                     vehicleDetails.MileageInKilometers = dto.MileageInKilometers;
                 if (dto.HorsePower is not null)
-                    vehicleDetails.MileageInKilometers = dto.HorsePower;
+                    vehicleDetails.HorsePower = dto.HorsePower;
                 if (dto.VehicleVersion is not null)
                     vehicleDetails.VehicleVersion = VehicleVersion.Create(dto.VehicleVersion).Value;
                 if (dto.BodyType is not null)
@@ -116,8 +122,6 @@ internal sealed class UpdateVehicleSale(
                     vehicleDetails.NumberOfPreviousOwners = dto.NumberOfPreviousOwners;
                 if (dto.BatteryCapacityInKWh is not null)
                     vehicleDetails.BatteryCapacityInKWh = dto.BatteryCapacityInKWh;
-                if (dto.FuelType is not null)
-                    vehicleDetails.FuelType = dto.FuelType;
                 if (dto.RangeInKilometers is not null)
                     vehicleDetails.RangeInKilometers = dto.RangeInKilometers;
                 if (dto.AverageFuelConsumptionInLitersPer100Km is not null)
@@ -129,161 +133,77 @@ internal sealed class UpdateVehicleSale(
                 if (dto.MaximumLoadInKg is not null)
                     vehicleDetails.MaximumLoadInKg = dto.MaximumLoadInKg;
 
-                // Cases(subsets of reordering, addition and removal):
-                // - do nothing with photos -> no action needed
-                // - just reorder photos -> assign new version here
-                // - just remove some photos -> assign new version here and remove the photos from R2
-                // - just add some photos -> no reassignment here, assign new version in ConfirmObjectUploadForVehicleSale when confirming the upload of the new photos
-                // - reorder photos and add new ones without removal -> create ObjectUpload for the new photos and assign the new version including the new photos in ConfirmObjectUploadForVehicleSale
-                // - reorder photos and remove some without addition -> same as 'just remove some photos' case, the new version will be assigned here and the removed photos will be deleted from R2
-                // - add and remove photos without reordering -> reassign NewVersion except Added here, create ObjectUpload for Added and remove from R2 the Removed photos.
-                // - reorder photos, add new ones and remove some at the same time -> assign NewVersion except Added here, create ObjectUpload for the new photos and assign the new version including the new photos in ConfirmObjectUploadForVehicleSale, remove from R2 the Removed photos.
-
-                vehicleDetails.PhotoKeys = diff.NewVersion?
-                    .Except(diff.Added)
-                    .ToList();
+                // Apply photo key changes: keep only requested existing keys in stated order.
+                if (dto.ExistingPhotos is not null)
+                    vehicleDetails.PhotoKeys = [.. dto.ExistingPhotos
+                        .Select(k => ObjectKeyName.Create(k).Value)];
             });
 
-        if (diff.Removed.Count > 0)
-            await r2Client.DeleteObjectsAsync(
-                new DeleteObjectsRequest
-                {
-                    BucketName = configuration[R2Config.BucketNameKey],
-                    Objects = [.. diff.Removed
-                        .Select(objectKey => new KeyVersion
-                        {
-                            Key = $"{vehicleSale.VehicleDetails.Directory?.Value}/{objectKey}"
-                        })]
-                },
-                cancellationToken);
-
-        ObjectUploadTrackingDto? result = null;
-        if (diff.Added.Count > 0)
+        // Delete photos that were removed.
+        if (dto.ExistingPhotos is not null && vehicleSale.VehicleDetails.Directory is not null)
         {
-            ObjectUpload objectUpload = new()
+            var removedKeys = currentKeySet.Except(dto.ExistingPhotos).ToList();
+            if (removedKeys.Count > 0)
             {
-                Module = Constants.ModuleName,
-                EntityId = vehicleSale.Id,
-                Directory = vehicleSale.VehicleDetails.Directory ??
-                        DirectoryName.Create(Guid.CreateVersion7().ToString("N")).Value,
-                ObjectKeys = diff.NewVersion!,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-            };
+                var bucketName = configuration[R2Config.BucketNameKey] ??
+                    throw new InvalidOperationException("Bucket name not set in configuration");
+                await r2Client.DeleteObjectsAsync(
+                    new DeleteObjectsRequest
+                    {
+                        BucketName = bucketName,
+                        Objects = [.. removedKeys.Select(k => new KeyVersion
+                        {
+                            Key = $"{vehicleSale.VehicleDetails.Directory.Value}/{k}"
+                        })]
+                    },
+                    cancellationToken);
+            }
+        }
 
-            await createObjectUpload.Execute(
-                objectUpload,
-                cancellationToken);
+        // Upload new photos.
+        if (newPhotos is { Count: > 0 })
+        {
+            var bucketName = configuration[R2Config.BucketNameKey] ??
+                throw new InvalidOperationException("Bucket name not set in configuration");
 
-            result = new ObjectUploadTrackingDto(
-                vehicleSale.Id)
+            // Reuse the existing directory if one exists, otherwise create a new one.
+            var directory = vehicleSale.VehicleDetails.Directory
+                ?? DirectoryName.Create(Guid.CreateVersion7().ToString("N")).Value;
+
+            // Next index is based on the highest existing index + 1.
+            var nextIndex = vehicleSale.VehicleDetails.PhotoKeys?
+                .Select(pk => int.TryParse(pk.Value.Split('.')[0], out var idx) ? idx : -1)
+                .DefaultIfEmpty(-1)
+                .Max() + 1 ?? 0;
+
+            var appendedKeys = new List<ObjectKeyName>(newPhotos.Count);
+            for (int i = 0; i < newPhotos.Count; i++)
             {
-                ObjectUploadId = objectUpload.Id,
-                ObjectKeysAndTheirPresignedUploadUrls = CreatePresignedPutRequests(
-                    objectUpload.Directory,
-                    diff.AddedObjectKeysAndContentTypes)
-            };
+                var photo = newPhotos[i];
+                var extension = photo.ContentType.Split('/')[1];
+                var key = ObjectKeyName.Create($"{nextIndex + i}.{extension}").Value;
+
+                var putRequest = new PutObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = $"{directory.Value}/{key.Value}",
+                    InputStream = photo.OpenReadStream(),
+                    ContentType = photo.ContentType,
+                    DisablePayloadSigning = true
+                };
+
+                await r2Client.PutObjectAsync(putRequest, cancellationToken);
+                appendedKeys.Add(key);
+            }
+
+            vehicleSale.UpdateVehicleDetails(vd =>
+            {
+                vd.Directory = directory;
+                vd.PhotoKeys = [.. (vd.PhotoKeys ?? []), .. appendedKeys];
+            });
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        return result ?? new ObjectUploadTrackingDto(
-            vehicleSale.Id);
-    }
-
-    private Dictionary<string, string> CreatePresignedPutRequests(
-        DirectoryName directory,
-        IReadOnlyList<(ObjectKeyName, string)> objectKeysAndTheirContentType)
-    =>
-        objectKeysAndTheirContentType.ToDictionary(
-            objectKey => objectKey.Item1.Value,
-            objectKeyAndItsContentType => r2Client.GetPreSignedURL(
-                new GetPreSignedUrlRequest
-                {
-                    BucketName = configuration[R2Config.BucketNameKey],
-                    Key = $"{directory.Value}/{objectKeyAndItsContentType.Item1.Value}",
-                    Verb = HttpVerb.PUT,
-                    Expires = DateTime.Now.AddMinutes(15),
-                    ContentType = objectKeyAndItsContentType.Item2
-                }));
-
-    private sealed class ObjectDiff
-    {
-        public IReadOnlyList<ObjectKeyName>? NewVersion { get; }
-        public IReadOnlyList<string> Removed { get; }
-        public IReadOnlyList<ObjectKeyName> Added { get; }
-        public IReadOnlyList<(ObjectKeyName, string)> AddedObjectKeysAndContentTypes { get; }
-        public IReadOnlyList<string> Inexistent { get; }
-
-        internal ObjectDiff(
-            IEnumerable<ObjectKeyName>? currentPhotoKeys,
-            IEnumerable<string>? newPhotoKeys)
-        {
-            var nextIndex =
-                currentPhotoKeys?
-                    .Select(pk => int.Parse(pk.Value.Split('.')[0]))
-                    .Max() + 1 ?? 0;
-
-            NewVersion = GetNewVersion(currentPhotoKeys, newPhotoKeys, nextIndex);
-            Removed = GetRemoved(currentPhotoKeys, newPhotoKeys);
-            Added = GetAdded(newPhotoKeys, nextIndex);
-            AddedObjectKeysAndContentTypes = GetAddedObjectKeyAndContentType(newPhotoKeys, nextIndex);
-            Inexistent = GetInexistent(newPhotoKeys, currentPhotoKeys);
-        }
-
-        static List<ObjectKeyName>? GetNewVersion(IEnumerable<ObjectKeyName>? currentPhotoKeys, IEnumerable<string>? newPhotoKeys, int nextIndex)
-        {
-            var currentIndex = nextIndex;
-            return newPhotoKeys is null
-                ? currentPhotoKeys?.ToList()
-                : [.. newPhotoKeys
-                    .Select(npk => MaxPhotoContentTypesAttribute.AllowedImageContentTypes.Contains(npk)
-                        ? ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value
-                        : ObjectKeyName.Create(npk).Value)];
-        }
-
-        private static List<string> GetRemoved(
-            IEnumerable<ObjectKeyName>? currentPhotoKeys,
-            IEnumerable<string>? newPhotoKeys)
-        =>
-            newPhotoKeys is null
-                ? []
-                : currentPhotoKeys?
-                    .Select(pk => pk.Value)
-                    .Except(newPhotoKeys)
-                    .ToList()
-                    ?? [];
-
-        private static List<ObjectKeyName> GetAdded(
-            IEnumerable<string>? newPhotoKeys,
-            int nextIndex)
-        {
-            var currentIndex = nextIndex;
-            return newPhotoKeys?
-                .Intersect(MaxPhotoContentTypesAttribute.AllowedImageContentTypes)
-                .Select(npk => ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value)
-                .ToList()
-            ?? [];
-        }
-
-        private static List<(ObjectKeyName, string)> GetAddedObjectKeyAndContentType(
-            IEnumerable<string>? newPhotoKeys,
-            int nextIndex)
-        {
-            var currentIndex = nextIndex;
-            return newPhotoKeys?
-                .Intersect(MaxPhotoContentTypesAttribute.AllowedImageContentTypes)
-                .Select(npk => (ObjectKeyName.Create($"{currentIndex++}.{npk.Split('/')[1]}").Value, npk))
-                .ToList()
-            ?? [];
-        }
-
-        private static List<string> GetInexistent(
-            IEnumerable<string>? newPhotoKeys,
-            IEnumerable<ObjectKeyName>? currentPhotoKeys)
-        =>
-            newPhotoKeys?
-                .Except(MaxPhotoContentTypesAttribute.AllowedImageContentTypes
-                    .Concat(currentPhotoKeys?.Select(pk => pk.Value) ?? []))
-                .ToList()
-            ?? [];
+        return UnitResult.Success<UpdateVehicleSaleErrorCode>();
     }
 }

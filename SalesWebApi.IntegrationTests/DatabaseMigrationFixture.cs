@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ObjectUploadTracking;
 using UserIdentity;
 using VehicleSales;
 
@@ -19,7 +18,6 @@ public sealed class DatabaseMigrationFixture : IAsyncLifetime
     private IAmazonS3 r2Client;
     private UserIdentityDbContext userIdentityDbContext;
     private VehicleSalesDbContext vehicleSalesDbContext;
-    private ObjectUploadTrackingDbContext objectUploadTrackingDbContext;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     public async ValueTask InitializeAsync()
@@ -33,10 +31,8 @@ public sealed class DatabaseMigrationFixture : IAsyncLifetime
         r2Client = scope.ServiceProvider.GetRequiredService<IAmazonS3>();
         userIdentityDbContext = scope.ServiceProvider.GetRequiredService<UserIdentityDbContext>();
         vehicleSalesDbContext = scope.ServiceProvider.GetRequiredService<VehicleSalesDbContext>();
-        objectUploadTrackingDbContext = scope.ServiceProvider.GetRequiredService<ObjectUploadTrackingDbContext>();
         await userIdentityDbContext.Database.MigrateAsync();
         await vehicleSalesDbContext.Database.MigrateAsync();
-        await objectUploadTrackingDbContext.Database.MigrateAsync();
         await ClearTestData();
     }
 
@@ -53,7 +49,6 @@ public sealed class DatabaseMigrationFixture : IAsyncLifetime
 
     private async Task ClearTables() =>
         await Task.WhenAll(
-            this.objectUploadTrackingDbContext.ObjectUploads.ExecuteDeleteAsync(),
             this.vehicleSalesDbContext.VehicleSales.ExecuteDeleteAsync(),
             this.userIdentityDbContext.Users.ExecuteDeleteAsync());
 

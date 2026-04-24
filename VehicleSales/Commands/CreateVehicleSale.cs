@@ -1,16 +1,16 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using ObjectUploadTracking;
-using ObjectUploadTracking.Commands;
 using VehicleSales.Dtos;
+using VehicleSales.Entities.VehicleSale;
 
 namespace VehicleSales.Commands;
 
 public interface ICreateVehicleSale
 {
-    Task<Result<ObjectUploadTrackingDto>> Execute(
+    Task<Result<int>> Execute(
         CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken);
@@ -18,78 +18,63 @@ public interface ICreateVehicleSale
 
 internal sealed class CreateVehicleSale(
     VehicleSalesDbContext dbContext,
-    ICreateObjectUpload createObjectUpload,
     IAmazonS3 r2Client,
     IConfiguration configuration) : ICreateVehicleSale
 {
-    public async Task<Result<ObjectUploadTrackingDto>> Execute(
+    public async Task<Result<int>> Execute(
         CreateVehicleSaleRequestDto dto,
         int sellerId,
         CancellationToken cancellationToken)
     {
-        // It's not necessary to check the seller existence here as it's assumed to be valid.
-
         var vehicleSaleResult = dto.ToVehicleSale(sellerId);
         if (vehicleSaleResult.IsFailure)
-            return Result.Failure<ObjectUploadTrackingDto>(vehicleSaleResult.Error);
+            return Result.Failure<int>(vehicleSaleResult.Error);
 
         dbContext.VehicleSales.Add(vehicleSaleResult.Value);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        if (dto.PhotoContentTypes?.Any() != true)
-            return new ObjectUploadTrackingDto(vehicleSaleResult.Value.Id);
+        if (dto.Photos is { Count: > 0 })
+            await UploadPhotos(vehicleSaleResult.Value, dto.Photos, cancellationToken);
 
-        return await CreateObjectUpload(
-            dto.PhotoContentTypes,
-            vehicleSaleResult.Value.Id,
-            DateTime.UtcNow.AddMinutes(15),
-            cancellationToken);
+        return vehicleSaleResult.Value.Id;
     }
 
-    private async Task<ObjectUploadTrackingDto> CreateObjectUpload(
-        IEnumerable<string> objectContentTypes,
-        int entityId,
-        DateTime expiresAt,
+    private async Task UploadPhotos(
+        VehicleSale vehicleSale,
+        IFormFileCollection photos,
         CancellationToken cancellation)
     {
-        IReadOnlyList<(ObjectKeyName, string)> objKeyAndItsContentType = CreateObjectKeys(objectContentTypes);
-        ObjectUpload objectUpload = new()
-        {
-            Module = Constants.ModuleName,
-            EntityId = entityId,
-            Directory = DirectoryName.Create(Guid.CreateVersion7().ToString("N")).Value,
-            ObjectKeys = [.. objKeyAndItsContentType.Select(tuple => tuple.Item1)],
-            ExpiresAt = expiresAt
-        };
-        await createObjectUpload.Execute(objectUpload, cancellation);
+        var bucketName = configuration[R2Config.BucketNameKey] ??
+            throw new InvalidOperationException("Bucket name not set in configuration");
 
-        return new ObjectUploadTrackingDto(entityId)
+        var directory = DirectoryName.Create(Guid.CreateVersion7().ToString("N")).Value;
+        var photoKeys = new List<ObjectKeyName>(photos.Count);
+
+        for (int i = 0; i < photos.Count; i++)
         {
-            ObjectUploadId = objectUpload.Id,
-            ObjectKeysAndTheirPresignedUploadUrls = CreatePresignedPutRequests(
-                objectUpload.Directory, objKeyAndItsContentType)
-        };
+            var photo = photos[i];
+            var extension = photo.ContentType.Split('/')[1];
+            var key = ObjectKeyName.Create($"{i}.{extension}").Value;
+
+            var putRequest = new PutObjectRequest
+            {
+                BucketName = bucketName,
+                Key = $"{directory.Value}/{key.Value}",
+                InputStream = photo.OpenReadStream(),
+                ContentType = photo.ContentType,
+                DisablePayloadSigning = true
+            };
+
+            await r2Client.PutObjectAsync(putRequest, cancellation);
+            photoKeys.Add(key);
+        }
+
+        vehicleSale.UpdateVehicleDetails(vd =>
+        {
+            vd.Directory = directory;
+            vd.PhotoKeys = photoKeys;
+        });
+
+        await dbContext.SaveChangesAsync(cancellation);
     }
-
-    private static List<(ObjectKeyName, string)> CreateObjectKeys(
-        IEnumerable<string> objectContentTypes)
-    =>
-        [.. objectContentTypes
-            .Select((pct, index) => (ObjectKeyName.Create($"{index}.{pct.Split('/')[1]}").Value, pct))];
-
-    private Dictionary<string, string> CreatePresignedPutRequests(
-        DirectoryName directory,
-        IReadOnlyList<(ObjectKeyName, string)> objectKeysAndTheirContentType)
-    =>
-        objectKeysAndTheirContentType.ToDictionary(
-            objectKey => objectKey.Item1.Value,
-            objectKeyAndItsContentType => r2Client.GetPreSignedURL(
-                new GetPreSignedUrlRequest
-                {
-                    BucketName = configuration[R2Config.BucketNameKey],
-                    Key = $"{directory.Value}/{objectKeyAndItsContentType.Item1.Value}",
-                    Verb = HttpVerb.PUT,
-                    Expires = DateTime.Now.AddMinutes(15),
-                    ContentType = objectKeyAndItsContentType.Item2
-                }));
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace VehicleSales.Attributes;
@@ -19,19 +20,17 @@ public sealed class MaxPhotoContentTypesAttribute(int maxPhotos) : ValidationAtt
     protected override ValidationResult? IsValid(
         object? value, ValidationContext validationContext)
     {
-        var photoContentTypes = (IReadOnlyList<string>?)value;
-        if (photoContentTypes is null)
+        var photos = (IFormFileCollection?)value;
+        if (photos is null || photos.Count == 0)
             return ValidationResult.Success;
 
-        if (photoContentTypes.Any(string.IsNullOrWhiteSpace))
-            return new ValidationResult("Null or empty photo content type.");
-
-        if (photoContentTypes.Count > maxPhotos)
+        if (photos.Count > maxPhotos)
             return new ValidationResult($"Max {maxPhotos} photos allowed.");
 
-        if (photoContentTypes.Any(p => !AllowedImageContentTypes.Contains(p)))
+        if (photos.Any(f => !AllowedImageContentTypes.Contains(f.ContentType)))
             return new ValidationResult("Invalid image content type.");
 
         return ValidationResult.Success;
     }
 }
+

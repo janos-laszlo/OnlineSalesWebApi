@@ -4,7 +4,6 @@ using EmailSending;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
-using ObjectUploadTracking;
 using SalesWebApi.Endpoints;
 using Scalar.AspNetCore;
 using UserIdentity;
@@ -25,8 +24,7 @@ builder.Services
     .AddValidation()
     .AddEmailSending(builder.Configuration)
     .AddUserIdentity(builder.Configuration)
-    .AddVehicleSales(builder.Configuration)
-    .AddObjectUploadTracking(builder.Configuration);
+    .AddVehicleSales(builder.Configuration);
 
 var app = builder.Build();
 
@@ -56,9 +54,9 @@ static Action<JwtBearerOptions> ConfigureJwtBearer(WebApplicationBuilder builder
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = signingKey,
             ValidateIssuer = true,
-            ValidIssuer = "http://192.168.1.7:5153",
+            ValidIssuer = "http://192.168.0.38:5153",
             ValidateAudience = true,
-            ValidAudience = "http://192.168.1.7:5153",
+            ValidAudience = "http://192.168.0.38:5153",
             ValidateLifetime = true
         };
     };

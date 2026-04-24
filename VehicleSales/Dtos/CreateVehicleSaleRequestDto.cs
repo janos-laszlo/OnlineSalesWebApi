@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.Http;
 using VehicleSales.Attributes;
 using VehicleSales.Entities.VehicleSale;
 
@@ -102,12 +103,11 @@ public sealed record CreateVehicleSaleRequestDto(
 
     [Description(
         """
-        Content types of presigned URLs. The response will contain presigned URLs 
-        for the provided content types, which can be used to upload photos of the vehicle.
-        Allowed values: image/jpeg, image/png, image/webp, image/bmp, image/tiff, image/avif
+        Photos of the vehicle.
+        Allowed content types: image/jpeg, image/png, image/webp, image/bmp, image/tiff, image/avif
         """)]
     [MaxPhotoContentTypes(VehicleDetails.MaxNumberOfPhotos)]
-    public IReadOnlyList<string>? PhotoContentTypes { get; init; }
+    public IFormFileCollection? Photos { get; init; }
 
     internal Result<VehicleSale> ToVehicleSale(int sellerId)
     {

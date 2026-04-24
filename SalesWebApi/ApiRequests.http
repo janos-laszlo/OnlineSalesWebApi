@@ -1,4 +1,4 @@
-@baseUrl = http://192.168.1.7:5153
+@baseUrl = http://192.168.0.38:5153
 @bearerToken = ...
 
 ###

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UserIdentity.Extensions;
 using VehicleSales.Commands;
+using VehicleSales.Commands.Translations;
 using VehicleSales.Dtos;
 using VehicleSales.Queries;
 
@@ -13,6 +14,7 @@ internal static class VehicleSalesEndpoints
 {
     internal const string VehicleSalesName = "VehicleSales";
     internal const string VehicleSalesBase = "/vehicle-sales";
+    internal const string TranslationsBase = "/translations";
     internal const string Makes = "/makes";
     internal const string Models = "/models";
     internal const string My = "/my";
@@ -137,5 +139,25 @@ internal static class VehicleSalesEndpoints
                                 })))
             .RequireAuthorization()
             .WithSummary("Delete a vehicle sale");
+
+        var translationsGroup = app.MapGroup(TranslationsBase)
+            .WithTags("Translations");
+
+        translationsGroup
+            .MapPost(
+                string.Empty,
+                async ([FromBody] CreateTranslationDto dto,
+                    ICreateTranslation command,
+                    CancellationToken cancellationToken)
+                =>
+                    await command.Execute(dto, cancellationToken)
+                        .Finally(result => result.IsSuccess
+                            ? Results.Created($"{TranslationsBase}/{result.Value}", null)
+                            : Results.Problem(
+                                title: "Translation creation failed",
+                                detail: result.Error,
+                                statusCode: StatusCodes.Status400BadRequest)))
+            .RequireAuthorization("Admin")
+            .WithSummary("Create a new translation");
     }
 }

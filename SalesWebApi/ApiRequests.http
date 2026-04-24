@@ -1,5 +1,5 @@
 @baseUrl = http://192.168.0.11:5153
-@bearerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJleHAiOjE3NzcwNDMzMzQsImlhdCI6MTc3NzA0MzAzNCwibmJmIjoxNzc3MDQzMDM0LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.JDQy4q6Wgj4MnaSjuSjZewWClMvJHMkWQnTWq5MR46A
+@bearerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJleHAiOjE3NzcwNTA2NjAsImlhdCI6MTc3NzA1MDM2MCwibmJmIjoxNzc3MDUwMzYwLCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4ifQ.ZHQMlMcdlNLErbGm-KOvaQ5qgtUjDRBda9L59m3X-Cs
 
 ###
 GET {{baseUrl}}
@@ -132,3 +132,13 @@ Authorization: Bearer {{bearerToken}}
 ###
 DELETE {{baseUrl}}/vehicle-sales/3
 Authorization: Bearer {{bearerToken}}
+
+###
+POST  {{baseUrl}}/translations
+Content-Type: application/json
+Authorization: Bearer {{bearerToken}}
+
+{
+    "key": "DriveType",
+    "value": "\"FrontWheelDrive\": { \"en\": \"\"Front Wheel Drive\", \"hu\": \"Elsőkerék meghajtás\" }, \"RearWheelDrive\": { \"en\": \"Rear Wheel Drive\", \"hu\": \"Hátsókerék meghajtás\" }, \"AllWheelDrive\": { \"en\": \"All Wheel Drive\", \"hu\": \"Összkerék meghajtás\" }"
+}

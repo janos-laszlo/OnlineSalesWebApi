@@ -17,7 +17,8 @@ builder.Services
     .AddAuthentication()
     .AddJwtBearer(ConfigureJwtBearer(builder));
 builder.Services
-    .AddAuthorization()
+    .AddAuthorization(options =>
+        options.AddPolicy("Admin", policy => policy.RequireRole("Admin")))
     .AddCors(ConfigureCors(builder))
     .AddOpenApi()
     .AddProblemDetails()

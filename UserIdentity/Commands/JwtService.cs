@@ -32,6 +32,8 @@ internal sealed class JwtService(
             [JwtRegisteredClaimNames.Sub] = user.Id,
             [JwtRegisteredClaimNames.Email] = user.Email
         };
+        if (user.ProfileType == ProfileType.Admin)
+            claims["role"] = "Admin";
         var descriptor = new SecurityTokenDescriptor
         {
             Issuer = baseUrl,

@@ -4,6 +4,7 @@ using Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using VehicleSales.Commands;
+using VehicleSales.Commands.Translations;
 using VehicleSales.Queries;
 
 namespace VehicleSales;
@@ -24,6 +25,7 @@ public static class VehicleSalesRegistration
         services.AddTransient<IGetUserVehicleSales, GetUserVehicleSales>();
         
         // Commands
+        services.AddTransient<ICreateTranslation, CreateTranslation>();
         services.AddTransient<ICreateVehicleSale, CreateVehicleSale>();
         services.AddTransient<IUpdateVehicleSale, UpdateVehicleSale>();
         services.AddTransient<IDeleteVehicleSale, DeleteVehicleSale>();

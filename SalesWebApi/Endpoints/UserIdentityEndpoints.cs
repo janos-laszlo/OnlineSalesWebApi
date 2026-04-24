@@ -16,6 +16,7 @@ internal static class UserIdentityEndpoints
     internal const string ConfirmEmail = "/confirm-email/{token}";
     internal const string Health = "/health";
     internal const string Profile = "/profile";
+    internal const string Dealers = "/dealers";
 
     internal static void MapIdentityEndpoints(this WebApplication app)
     {
@@ -117,6 +118,14 @@ internal static class UserIdentityEndpoints
                                 detail: result.Error,
                                 statusCode: StatusCodes.Status400BadRequest)))
             .RequireAuthorization();
+
+        accountGroup
+            .MapGet(
+                Dealers,
+                async (IGetDealersQuery query,
+                    CancellationToken cancellationToken) =>
+                    Results.Ok(await query.Execute(cancellationToken)))
+            .WithSummary("Get all dealers");
 
         accountGroup.MapGet(Health, () => Results.Ok("Healthy"))
             .RequireAuthorization();

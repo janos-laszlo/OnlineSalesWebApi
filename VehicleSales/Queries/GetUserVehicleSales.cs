@@ -1,4 +1,3 @@
-using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using VehicleSales.Entities.VehicleSale;
@@ -12,8 +11,7 @@ public interface IGetUserVehicleSales
 }
 
 internal sealed class GetUserVehicleSales(
-    IConfiguration configuration,
-    IAmazonS3 r2Client) : IGetUserVehicleSales
+    IConfiguration configuration) : IGetUserVehicleSales
 {
     public async Task<IReadOnlyList<VehicleSaleSummaryDto>> Execute(int userId, PagedRequest request, CancellationToken cancellation)
     {
@@ -45,7 +43,7 @@ internal sealed class GetUserVehicleSales(
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
-        var baseUrl = $"{r2Client.Config.ServiceURL}/{configuration[R2Config.BucketNameKey]}/";
+        var baseUrl = $"{configuration[R2Config.PublicUrlKey]}/";
 
         var vehicleSales = new List<VehicleSaleSummaryDto>(request.PageSize);
         while (await reader.ReadAsync(cancellation))

@@ -19,6 +19,7 @@ public static class UserIdentityRegistration
         services.AddTransient<IRefreshTokenCommand, RefreshTokenCommand>();
         services.AddTransient<IConfirmEmailCommand, ConfirmEmailCommand>();
         services.AddTransient<IGetUserProfileCommand, GetUserProfileCommand>();
+        services.AddTransient<IGetDealersQuery, GetDealersQuery>();
         services.AddTransient<IUpdateUserProfileCommand, UpdateUserProfileCommand>();
         services.RegisterDbContext<UserIdentityDbContext>(configuration);
         services.AddTickerQ();

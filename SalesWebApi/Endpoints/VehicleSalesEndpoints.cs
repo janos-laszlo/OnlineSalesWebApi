@@ -7,6 +7,7 @@ using VehicleSales.Commands;
 using VehicleSales.Commands.Translations;
 using VehicleSales.Dtos;
 using VehicleSales.Queries;
+using VehicleSales.Queries.Translations;
 
 namespace SalesWebApi.Endpoints;
 
@@ -142,6 +143,19 @@ internal static class VehicleSalesEndpoints
 
         var translationsGroup = app.MapGroup(TranslationsBase)
             .WithTags("Translations");
+
+        translationsGroup
+            .MapGet(
+                string.Empty,
+                async (string key,
+                    IGetTranslationByKey query,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await query.Execute(key, cancellationToken);
+                    return result is not null ? Results.Ok(result) : Results.NotFound();
+                })
+            .AllowAnonymous()
+            .WithSummary("Get a translation by key");
 
         translationsGroup
             .MapPost(

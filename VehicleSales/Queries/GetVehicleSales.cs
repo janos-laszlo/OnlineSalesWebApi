@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
@@ -15,8 +14,7 @@ public interface IGetVehicleSales
 }
 
 internal sealed class GetVehicleSales(
-    IConfiguration configuration,
-    IAmazonS3 r2Client) : IGetVehicleSales
+    IConfiguration configuration) : IGetVehicleSales
 {
     public async Task<IReadOnlyList<VehicleSaleSummaryDto>> Execute(PagedRequest request, CancellationToken cancellation)
     {
@@ -46,7 +44,7 @@ internal sealed class GetVehicleSales(
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
         
-        var baseUrl = $"{r2Client.Config.ServiceURL}/{configuration[R2Config.BucketNameKey]}/";
+        var baseUrl = $"{configuration[R2Config.PublicUrlKey]}/";
         var vehicleSales = new List<VehicleSaleSummaryDto>(request.PageSize);
         while (await reader.ReadAsync(cancellation))
         {

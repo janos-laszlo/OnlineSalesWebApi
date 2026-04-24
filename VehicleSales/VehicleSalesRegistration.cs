@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VehicleSales.Commands;
 using VehicleSales.Commands.Translations;
 using VehicleSales.Queries;
+using VehicleSales.Queries.Translations;
 
 namespace VehicleSales;
 
@@ -18,6 +19,7 @@ public static class VehicleSalesRegistration
         services.RegisterDbContext<VehicleSalesDbContext>(configuration);
 
         // Queries
+        services.AddTransient<IGetTranslationByKey, GetTranslationByKey>();
         services.AddTransient<IGetVehicleMakesQuery, GetVehicleMakesQuery>();
         services.AddTransient<IGetMakeModelsQuery, GetMakeModelsQuery>();
         services.AddTransient<IGetVehicleSales, GetVehicleSales>();

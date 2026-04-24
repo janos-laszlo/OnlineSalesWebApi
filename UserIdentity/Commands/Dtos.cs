@@ -52,6 +52,7 @@ public sealed record UserInfoDto(string Email)
 {
     public DateTimeOffset CreatedAt { get; init; }
     public bool EmailConfirmed { get; init; }
+    public ProfileType? ProfileType { get; init; }
     public bool IsDealer { get; init; }
     public string? FirstName { get; init; }
     public string? LastName { get; init; }
@@ -69,16 +70,20 @@ public sealed record UserInfoDto(string Email)
             {
                 CreatedAt = user.CreatedAt,
                 EmailConfirmed = user.EmailConfirmed,
+                ProfileType = Entities.ProfileType.Regular,
                 IsDealer = false,
-                FirstName = regular.FirstName,
-                LastName = regular.LastName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 PhoneNumbers = regular.PhoneNumbers
             },
             dealer => new UserInfoDto(dealer.Email)
             {
                 CreatedAt = user.CreatedAt,
                 EmailConfirmed = user.EmailConfirmed,
+                ProfileType = Entities.ProfileType.Dealer,
                 IsDealer = true,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Cui = dealer.Cui,
                 CompanyName = dealer.CompanyName,
                 RegistrationNumber = dealer.RegistrationNumber,
@@ -91,12 +96,18 @@ public sealed record UserInfoDto(string Email)
             {
                 CreatedAt = user.CreatedAt,
                 EmailConfirmed = user.EmailConfirmed,
+                ProfileType = null,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 PhoneNumbers = noProfileAction.PhoneNumbers
             },
             admin => new UserInfoDto(admin.Email)
             {
                 CreatedAt = user.CreatedAt,
                 EmailConfirmed = user.EmailConfirmed,
+                ProfileType = Entities.ProfileType.Admin,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 PhoneNumbers = admin.PhoneNumbers
             });
 }

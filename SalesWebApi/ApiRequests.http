@@ -1,5 +1,5 @@
-@baseUrl = http://192.168.0.11:5153
-@bearerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJleHAiOjE3NzcwNTA2NjAsImlhdCI6MTc3NzA1MDM2MCwibmJmIjoxNzc3MDUwMzYwLCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4ifQ.ZHQMlMcdlNLErbGm-KOvaQ5qgtUjDRBda9L59m3X-Cs
+@baseUrl = http://192.168.1.6:5153
+@bearerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJleHAiOjE3NzcwNTUwMDksImlhdCI6MTc3NzA1NDcwOSwibmJmIjoxNzc3MDU0NzA5LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4ifQ.hQXVMIZgTmtVxF5bYgK_G5JYA5d1kK4W47z7nEcdYzE
 
 ###
 GET {{baseUrl}}
@@ -21,7 +21,7 @@ POST {{baseUrl}}/account/login
 Content-Type: application/json
 
 {
-    "email": "test1@example.com",
+    "email": "test@example.com",
     "password": "passs1Ddsfs#"
 }
 

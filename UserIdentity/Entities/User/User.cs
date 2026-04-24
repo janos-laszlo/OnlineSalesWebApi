@@ -60,8 +60,6 @@ internal partial class User
                 case DealerProfile dealer:
                     Email = dealer.Email;
                     ProfileType = Entities.ProfileType.Dealer;
-                    FirstName = null;
-                    LastName = null;
                     Cui = dealer.Cui;
                     CompanyName = dealer.CompanyName;
                     RegistrationNumber = dealer.RegistrationNumber;
@@ -73,8 +71,6 @@ internal partial class User
                 case NoProfile:
                     Email = value.Email;
                     ProfileType = null;
-                    FirstName = null;
-                    LastName = null;
                     Cui = null;
                     CompanyName = null;
                     RegistrationNumber = null;
@@ -308,7 +304,7 @@ internal static class ProfileExtensions
         };
 }
 
-internal enum ProfileType
+public enum ProfileType
 {
     Regular,
     Dealer,

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
@@ -15,61 +14,62 @@ public interface IGetVehicleSale
 }
 
 internal sealed class GetVehicleSale(
-    IConfiguration configuration,
-    IAmazonS3 r2Client) : IGetVehicleSale
+    IConfiguration configuration) : IGetVehicleSale
 {
     public async Task<VehicleSaleFullDto?> Execute(int id, CancellationToken cancellation)
     {
         var connectionString = configuration.GetConnectionString(ConfigKeys.ConnectionStringKey);
         await using var connection = new MySqlConnection(connectionString);
         await connection.OpenAsync(cancellation);
-        string query = 
+        string query =
             $"""
-            SELECT 
-                {nameof(VehicleSale.Id)},
-                {nameof(VehicleSale.SellerId)},
-                {nameof(Sale.Title)},
-                {nameof(Sale.Description)},
-                {nameof(Money.AmountInCents)},
-                {nameof(Money.Currency)},
-                {nameof(Location.County)},
-                {nameof(Location.Locality)},
-                {nameof(VehicleDetails.VehicleModelId)},
-                {nameof(VehicleDetails.MileageInKilometers)},
-                {nameof(VehicleDetails.HorsePower)},
-                {nameof(VehicleDetails.VehicleVersion)},
-                {nameof(VehicleDetails.BodyType)},
-                {nameof(VehicleDetails.EngineVolumeInCm3)},
-                {nameof(VehicleDetails.ExteriorColor)},
-                {nameof(VehicleDetails.InteriorColor)},
-                {nameof(VehicleDetails.FuelType)},
-                {nameof(VehicleDetails.VehicleManufacturingYear)},
-                {nameof(VehicleDetails.VehicleNumberOfDoors)},
-                {nameof(VehicleDetails.VehicleCondition)},
-                {nameof(VehicleDetails.GearboxType)},
-                {nameof(VehicleDetails.SteeringWheelSide)},
-                {nameof(VehicleDetails.DriveType)},
-                {nameof(VehicleDetails.NumberOfSeats)},
-                {nameof(VehicleDetails.EmissionStandard)},
-                {nameof(VehicleDetails.HasServiceHistory)},
-                {nameof(VehicleDetails.HasAccidentHistory)},
-                {nameof(VehicleDetails.Vin)},
-                {nameof(VehicleDetails.NumberOfPreviousOwners)},
-                {nameof(VehicleDetails.BatteryCapacityInKWh)},
-                {nameof(VehicleDetails.RangeInKilometers)},
-                {nameof(VehicleDetails.AverageFuelConsumptionInLitersPer100Km)},
-                {nameof(VehicleDetails.AverageBatteryConsumptionInKWhPer100Km)},
-                {nameof(VehicleDetails.MassInKg)},
-                {nameof(VehicleDetails.MaximumLoadInKg)},
-                {nameof(VehicleDetails.Directory)},
-                {nameof(VehicleDetails.PhotoKeys)}
-            FROM {Tables.VehicleSales}
-            WHERE {nameof(VehicleSale.Id)} = @Id;
+            SELECT
+                vs.{nameof(VehicleSale.Id)},
+                vs.{nameof(VehicleSale.SellerId)},
+                vs.{nameof(Sale.Title)},
+                vs.{nameof(Sale.Description)},
+                vs.{nameof(Money.AmountInCents)},
+                vs.{nameof(Money.Currency)},
+                vs.{nameof(Location.County)},
+                vs.{nameof(Location.Locality)},
+                vs.{nameof(VehicleDetails.VehicleModelId)},
+                vs.{nameof(VehicleDetails.MileageInKilometers)},
+                vs.{nameof(VehicleDetails.HorsePower)},
+                vs.{nameof(VehicleDetails.VehicleVersion)},
+                vs.{nameof(VehicleDetails.BodyType)},
+                vs.{nameof(VehicleDetails.EngineVolumeInCm3)},
+                vs.{nameof(VehicleDetails.ExteriorColor)},
+                vs.{nameof(VehicleDetails.InteriorColor)},
+                vs.{nameof(VehicleDetails.FuelType)},
+                vs.{nameof(VehicleDetails.VehicleManufacturingYear)},
+                vs.{nameof(VehicleDetails.VehicleNumberOfDoors)},
+                vs.{nameof(VehicleDetails.VehicleCondition)},
+                vs.{nameof(VehicleDetails.GearboxType)},
+                vs.{nameof(VehicleDetails.SteeringWheelSide)},
+                vs.{nameof(VehicleDetails.DriveType)},
+                vs.{nameof(VehicleDetails.NumberOfSeats)},
+                vs.{nameof(VehicleDetails.EmissionStandard)},
+                vs.{nameof(VehicleDetails.HasServiceHistory)},
+                vs.{nameof(VehicleDetails.HasAccidentHistory)},
+                vs.{nameof(VehicleDetails.Vin)},
+                vs.{nameof(VehicleDetails.NumberOfPreviousOwners)},
+                vs.{nameof(VehicleDetails.BatteryCapacityInKWh)},
+                vs.{nameof(VehicleDetails.RangeInKilometers)},
+                vs.{nameof(VehicleDetails.AverageFuelConsumptionInLitersPer100Km)},
+                vs.{nameof(VehicleDetails.AverageBatteryConsumptionInKWhPer100Km)},
+                vs.{nameof(VehicleDetails.MassInKg)},
+                vs.{nameof(VehicleDetails.MaximumLoadInKg)},
+                vs.{nameof(VehicleDetails.Directory)},
+                vs.{nameof(VehicleDetails.PhotoKeys)},
+                u.PhoneNumbers
+            FROM {Tables.VehicleSales} vs
+            LEFT JOIN {Common.Constants.Tables.Users} u ON u.Id = vs.{nameof(VehicleSale.SellerId)}
+            WHERE vs.{nameof(VehicleSale.Id)} = @Id;
             """;
         await using var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@Id", id);
 
-        var baseUrl = $"{r2Client.Config.ServiceURL}/{configuration[R2Config.BucketNameKey]}/";
+        var baseUrl = $"{configuration[R2Config.PublicUrlKey]}/";
         await using var reader = await command.ExecuteReaderAsync(cancellation);
         while (await reader.ReadAsync(cancellation))
         {
@@ -114,7 +114,10 @@ internal sealed class GetVehicleSale(
                     ? null
                     : reader.GetString(36).Split(VehicleSaleConfiguration.Separator)
                         .Select(key => $"{baseUrl}{reader.GetString(35)}/{key}")
-                        .ToArray()
+                        .ToArray(),
+                SellerPhoneNumbers = reader.IsDBNull(37)
+                    ? null
+                    : reader.GetString(37).Split(';', StringSplitOptions.RemoveEmptyEntries)
             };
         }
 
@@ -220,4 +223,6 @@ public sealed record VehicleSaleFullDto(
     public uint? MaximumLoadInKg { get; init; }
 
     public IReadOnlyList<string>? PhotoKeys { get; init; }
+
+    public IReadOnlyList<string>? SellerPhoneNumbers { get; init; }
 }

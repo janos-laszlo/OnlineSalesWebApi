@@ -13,6 +13,7 @@ internal sealed record R2Config(
 {
     internal static string SectionKey { get; set; } = "R2";
     public static string BucketNameKey => $"{SectionKey}:{nameof(BucketName)}";
+    public static string PublicUrlKey => $"{SectionKey}:PublicUrl";
 }
 
 internal static class Tables

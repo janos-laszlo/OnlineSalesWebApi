@@ -133,7 +133,7 @@ public sealed class UpdateVehicleSaleTests
     }
 
     [Fact]
-    public async Task WithNonExistentVehicleSale_ReturnsBadRequest()
+    public async Task WithNonExistentVehicleSale_ReturnsNotFound()
     {
         // Arrange
         var updateRequest = _fixture.BuildUpdateRequest(1000000,
@@ -155,11 +155,11 @@ public sealed class UpdateVehicleSaleTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
-    public async Task AnotherUsersSale_ReturnsBadRequest()
+    public async Task AnotherUsersSale_ReturnsForbidden()
     {
         // Arrange
         // Assume _fixture.AnotherUsersVehicleSaleId is a valid sale owned by another user
@@ -182,7 +182,7 @@ public sealed class UpdateVehicleSaleTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]

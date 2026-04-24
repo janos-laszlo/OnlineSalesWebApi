@@ -26,13 +26,6 @@ public interface IUpdateVehicleSale
         CancellationToken cancellationToken);
 }
 
-public enum UpdateVehicleSaleErrorCode
-{
-    VehicleSaleNotFound,
-    UnauthorizedToUpdate,
-    InvalidPhotos
-}
-
 internal sealed class UpdateVehicleSale(
     VehicleSalesDbContext dbContext,
     IAmazonS3 r2Client,

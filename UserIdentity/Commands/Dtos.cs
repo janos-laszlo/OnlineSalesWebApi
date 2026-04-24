@@ -92,6 +92,12 @@ public sealed record UserInfoDto(string Email)
                 CreatedAt = user.CreatedAt,
                 EmailConfirmed = user.EmailConfirmed,
                 PhoneNumbers = noProfileAction.PhoneNumbers
+            },
+            admin => new UserInfoDto(admin.Email)
+            {
+                CreatedAt = user.CreatedAt,
+                EmailConfirmed = user.EmailConfirmed,
+                PhoneNumbers = admin.PhoneNumbers
             });
 }
 

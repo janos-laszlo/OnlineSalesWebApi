@@ -2,16 +2,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace VehicleSales.Queries;
 
+public sealed record VehicleMakeDto(int Id, string Name);
+
 public interface IGetVehicleMakesQuery
 {
-    Task<IReadOnlyList<string>> Get(CancellationToken cancellationToken);
+    Task<IReadOnlyList<VehicleMakeDto>> Get(CancellationToken cancellationToken);
 }
 
 internal class GetVehicleMakesQuery(
     VehicleSalesDbContext context) : IGetVehicleMakesQuery
 {
-    public async Task<IReadOnlyList<string>> Get(CancellationToken cancellationToken) =>
+    public async Task<IReadOnlyList<VehicleMakeDto>> Get(CancellationToken cancellationToken) =>
         await context.VehicleMakes
-            .Select(vehicleMake => vehicleMake.Name)
+            .Select(vehicleMake => new VehicleMakeDto(vehicleMake.Id, vehicleMake.Name))
             .ToArrayAsync(cancellationToken);
 }

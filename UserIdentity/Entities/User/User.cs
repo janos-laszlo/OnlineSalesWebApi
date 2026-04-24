@@ -34,6 +34,10 @@ internal partial class User
             Entities.ProfileType.Dealer => DealerProfile
                 .Create(Email, Cui, CompanyName, RegistrationNumber, Address, County, Locality, PhoneNumbers)
                 .Value,
+
+            Entities.ProfileType.Admin => AdminProfile
+                .Create(Email, PhoneNumbers)
+                .Value,
             _ => throw new InvalidOperationException("Unknown profile type")
         };
         set
@@ -271,19 +275,35 @@ internal sealed record DealerProfile : Profile
             .Map(() => new DealerProfile(email!, cui!, companyName!, registrationNumber!, address!, county!, locality!, phoneNumbers!));
 }
 
+internal sealed record AdminProfile : Profile
+{
+    private AdminProfile(string email, IReadOnlyList<string>? phoneNumbers) : base(email, phoneNumbers)
+    {
+    }
+
+    internal static Result<AdminProfile> Create(string? email, IReadOnlyList<string?>? phoneNumbers) =>
+        Validate(email)
+            .Bind(() => phoneNumbers?.Any(p => string.IsNullOrWhiteSpace(p)) == true
+                ? Result.Failure<AdminProfile>("Invalid phone number/s provided")
+                : Result.Success())
+            .Map(() => new AdminProfile(email!, phoneNumbers!));
+}
+
 internal static class ProfileExtensions
 {
     public static T Match<T>(
         this Profile? profile,
         Func<RegularProfile, T> regularFunc,
         Func<DealerProfile, T> dealerFunc,
-        Func<NoProfile, T> noProfileFunc)
+        Func<NoProfile, T> noProfileFunc,
+        Func<AdminProfile, T> adminFunc)
     =>
         profile switch
         {
             RegularProfile regular => regularFunc(regular),
             DealerProfile dealer => dealerFunc(dealer),
             NoProfile noProfile => noProfileFunc(noProfile),
+            AdminProfile admin => adminFunc(admin),
             _ => throw new InvalidOperationException("Unknown profile type"),
         };
 }
@@ -291,5 +311,6 @@ internal static class ProfileExtensions
 internal enum ProfileType
 {
     Regular,
-    Dealer
+    Dealer,
+    Admin
 }

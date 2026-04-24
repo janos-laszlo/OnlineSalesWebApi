@@ -21,6 +21,7 @@ public static class VehicleSalesRegistration
         services.AddTransient<IGetMakeModelsQuery, GetMakeModelsQuery>();
         services.AddTransient<IGetVehicleSales, GetVehicleSales>();
         services.AddTransient<IGetVehicleSale, GetVehicleSale>();
+        services.AddTransient<IGetUserVehicleSales, GetUserVehicleSales>();
         
         // Commands
         services.AddTransient<ICreateVehicleSale, CreateVehicleSale>();

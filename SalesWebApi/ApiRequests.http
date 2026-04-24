@@ -1,5 +1,5 @@
 @baseUrl = http://192.168.0.11:5153
-@bearerToken = ...
+@bearerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJpc3MiOiJodHRwOi8vMTkyLjE2OC4wLjExOjUxNTMiLCJleHAiOjE3NzcwNDMzMzQsImlhdCI6MTc3NzA0MzAzNCwibmJmIjoxNzc3MDQzMDM0LCJzdWIiOjEsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20ifQ.JDQy4q6Wgj4MnaSjuSjZewWClMvJHMkWQnTWq5MR46A
 
 ###
 GET {{baseUrl}}
@@ -100,6 +100,10 @@ Authorization: Bearer {{bearerToken}}
 
 ###
 GET {{baseUrl}}/vehicle-sales?pageNumber=0&pageSize=10
+Authorization: Bearer {{bearerToken}}
+
+###
+GET {{baseUrl}}/vehicle-sales/my?pageNumber=0&pageSize=10
 Authorization: Bearer {{bearerToken}}
 
 ###

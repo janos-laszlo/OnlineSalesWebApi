@@ -15,6 +15,7 @@ internal static class VehicleSalesEndpoints
     internal const string VehicleSalesBase = "/vehicle-sales";
     internal const string Makes = "/makes";
     internal const string Models = "/models";
+    internal const string My = "/my";
     internal const string ById = "/{id:int}";
 
     internal static void MapVehicleSalesEndpoints(this WebApplication app)
@@ -81,6 +82,17 @@ internal static class VehicleSalesEndpoints
                 CancellationToken cancellationToken) =>
                     Results.Ok(await query.Execute(request, cancellationToken)))
             .WithSummary("Get a paged list of vehicle sales");
+
+        vehicleSalesGroup
+            .MapGet(
+                My,
+                async ([AsParameters] PagedRequest request,
+                IGetUserVehicleSales query,
+                ClaimsPrincipal principal,
+                CancellationToken cancellationToken) =>
+                    Results.Ok(await query.Execute(principal.UserId, request, cancellationToken)))
+            .RequireAuthorization()
+            .WithSummary("Get vehicle sales of the authenticated user");
 
         vehicleSalesGroup
             .MapPatch(

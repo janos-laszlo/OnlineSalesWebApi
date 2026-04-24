@@ -261,10 +261,11 @@ public sealed class UpdateVehicleSaleTests
 
         // Assert
         Assert.NotNull(afterUpdateSale);
-        string serializedUpdatedPhotoKeys = JsonSerializer.Serialize(afterUpdateSale.PhotoKeys);
-        Assert.Equal(expectedPhotoKeys, serializedUpdatedPhotoKeys);
-        Assert.NotNull(afterUpdateSale.Directory);
-        var objectsInDirectory = await _fixture.GetObjectsInDirectory(afterUpdateSale.Directory, TestContext.Current.CancellationToken);
+        Assert.NotNull(afterUpdateSale.PhotoKeys);
+        var fileNames = afterUpdateSale.PhotoKeys.Select(url => url.Split('/').Last()).ToArray();
+        Assert.Equal(expectedPhotoKeys, JsonSerializer.Serialize(fileNames));
+        var directory = afterUpdateSale.PhotoKeys[0].Split('/')[^2];
+        var objectsInDirectory = await _fixture.GetObjectsInDirectory(directory, TestContext.Current.CancellationToken);
         Assert.Equal(
             JsonSerializer.Deserialize<HashSet<string>>(expectedPhotoKeys),
             [.. JsonSerializer.Deserialize<List<string>>(JsonSerializer.Serialize(objectsInDirectory)) ?? []]);

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
@@ -14,7 +15,8 @@ public interface IGetVehicleSales
 }
 
 internal sealed class GetVehicleSales(
-    IConfiguration configuration) : IGetVehicleSales
+    IConfiguration configuration,
+    IAmazonS3 r2Client) : IGetVehicleSales
 {
     public async Task<IReadOnlyList<VehicleSaleSummaryDto>> Execute(PagedRequest request, CancellationToken cancellation)
     {
@@ -43,7 +45,8 @@ internal sealed class GetVehicleSales(
         command.Parameters.AddWithValue("@PageSize", request.PageSize);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
-
+        
+        var baseUrl = $"{r2Client.Config.ServiceURL}/{configuration[R2Config.BucketNameKey]}/";
         var vehicleSales = new List<VehicleSaleSummaryDto>(request.PageSize);
         while (await reader.ReadAsync(cancellation))
         {
@@ -57,8 +60,11 @@ internal sealed class GetVehicleSales(
                 {
                     VehicleVersion = reader.IsDBNull(5) ? null : reader.GetString(5),
                     VehicleManufacturingYear = reader.IsDBNull(6) ? null : reader.GetUInt16(6),
-                    Directory = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    PhotoKeys = reader.IsDBNull(8) ? null : reader.GetString(8)?.Split(VehicleSaleConfiguration.Separator)
+                    PhotoKeys = reader.IsDBNull(7) || reader.IsDBNull(8)
+                        ? null
+                        : reader.GetString(8).Split(VehicleSaleConfiguration.Separator)
+                            .Select(key => $"{baseUrl}{reader.GetString(7)}/{key}")
+                            .ToArray()
                 });
         }
 
@@ -90,6 +96,5 @@ public sealed record VehicleSaleSummaryDto(
     [Description($"Year the vehicle was manufactured. Must be >= 1880 and <= current year")]
     public ushort? VehicleManufacturingYear { get; init; }
 
-    public string? Directory { get; init; }
     public IReadOnlyList<string>? PhotoKeys { get; set; }
 }

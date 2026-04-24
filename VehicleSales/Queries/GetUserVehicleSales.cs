@@ -1,3 +1,4 @@
+using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using VehicleSales.Entities.VehicleSale;
@@ -11,7 +12,8 @@ public interface IGetUserVehicleSales
 }
 
 internal sealed class GetUserVehicleSales(
-    IConfiguration configuration) : IGetUserVehicleSales
+    IConfiguration configuration,
+    IAmazonS3 r2Client) : IGetUserVehicleSales
 {
     public async Task<IReadOnlyList<VehicleSaleSummaryDto>> Execute(int userId, PagedRequest request, CancellationToken cancellation)
     {
@@ -43,6 +45,8 @@ internal sealed class GetUserVehicleSales(
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
+        var baseUrl = $"{r2Client.Config.ServiceURL}/{configuration[R2Config.BucketNameKey]}/";
+
         var vehicleSales = new List<VehicleSaleSummaryDto>(request.PageSize);
         while (await reader.ReadAsync(cancellation))
         {
@@ -56,8 +60,11 @@ internal sealed class GetUserVehicleSales(
                 {
                     VehicleVersion = reader.IsDBNull(5) ? null : reader.GetString(5),
                     VehicleManufacturingYear = reader.IsDBNull(6) ? null : reader.GetUInt16(6),
-                    Directory = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    PhotoKeys = reader.IsDBNull(8) ? null : reader.GetString(8)?.Split(VehicleSaleConfiguration.Separator)
+                    PhotoKeys = reader.IsDBNull(7) || reader.IsDBNull(8)
+                        ? null
+                        : reader.GetString(8).Split(VehicleSaleConfiguration.Separator)
+                            .Select(key => $"{baseUrl}{reader.GetString(7)}/{key}")
+                            .ToArray()
                 });
         }
 

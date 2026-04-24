@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
@@ -14,7 +15,8 @@ public interface IGetVehicleSale
 }
 
 internal sealed class GetVehicleSale(
-    IConfiguration configuration) : IGetVehicleSale
+    IConfiguration configuration,
+    IAmazonS3 r2Client) : IGetVehicleSale
 {
     public async Task<VehicleSaleFullDto?> Execute(int id, CancellationToken cancellation)
     {
@@ -67,6 +69,7 @@ internal sealed class GetVehicleSale(
         await using var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@Id", id);
 
+        var baseUrl = $"{r2Client.Config.ServiceURL}/{configuration[R2Config.BucketNameKey]}/";
         await using var reader = await command.ExecuteReaderAsync(cancellation);
         while (await reader.ReadAsync(cancellation))
         {
@@ -107,8 +110,11 @@ internal sealed class GetVehicleSale(
                 AverageBatteryConsumptionInKWhPer100Km = reader.IsDBNull(32) ? null : reader.GetUInt16(32),
                 MassInKg = reader.IsDBNull(33) ? null : reader.GetUInt32(33),
                 MaximumLoadInKg = reader.IsDBNull(34) ? null : reader.GetUInt32(34),
-                Directory = reader.IsDBNull(35) ? null : reader.GetString(35),
-                PhotoKeys = reader.IsDBNull(36) ? null : reader.GetString(36).Split(VehicleSaleConfiguration.Separator)
+                PhotoKeys = reader.IsDBNull(35) || reader.IsDBNull(36)
+                    ? null
+                    : reader.GetString(36).Split(VehicleSaleConfiguration.Separator)
+                        .Select(key => $"{baseUrl}{reader.GetString(35)}/{key}")
+                        .ToArray()
             };
         }
 
@@ -213,6 +219,5 @@ public sealed record VehicleSaleFullDto(
     [Description("Maximum load capacity in kilograms.")]
     public uint? MaximumLoadInKg { get; init; }
 
-    public string? Directory { get; init; }
     public IReadOnlyList<string>? PhotoKeys { get; init; }
 }

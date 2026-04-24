@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using VehicleSales.Entities.Translation;
 using VehicleSales.Entities.User;
 using VehicleSales.Entities.VehicleMake;
 using VehicleSales.Entities.VehicleSale;
@@ -15,6 +16,7 @@ internal sealed class VehicleSalesDbContext(
     internal DbSet<VehicleMake> VehicleMakes { get; private set; }
     internal DbSet<VehicleModel> VehicleModels { get; private set; }
     internal DbSet<VehicleSale> VehicleSales { get; private set; }
+    internal DbSet<Translation> Translations { get; private set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

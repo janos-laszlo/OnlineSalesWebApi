@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dotnet build *)",
       "Bash(dotnet package *)",
-      "Bash(dotnet add *)"
+      "Bash(dotnet add *)",
+      "Bash(dotnet ef migrations *)"
     ]
   }
 }

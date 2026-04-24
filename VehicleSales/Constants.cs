@@ -20,4 +20,5 @@ internal static class Tables
     internal const string VehicleSales = "vehicle_sales";
     internal const string VehicleMakes = "vehicle_makes";
     internal const string VehicleModels = "vehicle_models";
+    internal const string Translations = "translations";
 }
